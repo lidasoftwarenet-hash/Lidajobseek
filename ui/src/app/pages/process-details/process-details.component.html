@@ -1,0 +1,531 @@
+<div class="details-view" *ngIf="process">
+    <header class="view-header">
+        <div class="title-block">
+            <h1>{{ process.companyName }}</h1>
+            <p class="subtitle">{{ process.roleTitle }}</p>
+        </div>
+        <div class="header-actions">
+            <div class="label-subtle" [ngClass]="getStatusClass(process.currentStage)">{{ process.currentStage }}</div>
+            <div class="action-buttons">
+                <button class="btn-secondary btn-small" [routerLink]="['/process', process.id, 'edit']">Edit</button>
+                <button class="btn-danger btn-small" (click)="deleteProcess()">Delete</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="content-sections">
+        <section class="info-card">
+            <div class="section-header">
+                <h2>Process Summary</h2>
+            </div>
+            <div class="metadata-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Location</span>
+                    <span class="meta-value">{{ process.location }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Work Mode</span>
+                    <span class="meta-value">
+                        {{ process.workMode | titlecase }}
+                        <span *ngIf="process.workMode === 'hybrid' && process.daysFromOffice" class="days-from-office">
+                            ({{ process.daysFromOffice }} day{{ process.daysFromOffice > 1 ? 's' : '' }} from office)
+                        </span>
+                    </span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Source</span>
+                    <span class="meta-value">{{ process.source }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Salary Expectation</span>
+                    <span class="meta-value">{{ process.salaryExpectation ? (process.salaryExpectation | number) : 'N/A'
+                        }}</span>
+                </div>
+                <div class="meta-item full">
+                    <span class="meta-label">Tech Stack</span>
+                    <span class="meta-value">{{ process.techStack }}</span>
+                </div>
+                <div class="meta-item full">
+                    <span class="meta-label">Data From the Phone Call</span>
+                    <p class="meta-text">{{ process.dataFromThePhoneCall }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="timeline-section">
+            <div class="section-header">
+                <h2>Interactions</h2>
+                <button class="btn-primary btn-small" [routerLink]="['/process', process.id, 'interaction', 'new']">+
+                    Record Interaction</button>
+            </div>
+
+            <div class="timeline" *ngIf="process.interactions?.length > 0; else noInteractions">
+                <div class="timeline-item" *ngFor="let inter of process.interactions">
+                    <div class="timeline-meta">
+                        <span class="timeline-date">{{ inter.date | date:'mediumDate' }}</span>
+                        <span class="timeline-type">{{ inter.interviewType | uppercase }}</span>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="participants-row" *ngIf="inter.participants?.length > 0">
+                            <span class="participant-label" *ngFor="let p of inter.participants">
+                                <strong>{{p.role}}:</strong> {{p.name}}
+                            </span>
+                        </div>
+                        <p class="summary">{{ inter.summary }}</p>
+                        <p class="notes" *ngIf="inter.notes">{{ inter.notes }}</p>
+
+                        <!-- Next Invite Display -->
+                        <div class="next-invite-card" *ngIf="inter.nextInviteStatus">
+                            <div class="next-invite-header">
+                                <span class="invite-icon">📅</span>
+                                <span class="invite-title">Next Round: {{ inter.nextInviteType || 'Scheduled' }}</span>
+                                <span class="invite-status"
+                                    [ngClass]="'status-' + inter.nextInviteStatus.toLowerCase()">
+                                    {{ inter.nextInviteStatus }}
+                                </span>
+                            </div>
+                            <div class="next-invite-details" *ngIf="inter.nextInviteStatus === 'Scheduled'">
+                                <div class="invite-row" *ngIf="inter.nextInviteDate">
+                                    <span class="label">Date:</span>
+                                    <span class="value">{{ inter.nextInviteDate | date:'medium' }}</span>
+                                </div>
+                                <div class="invite-row" *ngIf="inter.nextInviteLink">
+                                    <span class="label">Link:</span>
+                                    <a [href]="inter.nextInviteLink" target="_blank" class="invite-link">Join
+                                        Meeting</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="item-actions">
+                            <button class="btn-link"
+                                [routerLink]="['/process', process.id, 'interaction', inter.id, 'edit']">Edit</button>
+                            <button class="btn-link danger" (click)="deleteInteraction(inter.id)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noInteractions>
+                <p class="empty-muted">No interactions recorded yet.</p>
+            </ng-template>
+        </section>
+
+        <section class="timeline-section">
+            <div class="section-header">
+                <h2>Self Reviews</h2>
+                <button class="btn-primary btn-small" [routerLink]="['/process', process.id, 'review', 'new']">+ Add
+                    Review</button>
+            </div>
+
+            <div class="timeline" *ngIf="process.reviews?.length > 0; else noReviews">
+                <div class="timeline-item" *ngFor="let rev of process.reviews">
+                    <div class="timeline-meta">
+                        <span class="timeline-date">{{ rev.createdAt | date:'mediumDate' }}</span>
+                        <span class="timeline-type">STAGE: {{ rev.stage }}</span>
+                    </div>
+                    <div class="timeline-content">
+                        <div class="confidence-tag">Confidence: {{ rev.confidence }}/5</div>
+                        <div class="review-block">
+                            <strong>What went well</strong>
+                            <p>{{ rev.whatWentWell }}</p>
+                        </div>
+                        <div class="review-block">
+                            <strong>What could be better</strong>
+                            <p>{{ rev.whatFailed }}</p>
+                        </div>
+                        <div class="review-block">
+                            <strong>Gaps to address</strong>
+                            <p>{{ rev.gaps }}</p>
+                        </div>
+
+                        <div class="item-actions">
+                            <button class="btn-link"
+                                [routerLink]="['/process', process.id, 'review', rev.id, 'edit']">Edit</button>
+                            <button class="btn-link danger" (click)="deleteReview(rev.id)">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noReviews>
+                <p class="empty-muted">No self-reviews added yet.</p>
+            </ng-template>
+        </section>
+
+        <!-- Networking CRM Section -->
+        <section class="info-card">
+            <div class="section-header">
+                <h2>🕵️ Network Contacts</h2>
+                <button class="btn-primary btn-small" (click)="showContactForm = !showContactForm">
+                    {{ showContactForm ? 'Cancel' : '+ Add Contact' }}
+                </button>
+            </div>
+
+            <!-- Add Contact Form -->
+            <div *ngIf="showContactForm" class="contact-form">
+                <div class="form-row">
+                    <input type="text" [(ngModel)]="newContact.name" placeholder="Name" class="input-field">
+                    <input type="text" [(ngModel)]="newContact.role" placeholder="Role (e.g. Recruiter)"
+                        class="input-field">
+                </div>
+                <div class="form-row">
+                    <input type="text" [(ngModel)]="newContact.linkedIn" placeholder="LinkedIn URL" class="input-field">
+                    <input type="email" [(ngModel)]="newContact.email" placeholder="Email" class="input-field">
+                </div>
+                <textarea [(ngModel)]="newContact.socialHooks" rows="2"
+                    placeholder="Social hooks (e.g. 'Loves hiking, mention Dolomites')" class="input-field"></textarea>
+                <button class="btn-primary btn-small" (click)="addContact()">Save Contact</button>
+            </div>
+
+            <!-- Contacts List -->
+            <div *ngIf="process.contacts && process.contacts.length > 0; else noContacts" class="contacts-list">
+                <div *ngFor="let contact of process.contacts" class="contact-card">
+                    <div class="contact-header">
+                        <div>
+                            <strong class="contact-name">{{ contact.name }}</strong>
+                            <span class="contact-role">{{ contact.role }}</span>
+                        </div>
+                        <button class="btn-link danger" (click)="deleteContact(contact.id)">Delete</button>
+                    </div>
+                    <div class="contact-details">
+                        <a *ngIf="contact.linkedIn" [href]="contact.linkedIn" target="_blank"
+                            class="contact-link">LinkedIn</a>
+                        <a *ngIf="contact.email" [href]="'mailto:' + contact.email" class="contact-link">Email</a>
+                    </div>
+                    <p *ngIf="contact.socialHooks" class="social-hooks">💡 {{ contact.socialHooks }}</p>
+                </div>
+            </div>
+            <ng-template #noContacts>
+                <p class="empty-muted">No contacts added yet. Build your network!</p>
+            </ng-template>
+        </section>
+    </div>
+</div>
+
+<style>
+    .view-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+    }
+
+    .view-header h1 {
+        margin: 0;
+    }
+
+    .subtitle {
+        color: var(--text-secondary);
+        margin-top: 4px;
+        font-size: 16px;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .badge-status {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        text-transform: capitalize;
+    }
+
+    .content-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+    }
+
+    .metadata-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 24px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .meta-item.full {
+        grid-column: span 2;
+    }
+
+    .meta-label {
+        font-size: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .meta-value {
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    .meta-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        white-space: pre-wrap;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .section-header h2 {
+        margin: 0;
+    }
+
+    .btn-small {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+
+    .timeline {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .timeline-item {
+        display: flex;
+        padding: 24px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .timeline-item:last-child {
+        border-bottom: none;
+    }
+
+    .timeline-meta {
+        width: 140px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .timeline-date {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .timeline-type {
+        font-size: 11px;
+        font-weight: 100;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+    }
+
+    .timeline-content {
+        flex-grow: 1;
+    }
+
+    .summary {
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .notes {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+    }
+
+    .participants-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .participant-label {
+        font-size: 12px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+    }
+
+    .confidence-tag {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 100;
+        color: var(--accent-color);
+        margin-bottom: 16px;
+    }
+
+    .review-block {
+        margin-bottom: 16px;
+    }
+
+    .review-block:last-child {
+        margin-bottom: 0;
+    }
+
+    .review-block strong {
+        display: block;
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .review-block p {
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+        border-top: 1px solid var(--bg-subtle);
+        padding-top: 12px;
+    }
+
+    .btn-link {
+        background: none;
+        border: none;
+        color: var(--accent-color);
+        font-size: 13px;
+        font-weight: 100;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .btn-link.danger {
+        color: #ef4444;
+    }
+
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-weight: 100;
+    }
+
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .empty-muted {
+        color: var(--text-muted);
+        font-size: 14px;
+        font-style: italic;
+    }
+
+    .contact-form {
+        background: var(--bg-subtle);
+        padding: 20px;
+        border-radius: var(--radius-md);
+        margin-bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .contacts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .contact-card {
+        background: var(--bg-subtle);
+        padding: 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .contact-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .contact-name {
+        font-size: 15px;
+        color: var(--text-primary);
+        display: block;
+    }
+
+    .contact-role {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-left: 8px;
+        background: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .contact-details {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .contact-link {
+        font-size: 13px;
+        color: var(--accent-color);
+        text-decoration: none;
+    }
+
+    .contact-link:hover {
+        text-decoration: underline;
+    }
+
+    .social-hooks {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-style: italic;
+        margin: 0;
+        padding: 8px;
+        background: #fffbeb;
+        border-left: 3px solid #f59e0b;
+        border-radius: 4px;
+    }
+
+    .days-from-office {
+        font-size: 12px;
+        color: var(--accent-color);
+        font-weight: 500;
+        margin-left: 4px;
+    }
+    .next-invite-card { background: #fdfdfd; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); padding: 12px; margin-top: 12px; }    .next-invite-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }    .invite-icon { font-size: 16px; }    .invite-title { font-weight: 100; font-size: 14px; color: var(--text-primary); flex: 1; }    .invite-status { font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 500; text-transform: uppercase; }    .status-pending { background: #fffbeb; color: #92400e; }    .status-scheduled { background: #eff6ff; color: #1e40af; }    .status-completed { background: #f0fdf4; color: #166534; }    .status-declined { background: #fef2f2; color: #991b1b; }    .next-invite-details { margin-left: 24px; font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px; }    .invite-row { display: flex; gap: 8px; }    .invite-row .label { font-weight: 500; min-width: 40px; }    .invite-link { color: var(--accent-color); text-decoration: none; }    .invite-link:hover { text-decoration: underline; }</style>

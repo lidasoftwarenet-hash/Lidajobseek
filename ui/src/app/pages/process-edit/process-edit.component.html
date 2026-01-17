@@ -1,0 +1,297 @@
+<div class="form-view" *ngIf="process">
+    <header class="view-header">
+        <h1>Edit Process</h1>
+        <p class="subtitle">Modify details for {{ process.companyName }}.</p>
+    </header>
+
+    <form #processForm="ngForm" (ngSubmit)="onSubmit()" class="data-form">
+        <div class="form-section">
+            <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" name="companyName" [(ngModel)]="process.companyName" required
+                    placeholder="e.g. Google" class="input-field">
+            </div>
+
+            <div class="form-group">
+                <label>Role Title</label>
+                <input type="text" name="roleTitle" [(ngModel)]="process.roleTitle" required
+                    placeholder="e.g. Senior Software Engineer" class="input-field">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Location</label>
+                    <select name="locationSelect" [(ngModel)]="selectedLocation" required class="input-field"
+                        (change)="onLocationChange($event)">
+                        <option value="">Select location</option>
+                        <option *ngFor="let loc of locationOptions" 
+                                [value]="loc" 
+                                [class.abroad-option]="loc === 'Abroad'"
+                                [class.other-option]="loc === 'Other'">
+                            {{loc}}
+                        </option>
+                    </select>
+                    <div *ngIf="selectedLocation === 'Other'" class="form-group" style="margin-top: 12px;">
+                        <label>Specify Location</label>
+                        <input type="text" name="location" [(ngModel)]="process.location" 
+                            placeholder="Enter location..." class="input-field" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Work Mode</label>
+                    <select name="workMode" [(ngModel)]="process.workMode" class="input-field" (change)="onWorkModeChange($event)">
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="onsite">On-site</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" *ngIf="process.workMode === 'hybrid'">
+                <label>Days from Office per Week</label>
+                <input type="number" name="daysFromOffice" [(ngModel)]="process.daysFromOffice" min="1" max="5"
+                    placeholder="e.g. 2" class="input-field">
+                <p class="muted-hint">How many days per week are required in the office?</p>
+            </div>
+
+            <div class="form-group">
+                <label>Tech Stack</label>
+                <input type="text" name="techStack" [(ngModel)]="process.techStack" required
+                    placeholder="e.g. Angular, NestJS, Postgres" class="input-field">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Source</label>
+                    <input type="text" name="source" [(ngModel)]="process.source" placeholder="e.g. LinkedIn"
+                        class="input-field">
+                </div>
+
+                <div class="form-group">
+                    <label>Salary Expectation</label>
+                    <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
+                        placeholder="e.g. 35000" class="input-field">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Current Stage</label>
+                <select name="currentStage" [(ngModel)]="process.currentStage" required class="input-field">
+                    <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Data From the Phone Call</label>
+                <textarea name="dataFromThePhoneCall" [(ngModel)]="process.dataFromThePhoneCall" rows="4"
+                    placeholder="What did you learn in the initial call that makes you interested in this role?..." class="input-field"></textarea>
+                <p class="muted-hint">Capture key insights from your initial conversation with HR/recruiter.</p>
+            </div>
+        </div>
+
+     
+
+        <!-- Coach Hub moved to standalone page -->
+
+        <!-- Offer Details Section (Dynamic) -->
+        <div class="form-section highlight-section"
+            *ngIf="process.currentStage === 'offer received'">
+            <div class="section-header">
+                <h2>Offer Details</h2>
+                <p class="section-desc">Comparison data for the strategy board.</p>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Base Salary (Yearly)</label>
+                    <input type="number" name="baseSalary" [(ngModel)]="process.baseSalary" placeholder="e.g. 150000"
+                        class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>Signing Bonus</label>
+                    <input type="number" name="signingBonus" [(ngModel)]="process.signingBonus" placeholder="e.g. 20000"
+                        class="input-field">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Equity / Stocks</label>
+                    <input type="text" name="equity" [(ngModel)]="process.equity" placeholder="e.g. 100k over 4 years"
+                        class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>Performance Bonus</label>
+                    <input type="text" name="bonus" [(ngModel)]="process.bonus" placeholder="e.g. 15% target"
+                        class="input-field">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Extra Benefits</label>
+                <input type="text" name="benefits" [(ngModel)]="process.benefits"
+                    placeholder="e.g. Health, Study Fund, Gym" class="input-field">
+            </div>
+
+            <div class="form-group">
+                <label>Offer Deadline</label>
+                <input type="date" name="offerDeadline" [(ngModel)]="process.offerDeadline" class="input-field">
+            </div>
+        </div>
+
+        <!-- Reminders Section -->
+        <div class="form-section">
+            <div class="section-header">
+                <h2>Reminders & Maintenance</h2>
+            </div>
+            <div class="form-group">
+                <label>Next Follow-up Date</label>
+                <input type="date" name="nextFollowUp" [(ngModel)]="process.nextFollowUp" class="input-field">
+                <p class="muted-hint">Setting this will show a reminder on your dashboard.</p>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn-secondary" [routerLink]="['/process', process.id]">Cancel</button>
+            <button type="submit" class="btn-primary" [disabled]="!processForm.form.valid">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-view {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .view-header {
+        margin-bottom: 32px;
+    }
+
+    .subtitle {
+        color: var(--text-secondary);
+        margin-top: 4px;
+        font-size: 15px;
+    }
+
+    .data-form {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .highlight-section {
+        background: var(--accent-light);
+        padding: 24px;
+        border: 1px solid rgba(67, 97, 238, 0.2);
+        border-radius: var(--radius-md);
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .section-desc {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+        margin-bottom: 16px;
+    }
+
+    .muted-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 4px;
+        font-style: italic;
+    }
+
+    .score-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+
+    .score-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .score-slider {
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #e5e7eb;
+        outline: none;
+        -webkit-appearance: none;
+    }
+
+    .score-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-color);
+        cursor: pointer;
+    }
+
+    .score-slider::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-color);
+        cursor: pointer;
+        border: none;
+    }
+
+    .score-value {
+        font-size: 14px;
+        font-weight: 100;
+        color: var(--accent-color);
+        text-align: right;
+    }
+
+    /* Style for Abroad option */
+    .abroad-option {
+        color: #dc2626;
+        font-weight: 600;
+    }
+
+    /* Style for Other option */
+    .other-option {
+        color: #059669;
+        font-weight: 600;
+    }
+
+    /* Dark theme adjustments */
+    body.dark-theme .abroad-option {
+        color: #fca5a5;
+    }
+
+    body.dark-theme .other-option {
+        color: #6ee7b7;
+    }
+</style>

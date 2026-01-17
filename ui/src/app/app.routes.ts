@@ -1,0 +1,30 @@
+import { Routes } from '@angular/router';
+import { ProcessListComponent } from './pages/process-list/process-list.component';
+import { ProcessCreateComponent } from './pages/process-create/process-create.component';
+import { ProcessDetailsComponent } from './pages/process-details/process-details.component';
+import { InteractionCreateComponent } from './pages/interaction-create/interaction-create.component';
+import { ReviewCreateComponent } from './pages/review-create/review-create.component';
+import { ProcessEditComponent } from './pages/process-edit/process-edit.component';
+import { InteractionEditComponent } from './pages/interaction-edit/interaction-edit.component';
+import { ReviewEditComponent } from './pages/review-edit/review-edit.component';
+import { AnalyticsComponent } from './pages/analytics/analytics.component';
+import { CoachHubComponent } from './pages/coach-hub/coach-hub.component';
+import { DecisionBoardComponent } from './pages/decision-board/decision-board.component';
+import { CalendarComponent } from './pages/calendar/calendar.component';
+import { ScheduleInterviewComponent } from './pages/schedule-interview/schedule-interview.component';
+
+export const routes: Routes = [
+    { path: '', component: ProcessListComponent },
+    { path: 'analytics', component: AnalyticsComponent },
+    { path: 'decision-board', component: DecisionBoardComponent },
+    { path: 'coach-hub', component: CoachHubComponent },
+    { path: 'calendar', component: CalendarComponent },
+    { path: 'schedule-interview', component: ScheduleInterviewComponent },
+    { path: 'new', component: ProcessCreateComponent },
+    { path: 'process/:id', component: ProcessDetailsComponent },
+    { path: 'process/:id/edit', component: ProcessEditComponent },
+    { path: 'process/:id/interaction/new', component: InteractionCreateComponent },
+    { path: 'process/:pid/interaction/:id/edit', component: InteractionEditComponent },
+    { path: 'process/:id/review/new', component: ReviewCreateComponent },
+    { path: 'process/:pid/review/:id/edit', component: ReviewEditComponent }
+];

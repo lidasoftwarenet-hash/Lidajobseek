@@ -1,0 +1,68 @@
+<div class="decision-view">
+    <header class="view-header">
+        <h1>🎯 Decision Board</h1>
+        <p class="subtitle">Career Fit Scores ranked by your priorities.</p>
+    </header>
+
+    <div *ngIf="rankedProcesses.length > 0; else noScores" class="rankings-grid">
+        <div *ngFor="let process of rankedProcesses; let i = index" class="rank-card">
+            <div class="rank-badge">#{{i + 1}}</div>
+            <div class="rank-content">
+                <div class="rank-header">
+                    <div>
+                        <h3 class="company-name" [routerLink]="['/process', process.id]">{{process.companyName}}</h3>
+                        <p class="role-title">{{process.roleTitle}}</p>
+                    </div>
+                    <div class="fit-score" [ngClass]="getScoreClass(process.careerFitScore)">
+                        {{process.careerFitScore}}%
+                    </div>
+                </div>
+
+                <div class="score-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Tech</span>
+                        <div class="breakdown-bar">
+                            <div class="bar-fill" [style.width.%]="(process.scoreTech || 0) * 10"></div>
+                        </div>
+                        <span class="breakdown-value">{{process.scoreTech || 0}}/10</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">WLB</span>
+                        <div class="breakdown-bar">
+                            <div class="bar-fill" [style.width.%]="(process.scoreWLB || 0) * 10"></div>
+                        </div>
+                        <span class="breakdown-value">{{process.scoreWLB || 0}}/10</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Growth</span>
+                        <div class="breakdown-bar">
+                            <div class="bar-fill" [style.width.%]="(process.scoreGrowth || 0) * 10"></div>
+                        </div>
+                        <span class="breakdown-value">{{process.scoreGrowth || 0}}/10</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Vibe</span>
+                        <div class="breakdown-bar">
+                            <div class="bar-fill" [style.width.%]="(process.scoreVibe || 0) * 10"></div>
+                        </div>
+                        <span class="breakdown-value">{{process.scoreVibe || 0}}/10</span>
+                    </div>
+                </div>
+
+                <div class="rank-footer">
+                    <span class="stage-badge"
+                        [ngClass]="'status-' + (process.currentStage || '').toLowerCase().replace(' ', '-')"
+                        [textContent]="process.currentStage"></span>
+                    <button class="btn-text" [routerLink]="['/process', process.id, 'edit']">Edit Scores</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #noScores>
+        <div class="empty-state">
+            <h3>No scored opportunities yet</h3>
+            <p>Visit any process and fill out the Decision Matrix to see rankings here.</p>
+        </div>
+    </ng-template>
+</div>

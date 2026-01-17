@@ -1,0 +1,101 @@
+import { PrismaService } from '../prisma.service';
+import { CreateInteractionDto } from './dto/create-interaction.dto';
+export declare class InteractionsService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    create(dto: CreateInteractionDto): Promise<{
+        createdAt: Date;
+        id: number;
+        date: Date;
+        interviewType: string;
+        participants: import("@prisma/client/runtime/library").JsonValue | null;
+        summary: string;
+        testsAssessment: string | null;
+        roleInsights: string | null;
+        notes: string | null;
+        headsup: string | null;
+        nextInviteStatus: string | null;
+        nextInviteDate: Date | null;
+        nextInviteLink: string | null;
+        nextInviteType: string | null;
+        invitationExtended: string | null;
+        processId: number;
+    }>;
+    findAll(startDate?: string, endDate?: string, processId?: number): Promise<({
+        process: {
+            companyName: string;
+            roleTitle: string;
+        };
+    } & {
+        createdAt: Date;
+        id: number;
+        date: Date;
+        interviewType: string;
+        participants: import("@prisma/client/runtime/library").JsonValue | null;
+        summary: string;
+        testsAssessment: string | null;
+        roleInsights: string | null;
+        notes: string | null;
+        headsup: string | null;
+        nextInviteStatus: string | null;
+        nextInviteDate: Date | null;
+        nextInviteLink: string | null;
+        nextInviteType: string | null;
+        invitationExtended: string | null;
+        processId: number;
+    })[]>;
+    findByProcess(processId: number): Promise<{
+        createdAt: Date;
+        id: number;
+        date: Date;
+        interviewType: string;
+        participants: import("@prisma/client/runtime/library").JsonValue | null;
+        summary: string;
+        testsAssessment: string | null;
+        roleInsights: string | null;
+        notes: string | null;
+        headsup: string | null;
+        nextInviteStatus: string | null;
+        nextInviteDate: Date | null;
+        nextInviteLink: string | null;
+        nextInviteType: string | null;
+        invitationExtended: string | null;
+        processId: number;
+    }[]>;
+    update(id: number, dto: any): Promise<{
+        createdAt: Date;
+        id: number;
+        date: Date;
+        interviewType: string;
+        participants: import("@prisma/client/runtime/library").JsonValue | null;
+        summary: string;
+        testsAssessment: string | null;
+        roleInsights: string | null;
+        notes: string | null;
+        headsup: string | null;
+        nextInviteStatus: string | null;
+        nextInviteDate: Date | null;
+        nextInviteLink: string | null;
+        nextInviteType: string | null;
+        invitationExtended: string | null;
+        processId: number;
+    }>;
+    remove(id: number): Promise<{
+        createdAt: Date;
+        id: number;
+        date: Date;
+        interviewType: string;
+        participants: import("@prisma/client/runtime/library").JsonValue | null;
+        summary: string;
+        testsAssessment: string | null;
+        roleInsights: string | null;
+        notes: string | null;
+        headsup: string | null;
+        nextInviteStatus: string | null;
+        nextInviteDate: Date | null;
+        nextInviteLink: string | null;
+        nextInviteType: string | null;
+        invitationExtended: string | null;
+        processId: number;
+    }>;
+}

@@ -1,0 +1,100 @@
+<div class="hub-container">
+    <header class="hub-header">
+        <div>
+            <h1>🧠 Interview Coach Hub</h1>
+            <p class="subtitle">Prepare, store, and organize your career assets.</p>
+        </div>
+        <button class="btn-primary" (click)="showForm = !showForm">
+            <span class="btn-icon">{{ showForm ? '×' : '+' }}</span>
+            {{ showForm ? 'Cancel' : 'Add Resource' }}
+        </button>
+    </header>
+
+    <!-- Add Resource Form -->
+    <div *ngIf="showForm" class="resource-form highlight-section">
+        <h3>Add New Asset</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" [(ngModel)]="newResource.title" placeholder="e.g. Senior Backend Pitch"
+                    class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <select [(ngModel)]="newResource.type" class="input-field">
+                    <option *ngFor="let t of types" [value]="t">{{t}}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Content / URL / File</label>
+            <div class="input-group">
+                <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none">
+                <textarea [(ngModel)]="newResource.content" rows="4"
+                    placeholder="Write your pitch here, paste a link, or browse for a file..."
+                    class="input-field"></textarea>
+                <button type="button" class="btn-secondary browse-btn" (click)="fileInput.click()">
+                    📂 Browse
+                </button>
+            </div>
+            <p *ngIf="selectedFileName" class="file-hint">Selected: {{ selectedFileName }}</p>
+        </div>
+
+        <div class="form-group">
+            <label>Tags (comma separated)</label>
+            <input type="text" [(ngModel)]="newResource.tags" placeholder="e.g. generic, startup, tech"
+                class="input-field">
+        </div>
+
+        <div class="form-actions">
+            <button class="btn-primary" (click)="addResource()">Save Asset</button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+        <button class="filter-chip" [class.active]="filterType === 'All'"
+            (click)="filterType = 'All'; filterResources()">All</button>
+        <button *ngFor="let t of types" class="filter-chip" [class.active]="filterType === t"
+            (click)="filterType = t; filterResources()">{{t}}</button>
+    </div>
+
+    <!-- Resources List -->
+    <div class="resources-grid">
+        <div *ngFor="let res of filteredResources" class="resource-card">
+            <div class="card-header">
+                <span class="res-icon">{{ getIcon(res.type) }}</span>
+                <span class="res-type label-subtle">{{ res.type }}</span>
+                <button class="btn-icon danger" (click)="deleteResource(res.id)">&times;</button>
+            </div>
+            <h3 class="res-title">{{ res.title }}</h3>
+
+            <div class="res-body">
+                <div *ngIf="isFilePath(res.content); else textContent" class="file-preview">
+                    <a [href]="'http://localhost:3000' + res.content" target="_blank" class="btn-file">
+                        📄 Open File
+                    </a>
+                </div>
+                <ng-template #textContent>
+                    <p class="res-content">{{ res.content | slice:0:100 }}{{ res.content.length > 100 ? '...' : '' }}
+                    </p>
+                </ng-template>
+            </div>
+
+            <div class="res-tags" *ngIf="res.tags">
+                <span *ngFor="let tag of res.tags.split(',')" class="tag">{{ tag.trim() }}</span>
+            </div>
+            <div class="card-footer">
+                <span class="date">{{ res.updatedAt | date:'mediumDate' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="filteredResources.length === 0" class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h3>No resources found</h3>
+        <p>Add your first asset to get started!</p>
+        <button class="btn-primary" (click)="showForm = true">Add Resource</button>
+    </div>
+</div>

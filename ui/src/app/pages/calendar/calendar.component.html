@@ -1,0 +1,146 @@
+<div class="calendar-view">
+    <header class="view-header">
+        <div class="header-content">
+            <h1>Interview Calendar</h1>
+            <p class="subtitle">View and manage your scheduled interviews across all processes</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-primary" routerLink="/schedule-interview">
+                <span class="btn-icon">+</span>
+                Schedule New Interview
+            </button>
+        </div>
+    </header>
+
+    <div class="calendar-controls">
+        <div class="filters-card">
+            <h3>Filters</h3>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>Process Search</label>
+                    <div class="search-container">
+                        <input type="text" 
+                               [(ngModel)]="processSearch" 
+                               (ngModelChange)="onProcessSearchChange()"
+                               placeholder="Type to search processes..."
+                               class="input-field search-input">
+                        <div *ngIf="filteredProcesses.length > 0 && processSearch" class="search-dropdown">
+                            <div *ngFor="let process of filteredProcesses" 
+                                 class="search-option"
+                                 (click)="selectProcess(process)">
+                                {{process.companyName}} - {{process.roleTitle}}
+                            </div>
+                        </div>
+                        <div *ngIf="selectedProcess" class="selected-process">
+                            Selected: {{selectedProcess.companyName}} - {{selectedProcess.roleTitle}}
+                            <button type="button" class="clear-btn" (click)="clearProcessSelection()">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()" class="input-field">
+                </div>
+
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()" class="input-field">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showAllInterviews" [(ngModel)]="showAllInterviews" (ngModelChange)="onFilterChange()">
+                        <label for="showAllInterviews">Show all interviews</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn-secondary" (click)="loadInterviews()">
+                        <span class="btn-icon">↻</span>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-content">
+        <div class="interviews-list">
+            <div class="section-header">
+                <h2>Scheduled Interviews</h2>
+                <span class="badge">{{interviews.length}} interviews</span>
+            </div>
+
+            <div *ngIf="loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading interviews...</p>
+            </div>
+
+            <div *ngIf="!loading && interviews.length === 0" class="empty-state">
+                <div class="empty-icon">📅</div>
+                <h3>No interviews scheduled</h3>
+                <p>You don't have any interviews scheduled for the selected period.</p>
+                <button class="btn-primary" routerLink="/schedule-interview">
+                    <span class="btn-icon">+</span>
+                    Schedule Your First Interview
+                </button>
+            </div>
+
+            <div *ngIf="!loading && interviews.length > 0" class="interviews-list-view">
+                <div *ngFor="let interview of interviews | orderByDate" class="interview-card" 
+                     [style.borderLeftColor]="getInterviewColor(interview.interviewType)">
+                    <div class="interview-header">
+                        <div class="interview-type">
+                            <span class="type-badge" [style.background]="getInterviewColor(interview.interviewType)">
+                                {{interview.interviewType}}
+                            </span>
+                        </div>
+                        <div class="interview-date">
+                            <span class="date-icon">📅</span>
+                            {{formatDateTime(interview.date)}}
+                        </div>
+                    </div>
+
+                    <div class="interview-body">
+                        <h3 class="interview-title">
+                            {{interview.process?.companyName}} - {{interview.process?.roleTitle}}
+                        </h3>
+                        
+                        <div class="interview-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Participants:</span>
+                                <span class="detail-value">{{formatParticipants(interview.participants)}}</span>
+                            </div>
+                            
+                            <div *ngIf="interview.headsup" class="detail-item">
+                                <span class="detail-label">Heads-up:</span>
+                                <span class="detail-value">{{interview.headsup}}</span>
+                            </div>
+                            
+                            <div *ngIf="interview.notes" class="detail-item">
+                                <span class="detail-label">Notes:</span>
+                                <span class="detail-value">{{interview.notes}}</span>
+                            </div>
+                        </div>
+
+                        <div class="interview-summary">
+                            <p>{{interview.summary}}</p>
+                        </div>
+                    </div>
+
+                    <div class="interview-actions">
+                        <a [routerLink]="['/process', interview.processId, 'interaction', interview.id, 'edit']" 
+                           class="btn-text">
+                            Edit
+                        </a>
+                        <a [routerLink]="['/process', interview.processId]" class="btn-text">
+                            View Process
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

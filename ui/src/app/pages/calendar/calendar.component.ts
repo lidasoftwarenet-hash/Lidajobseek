@@ -1,0 +1,164 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { InteractionsService } from '../../services/interactions.service';
+import { ProcessesService } from '../../services/processes.service';
+import { OrderByDatePipe } from '../../pipes/order-by-date.pipe';
+
+@Component({
+  selector: 'app-calendar',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule, OrderByDatePipe],
+  templateUrl: './calendar.component.html',
+  styleUrls: ['./calendar.component.css']
+})
+export class CalendarComponent implements OnInit {
+  interviews: any[] = [];
+  processes: any[] = [];
+  filteredProcesses: any[] = [];
+  loading = true;
+  selectedProcessId: string = '';
+  selectedProcess: any = null;
+  processSearch: string = '';
+  startDate: string = '';
+  endDate: string = '';
+  showAllInterviews = false; // Default unchecked = show only upcoming
+
+  constructor(
+    private interactionsService: InteractionsService,
+    private processesService: ProcessesService
+  ) {}
+
+  ngOnInit() {
+    this.loadProcesses();
+    this.loadInterviews();
+    
+    // Set default date range: today to next 30 days
+    const today = new Date();
+    const nextMonth = new Date();
+    nextMonth.setDate(today.getDate() + 30);
+    
+    this.startDate = this.formatDateForInput(today);
+    this.endDate = this.formatDateForInput(nextMonth);
+  }
+
+  formatDateForInput(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  loadProcesses() {
+    this.processesService.getAll().subscribe({
+      next: (processes) => {
+        this.processes = processes;
+      },
+      error: (err) => {
+        console.error('Failed to load processes', err);
+      }
+    });
+  }
+
+  loadInterviews() {
+    this.loading = true;
+    const params: any = {};
+    
+    if (this.selectedProcessId) {
+      params.processId = this.selectedProcessId;
+    }
+    
+    if (this.startDate) {
+      params.startDate = this.startDate + 'T00:00:00.000Z';
+    }
+    
+    if (this.endDate) {
+      params.endDate = this.endDate + 'T23:59:59.999Z';
+    }
+    
+        this.interactionsService.getAll(params).subscribe({
+      next: (interviews) => {
+        // Filter interviews based on showAllInterviews checkbox
+        if (!this.showAllInterviews) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0); // Start of today (midnight)
+          interviews = interviews.filter((interview: any) => {
+            const interviewDate = new Date(interview.date);
+            interviewDate.setHours(0, 0, 0, 0); // Compare dates without time
+            return interviewDate >= today; // Show interviews from today onward
+          });
+        }
+        this.interviews = interviews;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load interviews', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  onFilterChange() {
+    this.loadInterviews();
+  }
+
+  getInterviewColor(interviewType: string): string {
+    const colors: Record<string, string> = {
+      'call': '#3b82f6',
+      'zoom': '#8b5cf6',
+      'frontal': '#10b981',
+      'home assigment': '#f59e0b',
+      'technical': '#ef4444',
+      'hr': '#06b6d4',
+      'managerial': '#8b5cf6'
+    };
+    return colors[interviewType] || '#6b7280';
+  }
+
+  formatDateTime(dateString: string): string {
+    const date = new Date(dateString);
+    // Format: dd/mm/yyyy, 24-hour clock
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    // Get weekday name
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekday = weekdays[date.getDay()];
+    
+    return `${weekday}, ${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
+  formatParticipants(participants: any[]): string {
+    if (!participants || participants.length === 0) return 'No participants';
+    return participants.map(p => p.name || p.role).join(', ');
+  }
+
+  onProcessSearchChange() {
+    if (!this.processSearch.trim()) {
+      this.filteredProcesses = [];
+      return;
+    }
+    
+    const searchTerm = this.processSearch.toLowerCase();
+    this.filteredProcesses = this.processes.filter(process => {
+      const companyName = process.companyName?.toLowerCase() || '';
+      const roleTitle = process.roleTitle?.toLowerCase() || '';
+      return companyName.includes(searchTerm) || roleTitle.includes(searchTerm);
+    });
+  }
+
+  selectProcess(process: any) {
+    this.selectedProcess = process;
+    this.selectedProcessId = process.id;
+    this.processSearch = '';
+    this.filteredProcesses = [];
+    this.onFilterChange();
+  }
+
+  clearProcessSelection() {
+    this.selectedProcess = null;
+    this.selectedProcessId = '';
+    this.onFilterChange();
+  }
+}
