@@ -6,6 +6,8 @@ import { InteractionsService } from '../../services/interactions.service';
 import { ReviewsService } from '../../services/reviews.service';
 import { ContactsService } from '../../services/contacts.service';
 import { FormsModule } from '@angular/forms';
+import { ConfirmService } from '../../services/confirm.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-process-details',
@@ -30,7 +32,9 @@ export class ProcessDetailsComponent implements OnInit {
         private processesService: ProcessesService,
         private interactionsService: InteractionsService,
         private reviewsService: ReviewsService,
-        private contactsService: ContactsService
+        private contactsService: ContactsService,
+        private confirmService: ConfirmService,
+        private toastService: ToastService
     ) { }
 
     ngOnInit() {
@@ -46,25 +50,28 @@ export class ProcessDetailsComponent implements OnInit {
         }
     }
 
-    deleteProcess() {
-        if (confirm('Are you sure you want to delete this whole process? This cannot be undone.')) {
+    async deleteProcess() {
+        if (await this.confirmService.confirm('Are you sure you want to delete this whole process? This cannot be undone.', 'Delete Process')) {
             this.processesService.delete(this.process.id).subscribe(() => {
+                this.toastService.show('Process deleted', 'success');
                 this.router.navigate(['/']);
             });
         }
     }
 
-    deleteInteraction(id: number) {
-        if (confirm('Delete this interaction?')) {
+    async deleteInteraction(id: number) {
+        if (await this.confirmService.confirm('Delete this interaction?', 'Delete Interaction')) {
             this.interactionsService.delete(id).subscribe(() => {
+                this.toastService.show('Interaction deleted', 'success');
                 this.loadProcess();
             });
         }
     }
 
-    deleteReview(id: number) {
-        if (confirm('Delete this self-review?')) {
+    async deleteReview(id: number) {
+        if (await this.confirmService.confirm('Delete this self-review?', 'Delete Review')) {
             this.reviewsService.delete(id).subscribe(() => {
+                this.toastService.show('Review deleted', 'success');
                 this.loadProcess();
             });
         }
@@ -85,9 +92,10 @@ export class ProcessDetailsComponent implements OnInit {
         });
     }
 
-    deleteContact(id: number) {
-        if (confirm('Delete this contact?')) {
+    async deleteContact(id: number) {
+        if (await this.confirmService.confirm('Delete this contact?', 'Delete Contact')) {
             this.contactsService.delete(id).subscribe(() => {
+                this.toastService.show('Contact deleted', 'success');
                 this.loadProcess();
             });
         }

@@ -26,4 +26,12 @@ export class ProcessesService {
     delete(id: number) {
         return this.http.delete(`${this.apiUrl}/${id}`);
     }
+
+    exportData() {
+        return this.http.get<any[]>(`${this.apiUrl}/export`);
+    }
+
+    importData(processes: any[], mode: 'overwrite' | 'append') {
+        return this.http.post(`${this.apiUrl}/import`, { processes, mode });
+    }
 }

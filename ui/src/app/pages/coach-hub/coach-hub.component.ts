@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ResourcesService } from '../../services/resources.service';
+import { ConfirmService } from '../../services/confirm.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-coach-hub',
@@ -27,7 +29,11 @@ export class CoachHubComponent implements OnInit {
 
     types = ['Pitch', 'CV', 'Question', 'Note', 'File'];
 
-    constructor(private resourcesService: ResourcesService) { }
+    constructor(
+        private resourcesService: ResourcesService,
+        private confirmService: ConfirmService,
+        private toastService: ToastService
+    ) { }
 
     ngOnInit() {
         this.loadResources();
@@ -83,9 +89,12 @@ export class CoachHubComponent implements OnInit {
         });
     }
 
-    deleteResource(id: number) {
-        if (confirm('Delete this resource?')) {
-            this.resourcesService.delete(id).subscribe(() => this.loadResources());
+    async deleteResource(id: number) {
+        if (await this.confirmService.confirm('Delete this resource?', 'Delete Resource')) {
+            this.resourcesService.delete(id).subscribe(() => {
+                this.toastService.show('Resource deleted', 'success');
+                this.loadResources();
+            });
         }
     }
 

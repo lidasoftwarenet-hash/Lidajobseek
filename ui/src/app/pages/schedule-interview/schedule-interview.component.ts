@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InteractionsService } from '../../services/interactions.service';
 import { ProcessesService } from '../../services/processes.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-schedule-interview',
@@ -15,7 +16,7 @@ import { ProcessesService } from '../../services/processes.service';
 export class ScheduleInterviewComponent implements OnInit {
   processes: any[] = [];
   loading = false;
-  
+
   interaction: any = {
     processId: null,
     date: '',
@@ -34,12 +35,13 @@ export class ScheduleInterviewComponent implements OnInit {
   constructor(
     private processesService: ProcessesService,
     private interactionsService: InteractionsService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
     this.loadProcesses();
-    
+
     // Set default date to now
     const now = new Date();
     const tzOffset = now.getTimezoneOffset() * 60000;
@@ -67,12 +69,12 @@ export class ScheduleInterviewComponent implements OnInit {
 
   onSubmit() {
     if (!this.interaction.processId) {
-      alert('Please select a process');
+      this.toastService.show('Please select a process', 'warning');
       return;
     }
 
     this.loading = true;
-    
+
     // Prepare the payload with only the fields we want to send
     const payload: any = {
       processId: Number(this.interaction.processId),
@@ -90,10 +92,12 @@ export class ScheduleInterviewComponent implements OnInit {
 
     this.interactionsService.create(payload).subscribe({
       next: () => {
+        this.toastService.show('Interview scheduled successfully', 'success');
         this.router.navigate(['/calendar']);
       },
       error: (err) => {
         console.error('Failed to schedule interview', err);
+        this.toastService.show('Failed to schedule interview', 'error');
         this.loading = false;
       }
     });

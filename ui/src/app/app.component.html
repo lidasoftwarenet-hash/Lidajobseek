@@ -1,135 +1,86 @@
-<header class="main-header">
-    <div class="header-content">
-        <a routerLink="/" class="app-logo">
-            <span class="logo-icon">📊</span>
-            <span class="logo-text">JobSeek</span>
-        </a>
-        <nav class="main-nav">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <span class="nav-icon">📋</span>
-                Processes
+<div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+        <div class="sidebar-header">
+            <a routerLink="/" class="app-logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="logo-text">JobSeek</span>
             </a>
-            <a routerLink="/calendar" routerLinkActive="active">
-                <span class="nav-icon">📅</span>
-                Calendar
+        </div>
+
+        <nav class="sidebar-nav">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Processes</span>
             </a>
-            <a routerLink="/analytics" routerLinkActive="active">
-                <span class="nav-icon">📈</span>
-                Analytics
+            <a routerLink="/calendar" routerLinkActive="active" class="nav-item">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Calendar</span>
             </a>
-            <a routerLink="/coach-hub" routerLinkActive="active">
-                <span class="nav-icon">🧠</span>
-                Data
+            <a routerLink="/analytics" routerLinkActive="active" class="nav-item">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>Analytics</span>
+            </a>
+            <a routerLink="/coach-hub" routerLinkActive="active" class="nav-item">
+                <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>Coach Hub</span>
             </a>
         </nav>
-        <button class="theme-toggle btn-icon" (click)="toggleTheme()" [title]="isDarkTheme ? 'Switch to light theme' : 'Switch to dark theme'">
-            <span class="theme-icon">{{ isDarkTheme ? '☀️' : '🌙' }}</span>
-        </button>
-    </div>
-</header>
-<main class="layout-container">
-    <router-outlet></router-outlet>
-</main>
 
-<style>
-    .main-header {
-        border-bottom: 1px solid var(--border-color);
-        background: var(--bg-card);
-        padding: 0;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        box-shadow: var(--shadow-sm);
-    }
+        <div class="sidebar-footer">
+            <button class="theme-toggle" (click)="toggleTheme()">
+                <svg *ngIf="!isDarkTheme" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <svg *ngIf="isDarkTheme" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <span>{{ isDarkTheme ? 'Light Mode' : 'Dark Mode' }}</span>
+            </button>
+        </div>
+    </aside>
 
-    .header-content {
-        max-width: var(--max-width);
-        margin: 0 auto;
-        padding: 0 24px;
-        display: flex;
-        align-items: center;
-        gap: 48px;
-        height: var(--header-height);
-    }
+    <!-- Main Content Area -->
+    <main class="app-main">
+        <div class="content-wrapper">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>
 
-    .app-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 100;
-        color: var(--text-primary);
-        font-size: 20px;
-        letter-spacing: -0.02em;
-        text-decoration: none;
-        transition: var(--transition);
-    }
-
-    .app-logo:hover {
-        color: var(--accent-color);
-    }
-
-    .logo-icon {
-        font-size: 24px;
-    }
-
-    .logo-text {
-        font-weight: 800;
-    }
-
-    .main-nav {
-        display: flex;
-        gap: 8px;
-        height: 100%;
-        flex: 1;
-    }
-
-    .main-nav a {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-secondary);
-        text-decoration: none;
-        padding: 8px 16px;
-        border-radius: var(--radius-sm);
-        transition: var(--transition);
-    }
-
-    .main-nav a:hover {
-        color: var(--accent-color);
-        background-color: var(--accent-light);
-    }
-
-    .main-nav a.active {
-        color: var(--accent-color);
-        background-color: var(--accent-light);
-        font-weight: 100;
-    }
-
-    .nav-icon {
-        font-size: 16px;
-    }
-
-    .theme-toggle {
-        margin-left: auto;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background: var(--bg-subtle);
-        border: 1px solid var(--border-color);
-    }
-
-    .theme-toggle:hover {
-        background: var(--accent-light);
-        border-color: var(--accent-color);
-        color: var(--accent-color);
-    }
-
-    .theme-icon {
-        font-size: 18px;
-    }
-</style>
+<app-toast></app-toast>
+<app-confirm-dialog></app-confirm-dialog>

@@ -9,7 +9,8 @@ import { ProcessesService } from '../../services/processes.service';
     selector: 'app-interaction-edit',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule],
-    templateUrl: './interaction-edit.component.html'
+    templateUrl: './interaction-edit.component.html',
+    styleUrls: ['./interaction-edit.component.css']
 })
 export class InteractionEditComponent implements OnInit {
     interaction: any;
@@ -28,7 +29,7 @@ export class InteractionEditComponent implements OnInit {
         const id = Number(this.route.snapshot.paramMap.get('id'));
 
         // We can't easily get a single interaction by ID from the API yet,
-        // so we fetch the whole process and find it. 
+        // so we fetch the whole process and find it.
         // Or we add a Get by ID for interactions.
         // Let's just fetch it from the process for now.
         this.processesService.getById(this.processId).subscribe(data => {

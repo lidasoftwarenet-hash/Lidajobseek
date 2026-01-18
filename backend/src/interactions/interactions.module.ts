@@ -4,7 +4,7 @@ import { InteractionsController } from './interactions.controller';
 import { PrismaService } from '../prisma.service';
 
 @Module({
-    controllers: [InteractionsController],
-    providers: [InteractionsService, PrismaService],
+  controllers: [InteractionsController],
+  providers: [InteractionsService, PrismaService],
 })
-export class InteractionsModule { }
+export class InteractionsModule {}

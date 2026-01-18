@@ -4,7 +4,7 @@ import { ProcessesController } from './processes.controller';
 import { PrismaService } from '../prisma.service';
 
 @Module({
-    controllers: [ProcessesController],
-    providers: [ProcessesService, PrismaService],
+  controllers: [ProcessesController],
+  providers: [ProcessesService, PrismaService],
 })
-export class ProcessesModule { }
+export class ProcessesModule {}

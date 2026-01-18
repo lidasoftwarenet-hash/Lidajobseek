@@ -14,9 +14,9 @@ import { ResourcesModule } from './resources/resources.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
     ProcessesModule,
@@ -27,4 +27,4 @@ import { ResourcesModule } from './resources/resources.module';
   controllers: [AppController, ContactsController],
   providers: [AppService, ContactsService, PrismaService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ProcessesService } from '../../services/processes.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-process-create',
@@ -70,12 +71,13 @@ export class ProcessCreateComponent {
 
     constructor(
         private processesService: ProcessesService,
-        private router: Router
+        private router: Router,
+        private toastService: ToastService
     ) { }
 
     onLocationChange(event: any) {
         const selectedValue = event.target.value;
-        
+
         // If selecting "Other", clear the location field to show placeholder
         if (selectedValue === 'Other') {
             this.process.location = '';
@@ -95,7 +97,7 @@ export class ProcessCreateComponent {
 
     onSubmit() {
         if (!this.processForm.valid) {
-            alert('Please fill in all required fields.');
+            this.toastService.show('Please fill in all required fields.', 'warning');
             return;
         }
 
@@ -107,7 +109,7 @@ export class ProcessCreateComponent {
         } else {
             payload.nextFollowUp = null;
         }
-        
+
         if (payload.initialInviteDate) {
             payload.initialInviteDate = new Date(payload.initialInviteDate).toISOString();
         } else {
@@ -124,11 +126,12 @@ export class ProcessCreateComponent {
         this.processesService.create(payload).subscribe({
             next: () => {
                 console.log('Success');
+                this.toastService.show('Process created successfully', 'success');
                 this.router.navigate(['/']);
             },
             error: (err) => {
                 console.error('Submission Failed:', err);
-                alert('Error creating process: ' + (err.error?.message || err.message));
+                this.toastService.show('Error creating process: ' + (err.error?.message || err.message), 'error');
             }
         });
     }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProcessesService } from '../../services/processes.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
     selector: 'app-process-edit',
@@ -53,7 +54,8 @@ export class ProcessEditComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private processesService: ProcessesService
+        private processesService: ProcessesService,
+        private toastService: ToastService
     ) { }
 
     ngOnInit() {
@@ -79,7 +81,7 @@ export class ProcessEditComponent implements OnInit {
 
     onLocationChange(event: any) {
         const selectedValue = event.target.value;
-        
+
         // If selecting "Other", clear the location field to show placeholder
         if (selectedValue === 'Other') {
             this.process.location = '';
@@ -106,7 +108,7 @@ export class ProcessEditComponent implements OnInit {
         } else {
             payload.nextFollowUp = null;
         }
-        
+
         if (payload.initialInviteDate) {
             payload.initialInviteDate = new Date(payload.initialInviteDate).toISOString();
         } else {
@@ -123,11 +125,12 @@ export class ProcessEditComponent implements OnInit {
         this.processesService.update(this.process.id, payload).subscribe({
             next: () => {
                 console.log('Process updated successfully');
+                this.toastService.show('Process updated successfully', 'success');
                 this.router.navigate(['/process', this.process.id]);
             },
             error: (err) => {
                 console.error('Error updating process:', err);
-                alert('Error updating process: ' + (err.error?.message || err.message));
+                this.toastService.show('Error updating process: ' + (err.error?.message || err.message), 'error');
             }
         });
     }

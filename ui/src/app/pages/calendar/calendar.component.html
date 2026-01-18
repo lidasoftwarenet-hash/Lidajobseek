@@ -1,144 +1,145 @@
-<div class="calendar-view">
-    <header class="view-header">
-        <div class="header-content">
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
             <h1>Interview Calendar</h1>
-            <p class="subtitle">View and manage your scheduled interviews across all processes</p>
+            <p class="subtitle">Manage your scheduled interviews</p>
         </div>
         <div class="header-actions">
+            <button class="btn-secondary" (click)="exportData()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export
+            </button>
+            <button class="btn-secondary" (click)="fileInput.click()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Import
+            </button>
+            <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none" accept=".json">
+
             <button class="btn-primary" routerLink="/schedule-interview">
-                <span class="btn-icon">+</span>
-                Schedule New Interview
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Schedule Interview
             </button>
         </div>
-    </header>
+    </div>
 
-    <div class="calendar-controls">
-        <div class="filters-card">
-            <h3>Filters</h3>
-            <div class="filter-grid">
-                <div class="form-group">
-                    <label>Process Search</label>
-                    <div class="search-container">
-                        <input type="text" 
-                               [(ngModel)]="processSearch" 
-                               (ngModelChange)="onProcessSearchChange()"
-                               placeholder="Type to search processes..."
-                               class="input-field search-input">
-                        <div *ngIf="filteredProcesses.length > 0 && processSearch" class="search-dropdown">
-                            <div *ngFor="let process of filteredProcesses" 
-                                 class="search-option"
-                                 (click)="selectProcess(process)">
-                                {{process.companyName}} - {{process.roleTitle}}
-                            </div>
-                        </div>
-                        <div *ngIf="selectedProcess" class="selected-process">
-                            Selected: {{selectedProcess.companyName}} - {{selectedProcess.roleTitle}}
-                            <button type="button" class="clear-btn" (click)="clearProcessSelection()">×</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Start Date</label>
-                    <input type="date" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()" class="input-field">
-                </div>
-
-                <div class="form-group">
-                    <label>End Date</label>
-                    <input type="date" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()" class="input-field">
-                </div>
-
-                <div class="form-group">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="showAllInterviews" [(ngModel)]="showAllInterviews" (ngModelChange)="onFilterChange()">
-                        <label for="showAllInterviews">Show all interviews</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>&nbsp;</label>
-                    <button class="btn-secondary" (click)="loadInterviews()">
-                        <span class="btn-icon">↻</span>
-                        Refresh
-                    </button>
+    <!-- Toolbar / Filters -->
+    <div class="toolbar">
+        <div class="search-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+                type="text"
+                [(ngModel)]="processSearch"
+                (ngModelChange)="onProcessSearchChange()"
+                placeholder="Search process..."
+                class="search-input"
+            />
+            <!-- Dropdown for process search results -->
+            <div *ngIf="filteredProcesses.length > 0 && processSearch" class="search-dropdown">
+                <div *ngFor="let process of filteredProcesses"
+                     class="search-option"
+                     (click)="selectProcess(process)">
+                    {{process.companyName}} - {{process.roleTitle}}
                 </div>
             </div>
+        </div>
+
+        <div class="filters-row">
+            <div class="date-range">
+                <input type="date" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()" class="filter-input">
+                <span class="separator">to</span>
+                <input type="date" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()" class="filter-input">
+            </div>
+
+            <label class="checkbox-filter">
+                <input type="checkbox" [(ngModel)]="showAllInterviews" (change)="onFilterChange()">
+                <span>Show All</span>
+            </label>
+
+            <button class="btn-icon-only" (click)="loadInterviews()" title="Refresh">
+                <span class="material-icons">refresh</span>
+            </button>
         </div>
     </div>
 
     <div class="calendar-content">
-        <div class="interviews-list">
-            <div class="section-header">
-                <h2>Scheduled Interviews</h2>
-                <span class="badge">{{interviews.length}} interviews</span>
-            </div>
+        <div *ngIf="loading" class="loading-state">
+            <div class="spinner"></div>
+        </div>
 
-            <div *ngIf="loading" class="loading-state">
-                <div class="spinner"></div>
-                <p>Loading interviews...</p>
+        <div *ngIf="!loading && interviews.length === 0" class="empty-state">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
             </div>
+            <h3>No interviews scheduled</h3>
+            <p>You don't have any interviews scheduled for this period.</p>
+            <button class="btn-primary" routerLink="/schedule-interview">Schedule Interview</button>
+        </div>
 
-            <div *ngIf="!loading && interviews.length === 0" class="empty-state">
-                <div class="empty-icon">📅</div>
-                <h3>No interviews scheduled</h3>
-                <p>You don't have any interviews scheduled for the selected period.</p>
-                <button class="btn-primary" routerLink="/schedule-interview">
-                    <span class="btn-icon">+</span>
-                    Schedule Your First Interview
-                </button>
-            </div>
+        <div *ngIf="!loading && interviews.length > 0" class="interviews-grid">
+            <div *ngFor="let interview of interviews | orderByDate" class="interview-card">
+                <div class="card-status-strip" [style.background-color]="getInterviewColor(interview.interviewType)"></div>
 
-            <div *ngIf="!loading && interviews.length > 0" class="interviews-list-view">
-                <div *ngFor="let interview of interviews | orderByDate" class="interview-card" 
-                     [style.borderLeftColor]="getInterviewColor(interview.interviewType)">
-                    <div class="interview-header">
-                        <div class="interview-type">
-                            <span class="type-badge" [style.background]="getInterviewColor(interview.interviewType)">
-                                {{interview.interviewType}}
-                            </span>
-                        </div>
-                        <div class="interview-date">
-                            <span class="date-icon">📅</span>
+                <div class="card-header">
+                    <div class="interview-meta">
+                        <span class="interview-type" [style.color]="getInterviewColor(interview.interviewType)">
+                            {{interview.interviewType}}
+                        </span>
+                        <span class="interview-date">
                             {{formatDateTime(interview.date)}}
-                        </div>
+                        </span>
                     </div>
-
-                    <div class="interview-body">
-                        <h3 class="interview-title">
-                            {{interview.process?.companyName}} - {{interview.process?.roleTitle}}
-                        </h3>
-                        
-                        <div class="interview-details">
-                            <div class="detail-item">
-                                <span class="detail-label">Participants:</span>
-                                <span class="detail-value">{{formatParticipants(interview.participants)}}</span>
-                            </div>
-                            
-                            <div *ngIf="interview.headsup" class="detail-item">
-                                <span class="detail-label">Heads-up:</span>
-                                <span class="detail-value">{{interview.headsup}}</span>
-                            </div>
-                            
-                            <div *ngIf="interview.notes" class="detail-item">
-                                <span class="detail-label">Notes:</span>
-                                <span class="detail-value">{{interview.notes}}</span>
-                            </div>
-                        </div>
-
-                        <div class="interview-summary">
-                            <p>{{interview.summary}}</p>
-                        </div>
-                    </div>
-
-                    <div class="interview-actions">
-                        <a [routerLink]="['/process', interview.processId, 'interaction', interview.id, 'edit']" 
-                           class="btn-text">
-                            Edit
-                        </a>
-                        <a [routerLink]="['/process', interview.processId]" class="btn-text">
-                            View Process
+                    <div class="card-actions">
+                        <a [routerLink]="['/process', interview.processId, 'interaction', interview.id, 'edit']" class="action-link">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
                         </a>
                     </div>
+                </div>
+
+                <div class="card-body">
+                    <h3 class="company-name">{{interview.process?.companyName}}</h3>
+                    <p class="role-title">{{interview.process?.roleTitle}}</p>
+
+                    <div class="participants-list" *ngIf="interview.participants && interview.participants.length > 0">
+                        <div class="participant" *ngFor="let p of interview.participants.slice(0, 3)">
+                            <div class="avatar">{{p.name.charAt(0)}}</div>
+                            <span class="name">{{p.name}}</span>
+                        </div>
+                        <div class="more-participants" *ngIf="interview.participants.length > 3">
+                            +{{interview.participants.length - 3}}
+                        </div>
+                    </div>
+
+                    <div class="notes-preview" *ngIf="interview.headsup">
+                        <span class="label">Heads up:</span> {{interview.headsup}}
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <a [routerLink]="['/process', interview.processId]" class="view-process-link">
+                        View Process →
+                    </a>
                 </div>
             </div>
         </div>

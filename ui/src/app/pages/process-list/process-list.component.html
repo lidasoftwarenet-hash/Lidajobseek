@@ -1,798 +1,160 @@
-<div class="page-container">
-    <!-- Sidebar Filters -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <span class="sidebar-icon">🔍</span>
-            <h3>Filters</h3>
-            <span class="filter-badge" *ngIf="activeFilterCount > 0">
-                {{ activeFilterCount }}
-            </span>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1>Processes</h1>
+            <p class="subtitle">Manage your job applications</p>
         </div>
-        
-        <button class="btn-secondary btn-small btn-clear" (click)="clearFilters()" [disabled]="!isFilterActive">
-            Clear All
-        </button>
+        <div class="header-actions">
+            <button class="btn-secondary" (click)="exportData()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export
+            </button>
+            <button class="btn-secondary" (click)="fileInput.click()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Import
+            </button>
+            <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none" accept=".json">
 
-        <!-- Search Box -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">📝</span>
-                <h4>Search</h4>
-            </div>
-            <div class="search-box">
-                <input 
-                    type="text" 
-                    [(ngModel)]="searchText" 
-                    (ngModelChange)="applyFilters()"
-                    placeholder="Company, role, tech..."
-                    class="search-input"
-                />
-                <span class="search-icon">🔍</span>
-            </div>
-        </div>
-
-        <!-- Stage Filter -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">📊</span>
-                <h4>Stage</h4>
-            </div>
-            <div class="checkbox-group">
-                <label *ngFor="let stage of availableStages" class="checkbox-label">
-                    <input 
-                        type="checkbox" 
-                        [checked]="selectedStages.includes(stage)"
-                        (change)="toggleStage(stage)"
-                        class="checkbox-input"
-                    />
-                    <span class="checkbox-custom"></span>
-                    <span class="checkbox-text">{{ stage }}</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- Work Mode Filter -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">🏢</span>
-                <h4>Work Mode</h4>
-            </div>
-            <div class="checkbox-group">
-                <label *ngFor="let mode of availableWorkModes" class="checkbox-label">
-                    <input 
-                        type="checkbox" 
-                        [checked]="selectedWorkModes.includes(mode)"
-                        (change)="toggleWorkMode(mode)"
-                        class="checkbox-input"
-                    />
-                    <span class="checkbox-custom"></span>
-                    <span class="checkbox-text">{{ mode }}</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- Location Filter -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">📍</span>
-                <h4>Location</h4>
-            </div>
-            <div class="text-input-group">
-                <input 
-                    type="text" 
-                    [(ngModel)]="locationText" 
-                    (ngModelChange)="applyFilters()"
-                    placeholder="Filter by location..."
-                    class="text-input"
-                />
-            </div>
-        </div>
-
-        <!-- Tech Stack Filter -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">💻</span>
-                <h4>Tech Stack</h4>
-            </div>
-            <div class="text-input-group">
-                <input 
-                    type="text" 
-                    [(ngModel)]="techStackText" 
-                    (ngModelChange)="applyFilters()"
-                    placeholder="Filter by technology..."
-                    class="text-input"
-                />
-            </div>
-        </div>
-
-        <!-- Interactions Filter -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">💬</span>
-                <h4>Interactions</h4>
-            </div>
-            <div class="range-inputs">
-                <div class="range-input">
-                    <label>Min:</label>
-                    <input 
-                        type="number" 
-                        [(ngModel)]="minInteractions" 
-                        (ngModelChange)="applyFilters()"
-                        placeholder="0"
-                        min="0"
-                        class="number-input"
-                    />
-                </div>
-                <div class="range-input">
-                    <label>Max:</label>
-                    <input 
-                        type="number" 
-                        [(ngModel)]="maxInteractions" 
-                        (ngModelChange)="applyFilters()"
-                        placeholder="Any"
-                        min="0"
-                        class="number-input"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Filter -->
-        <div class="filter-section">
-            <div class="filter-section-header">
-                <span class="filter-section-icon">📋</span>
-                <h4>Status</h4>
-            </div>
-            <div class="checkbox-group">
-                <label class="checkbox-label">
-                    <input 
-                        type="checkbox" 
-                        [(ngModel)]="showAllProcesses"
-                        (ngModelChange)="applyFilters()"
-                        class="checkbox-input"
-                    />
-                    <span class="checkbox-custom"></span>
-                    <span class="checkbox-text">Show all processes</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- Results Summary -->
-        <div class="results-summary" *ngIf="isFilterActive">
-            <div class="results-count">
-                {{ filteredProcesses.length }} of {{ processes.length }} (including Rejected/Withdrawn)
-            </div>
-            <div class="results-text" *ngIf="filteredProcesses.length === 0">
-                No matches found
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="page-header">
-            <div>
-                <h1>Active Processes</h1>
-                <p class="subtitle">Track and manage your job applications</p>
-            </div>
             <button class="btn-primary" routerLink="/new">
-                <span class="btn-icon">+</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
                 New Process
             </button>
         </div>
-
-        <div class="table-container" *ngIf="filteredProcesses.length > 0; else noData">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th (click)="sort('company')" class="sortable">
-                            <div class="th-content">
-                                Company & Role
-                                <span class="sort-arrow" *ngIf="isSorted('company')">
-                                    {{ getSortDirection('company') === 'asc' ? '↑' : '↓' }}
-                                </span>
-                            </div>
-                        </th>
-                        <th (click)="sort('stage')" class="sortable">
-                            <div class="th-content">
-                                Stage
-                                <span class="sort-arrow" *ngIf="isSorted('stage')">
-                                    {{ getSortDirection('stage') === 'asc' ? '↑' : '↓' }}
-                                </span>
-                            </div>
-                        </th>
-                        <th (click)="sort('interactions')" class="sortable">
-                            <div class="th-content">
-                                Interactions
-                                <span class="sort-arrow" *ngIf="isSorted('interactions')">
-                                    {{ getSortDirection('interactions') === 'asc' ? '↑' : '↓' }}
-                                </span>
-                            </div>
-                        </th>
-                        <th (click)="sort('location')" class="sortable">
-                            <div class="th-content">
-                                Location
-                                <span class="sort-arrow" *ngIf="isSorted('location')">
-                                    {{ getSortDirection('location') === 'asc' ? '↑' : '↓' }}
-                                </span>
-                            </div>
-                        </th>
-                        <th (click)="sort('workMode')" class="sortable">
-                            <div class="th-content">
-                                Work Mode
-                                <span class="sort-arrow" *ngIf="isSorted('workMode')">
-                                    {{ getSortDirection('workMode') === 'asc' ? '↑' : '↓' }}
-                                </span>
-                            </div>
-                        </th>
-                        <th (click)="sort('updated')" class="sortable">
-                            <div class="th-content">
-                                Last Updated
-                                <span class="sort-arrow" *ngIf="isSorted('updated')">
-                                    {{ getSortDirection('updated') === 'asc' ? '↑' : '↓' }}
-                                </span>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let p of filteredProcesses" [class.process-closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'">
-                        <td>
-                            <div class="company-cell">
-                                <a [routerLink]="['/process', p.id]" class="company-name">{{ p.companyName }}</a>
-                                <span class="role-title">{{ p.roleTitle }}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="label-subtle" [ngClass]="getStatusClass(p.currentStage)">{{ p.currentStage }}</span>
-                        </td>
-                        <td class="muted">{{ p._count?.interactions || 0 }}</td>
-                        <td class="muted">{{ p.location }}</td>
-                        <td class="muted">
-                            {{ p.workMode | titlecase }}
-                            <span *ngIf="p.workMode === 'hybrid' && p.daysFromOffice" class="days-from-office">
-                                ({{ p.daysFromOffice }} day{{ p.daysFromOffice > 1 ? 's' : '' }} from office)
-                            </span>
-                        </td>
-                        <td class="muted">{{ p.updatedAt | date:'shortDate' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <!-- Table Footer with Count -->
-            <div class="table-footer">
-    <div class="table-count">
-        Showing {{ filteredProcesses.length }} 
-        
-        <ng-container *ngIf="processesOnActioin.length > filteredProcesses.length; else totalOnly">
-            of {{ processesOnActioin.length }} Active processes
-        </ng-container>
-
-        <ng-template #totalOnly>
-            Active processes
-        </ng-template>
     </div>
-</div>
+
+    <!-- Toolbar / Filters -->
+    <div class="toolbar">
+        <div class="search-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+                type="text"
+                [(ngModel)]="searchText"
+                (ngModelChange)="applyFilters()"
+                placeholder="Search..."
+                class="search-input"
+            />
         </div>
 
-        <ng-template #noData>
-            <div class="empty-state">
-                <div class="empty-icon">📋</div>
-                <h3 *ngIf="processes.length === 0">No processes yet</h3>
-                <h3 *ngIf="processes.length > 0 && filteredProcesses.length === 0">No matching processes found</h3>
-                <p *ngIf="processes.length === 0">Start tracking your job applications by creating your first process.</p>
-                <p *ngIf="processes.length > 0 && filteredProcesses.length === 0">Try adjusting your filters to see more results.</p>
-                <button class="btn-primary" routerLink="/new" *ngIf="processes.length === 0">Create Process</button>
-                <button class="btn-secondary" (click)="clearFilters()" *ngIf="processes.length > 0 && filteredProcesses.length === 0">Clear Filters</button>
-            </div>
-        </ng-template>
+        <div class="filters-row">
+            <select [(ngModel)]="selectedStage" (change)="onStageChange($event)" class="filter-select">
+                <option value="">All Stages</option>
+                <option *ngFor="let stage of availableStages" [value]="stage">{{ stage }}</option>
+            </select>
+
+            <select [(ngModel)]="selectedWorkMode" (change)="onWorkModeChange($event)" class="filter-select">
+                <option value="">All Work Modes</option>
+                <option *ngFor="let mode of availableWorkModes" [value]="mode">{{ mode | titlecase }}</option>
+            </select>
+
+            <label class="checkbox-filter">
+                <input type="checkbox" [(ngModel)]="showAllProcesses" (change)="applyFilters()">
+                <span>Show Closed</span>
+            </label>
+        </div>
     </div>
+
+    <!-- Data Grid -->
+    <div class="table-container" *ngIf="filteredProcesses.length > 0; else noData">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th (click)="sort('company')" class="sortable">
+                        Company
+                        <span class="sort-indicator" *ngIf="isSorted('company')">
+                            {{ getSortDirection('company') === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
+                    <th (click)="sort('stage')" class="sortable">
+                        Stage
+                        <span class="sort-indicator" *ngIf="isSorted('stage')">
+                            {{ getSortDirection('stage') === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
+                    <th (click)="sort('interactions')" class="sortable">
+                        Interactions
+                        <span class="sort-indicator" *ngIf="isSorted('interactions')">
+                            {{ getSortDirection('interactions') === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
+                    <th (click)="sort('location')" class="sortable">
+                        Location
+                        <span class="sort-indicator" *ngIf="isSorted('location')">
+                            {{ getSortDirection('location') === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
+                    <th (click)="sort('updated')" class="sortable">
+                        Updated
+                        <span class="sort-indicator" *ngIf="isSorted('updated')">
+                            {{ getSortDirection('updated') === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
+                    <th></th> <!-- Actions -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let p of filteredProcesses" [class.closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'">
+                    <td>
+                        <div class="company-info">
+                            <span class="company-name">{{ p.companyName }}</span>
+                            <span class="role-title">{{ p.roleTitle }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge" [ngClass]="getStatusClass(p.currentStage)">
+                            {{ p.currentStage }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="interaction-count">
+                            {{ p._count?.interactions || 0 }}
+                        </div>
+                    </td>
+                    <td class="text-secondary">
+                        {{ p.location }}
+                        <span *ngIf="p.workMode === 'hybrid'" class="hybrid-badge">Hybrid</span>
+                    </td>
+                    <td class="text-secondary">
+                        {{ p.updatedAt | date:'dd/MM/yy' }}
+                    </td>
+                    <td>
+                        <a [routerLink]="['/process', p.id]" class="btn-icon-link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <ng-template #noData>
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+            </div>
+            <h3>No processes found</h3>
+            <p>Create a new process to get started tracking your applications.</p>
+            <button class="btn-primary" routerLink="/new">Create Process</button>
+        </div>
+    </ng-template>
 </div>
-
-<style>
-    /* Page Layout */
-    .page-container {
-        display: flex;
-        gap: 8px;
-        min-height: calc(100vh - 100px);
-        margin-left: -110px;
-        width: calc(100% + 60px);
-    }
-
-    /* Sidebar Styles */
-    .sidebar {
-        width: 300px;
-        flex-shrink: 0;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 16px;
-        height: fit-content;
-        position: sticky;
-        top: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 16px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .sidebar-icon {
-        font-size: 18px;
-        opacity: 0.8;
-    }
-
-    .sidebar-header h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 100;
-        color: var(--text-primary);
-    }
-
-    .btn-clear {
-        width: 100%;
-        margin-bottom: 20px;
-        padding: 8px 12px;
-    }
-
-    /* Main Content */
-    .main-content {
-        flex: 2;
-        min-width: 0;
-    
-    }
-
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 24px;
-    }
-
-    .page-header h1 {
-        margin-bottom: 8px;
-        font-size: 24px;
-        font-weight: 100;
-        color: var(--text-primary);
-
-    }
-
-    .subtitle {
-        color: var(--text-secondary);
-        font-size: 14px;
-        margin: 0;
-    }
-
-    /* Filter Sections */
-    .filter-section {
-        margin-bottom: 25px;
-    }
-
-    .filter-section-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 10px;
-    }
-
-    .filter-section-icon {
-        font-size: 14px;
-        opacity: 2.7;
-    }
-
-    .filter-section h4 {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 100;
-        color: var(--text-primary);
-    }
-
-    /* Search Box */
-    .search-box {
-        position: relative;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 8px 12px 8px 36px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 13px;
-        background: var(--bg-input);
-        color: var(--text-primary);
-        transition: border-color 0.2s ease;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
-    }
-
-    .search-icon {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 14px;
-        opacity: 0.5;
-    }
-
-    /* Checkbox Groups */
-    .checkbox-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        max-height: 180px;
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        font-size: 13px;
-        color: var(--text-secondary);
-        transition: color 0.2s ease;
-        padding: 3px 0;
-    }
-
-    .checkbox-label:hover {
-        color: var(--text-primary);
-    }
-
-    .checkbox-input {
-        display: none;
-    }
-
-    .checkbox-custom {
-        width: 14px;
-        height: 14px;
-        border: 2px solid var(--border-color);
-        border-radius: 3px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        flex-shrink: 0;
-    }
-
-    .checkbox-input:checked + .checkbox-custom {
-        background: var(--accent-color);
-        border-color: var(--accent-color);
-    }
-
-    .checkbox-input:checked + .checkbox-custom::after {
-        content: '✓';
-        color: white;
-        font-size: 10px;
-        font-weight: bold;
-    }
-
-    .checkbox-text {
-        user-select: none;
-    }
-
-    /* Text Input Groups */
-    .text-input-group {
-        margin-top: 6px;
-    }
-
-    .text-input {
-        width: 100%;
-        padding: 6px 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 13px;
-        background: var(--bg-input);
-        color: var(--text-primary);
-        transition: border-color 0.2s ease;
-    }
-
-    .text-input:focus {
-        outline: none;
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
-    }
-
-    /* Range Inputs */
-    .range-inputs {
-        display: flex;
-        gap: 10px;
-    }
-
-    .range-input {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .range-input label {
-        font-size: 12px;
-        color: var(--text-secondary);
-    }
-
-    .number-input {
-        padding: 6px 10px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 6px;
-        background: var(--bg-input);
-        color: var(--text-primary);
-        transition: border-color 0.2s ease;
-    }
-
-    .number-input:focus {
-        outline: none;
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
-    }
-
-    /* Results Summary */
-    .results-summary {
-        padding-top: 12px;
-        border-top: 1px solid var(--border-color);
-        font-size: 12px;
-        color: var(--text-secondary);
-    }
-
-    .results-count {
-        font-weight: 100;
-        color: var(--accent-color);
-        margin-bottom: 4px;
-    }
-
-    .results-text {
-        font-size: 11px;
-        color: var(--error-color);
-    }
-
-    /* Table Styles */
-    .table-container {
-        width: 1100px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .data-table th {
-        background: var(--bg-subtle);
-        padding: 12px 20px;
-        text-align: left;
-        font-size: 13px;
-        font-weight: 100;
-        color: var(--text-primary);
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .data-table td {
-        padding: 12px 20px;
-        border-bottom: 1px solid var(--border-color);
-        font-size: 13px;
-    }
-
-    .data-table tr:last-child td {
-        border-bottom: none;
-    }
-
-    .data-table tr:hover {
-        background: var(--bg-hover);
-    }
-
-    /* Company cell with smaller font */
-    .company-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .company-name {
-        font-weight: 100;
-        color: var(--accent-color);
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .company-name:hover {
-        text-decoration: underline;
-    }
-
-    .role-title {
-        font-size: 12px;
-        color: var(--text-secondary);
-    }
-
-    .muted {
-        color: var(--text-secondary);
-        font-size: 12px;
-    }
-
-    .label-subtle {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 500;
-        background: var(--bg-subtle);
-        color: var(--text-secondary);
-        border: 1px solid var(--border-color);
-    }
-
-    /* Sorting styles */
-    .sortable {
-        cursor: pointer;
-        user-select: none;
-        transition: background-color 0.2s ease;
-    }
-
-    .sortable:hover {
-        background-color: rgba(67, 97, 238, 0.1) !important;
-    }
-
-    .th-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-    }
-
-    .sort-arrow {
-        font-size: 10px;
-        color: var(--accent-color);
-        font-weight: bold;
-        opacity: 0.8;
-    }
-
-    .sortable:hover .sort-arrow {
-        opacity: 1;
-    }
-
-    /* Closed/ended process styling */
-    .process-closed {
-        opacity: 0.4;
-        filter: grayscale(0.3);
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    .process-closed:hover {
-        opacity: 0.7;
-        filter: grayscale(0.2);
-        background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    .process-closed .role-title,
-    .process-closed .muted {
-        color: var(--text-muted);
-    }
-
-    .process-closed .label-subtle {
-        background-color: var(--bg-subtle);
-        color: var(--text-muted);
-        border-color: var(--border-color);
-    }
-
-    /* Days from office styling */
-    .days-from-office {
-        font-size: 11px;
-        color: var(--text-secondary);
-        opacity: 0.8;
-        margin-left: 4px;
-    }
-
-    /* Table footer styling */
-    .table-footer {
-        padding: 12px 16px;
-        border-top: 1px solid var(--border-color);
-        background: var(--bg-subtle);
-        text-align: center;
-    }
-
-    .table-count {
-        font-size: 12px;
-        color: var(--text-secondary);
-        font-weight: 100;
-    }
-
-    /* Empty state */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-
-    .empty-icon {
-        font-size: 36px;
-        margin-bottom: 16px;
-        opacity: 0.5;
-    }
-
-    .empty-state h3 {
-        margin-bottom: 8px;
-        font-size: 16px;
-        color: var(--text-primary);
-    }
-
-    .empty-state p {
-        margin-bottom: 20px;
-        color: var(--text-secondary);
-        font-size: 13px;
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    /* Button styles */
-    .btn-primary {
-        background: var(--accent-color-dark);
-        color: rgb(224, 218, 232);
-        border: none;
-        padding: 1px 16px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: background-color 0.2s ease;
-    }
-
-    .btn-primary:hover {
-        background: var(--accent-color-dark);
-    }
-
-    .btn-secondary {
-        background: var(--bg-subtle);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .btn-secondary:hover {
-        background: var(--bg-hover);
-        border-color: var(--border-color-dark);
-    }
-
-    .btn-secondary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .btn-icon {
-        font-size: 0.000000000000000001px;
-    }
-
-    /* Filter badge */
-    .filter-badge {
-        background: var(--accent-color);
-        color: white;
-        font-size: 11px;
-        font-weight: 100;
-        padding: 1px 6px;
-        border-radius: 10px;
-        margin-left: auto;
-    }
-</style>

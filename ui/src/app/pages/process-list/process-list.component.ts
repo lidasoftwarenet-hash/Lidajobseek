@@ -3,32 +3,31 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProcessesService } from '../../services/processes.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
     selector: 'app-process-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, FormsModule],
-    templateUrl: './process-list.component.html'
+    imports: [CommonModule, FormsModule, RouterModule],
+    templateUrl: './process-list.component.html',
+    styleUrls: ['./process-list.component.css']
 })
 export class ProcessListComponent implements OnInit {
     processes: any[] = [];
     processesOnActioin: any[] = [];
     filteredProcesses: any[] = [];
     tasks: any[] = [];
-    
+
     // Sorting properties
     sortColumn: string = '';
     sortDirection: 'asc' | 'desc' = 'asc';
 
     // Filter properties
     searchText: string = '';
-    selectedStages: string[] = [];
-    selectedWorkModes: string[] = [];
-    locationText: string = '';
-    techStackText: string = '';
+    selectedStage: string = '';
+    selectedWorkMode: string = '';
     showAllProcesses: boolean = false;
-    minInteractions: number | null = null;
-    maxInteractions: number | null = null;
 
     // Available options for filters
     availableStages: string[] = [
@@ -44,10 +43,14 @@ export class ProcessListComponent implements OnInit {
         'Rejected',
         'No Response (14+ Days)'
     ];
-    
+
     availableWorkModes: string[] = ['remote', 'hybrid', 'onsite'];
 
-    constructor(private processesService: ProcessesService) { }
+    constructor(
+        private processesService: ProcessesService,
+        private toastService: ToastService,
+        private confirmService: ConfirmService
+    ) { }
 
     ngOnInit() {
         this.processesService.getAll().subscribe(data => {
@@ -70,6 +73,65 @@ export class ProcessListComponent implements OnInit {
             }));
     }
 
+    exportData() {
+        this.processesService.exportData().subscribe({
+            next: (data) => {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `jobseek-export-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                this.toastService.show('Export successful', 'success');
+            },
+            error: (err) => {
+                console.error('Export failed', err);
+                this.toastService.show('Export failed', 'error');
+            }
+        });
+    }
+
+    onFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e: any) => {
+            try {
+                const processes = JSON.parse(e.target.result);
+
+                const mode = await this.confirmService.custom({
+                    title: 'Import Data',
+                    message: 'How would you like to import the data?',
+                    buttons: [
+                        { text: 'Append', value: 'append', class: 'btn-secondary' },
+                        { text: 'Overwrite', value: 'overwrite', class: 'btn-danger' },
+                        { text: 'Cancel', value: null, class: 'btn-secondary' }
+                    ]
+                });
+
+                if (!mode) return;
+
+                this.processesService.importData(processes, mode).subscribe({
+                    next: () => {
+                        this.toastService.show('Import successful', 'success');
+                        this.ngOnInit(); // Reload data
+                    },
+                    error: (err) => {
+                        console.error('Import failed', err);
+                        this.toastService.show('Import failed', 'error');
+                    }
+                });
+            } catch (err) {
+                console.error('Invalid file', err);
+                this.toastService.show('Invalid JSON file', 'error');
+            }
+            // Reset input
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
 
     // Apply filters
     applyFilters() {
@@ -77,7 +139,7 @@ export class ProcessListComponent implements OnInit {
             // Search text filter
             if (this.searchText) {
                 const searchLower = this.searchText.toLowerCase();
-                const matchesSearch = 
+                const matchesSearch =
                     process.companyName?.toLowerCase().includes(searchLower) ||
                     process.roleTitle?.toLowerCase().includes(searchLower) ||
                     process.techStack?.toLowerCase().includes(searchLower) ||
@@ -86,37 +148,12 @@ export class ProcessListComponent implements OnInit {
             }
 
             // Stage filter
-            if (this.selectedStages.length > 0 && !this.selectedStages.includes(process.currentStage)) {
+            if (this.selectedStage && process.currentStage !== this.selectedStage) {
                 return false;
             }
 
             // Work mode filter
-            if (this.selectedWorkModes.length > 0 && !this.selectedWorkModes.includes(process.workMode)) {
-                return false;
-            }
-
-            // Location text filter
-            if (this.locationText) {
-                const locationLower = this.locationText.toLowerCase();
-                if (!process.location?.toLowerCase().includes(locationLower)) {
-                    return false;
-                }
-            }
-
-            // Tech stack text filter
-            if (this.techStackText) {
-                const techLower = this.techStackText.toLowerCase();
-                if (!process.techStack?.toLowerCase().includes(techLower)) {
-                    return false;
-                }
-            }
-
-            // Interactions count filter
-            const interactionsCount = process._count?.interactions || 0;
-            if (this.minInteractions !== null && interactionsCount < this.minInteractions) {
-                return false;
-            }
-            if (this.maxInteractions !== null && interactionsCount > this.maxInteractions) {
+            if (this.selectedWorkMode && process.workMode !== this.selectedWorkMode) {
                 return false;
             }
 
@@ -138,34 +175,19 @@ export class ProcessListComponent implements OnInit {
     // Clear all filters
     clearFilters() {
         this.searchText = '';
-        this.selectedStages = [];
-        this.selectedWorkModes = [];
-        this.locationText = '';
-        this.techStackText = '';
+        this.selectedStage = '';
+        this.selectedWorkMode = '';
         this.showAllProcesses = false;
-        this.minInteractions = null;
-        this.maxInteractions = null;
-        this.applyFilters(); // Apply filters after clearing
-    }
-
-    // Toggle filter selections
-    toggleStage(stage: string) {
-        const index = this.selectedStages.indexOf(stage);
-        if (index === -1) {
-            this.selectedStages.push(stage);
-        } else {
-            this.selectedStages.splice(index, 1);
-        }
         this.applyFilters();
     }
 
-    toggleWorkMode(mode: string) {
-        const index = this.selectedWorkModes.indexOf(mode);
-        if (index === -1) {
-            this.selectedWorkModes.push(mode);
-        } else {
-            this.selectedWorkModes.splice(index, 1);
-        }
+    onStageChange(event: any) {
+        this.selectedStage = event.target.value;
+        this.applyFilters();
+    }
+
+    onWorkModeChange(event: any) {
+        this.selectedWorkMode = event.target.value;
         this.applyFilters();
     }
 
@@ -186,7 +208,7 @@ export class ProcessListComponent implements OnInit {
         }
 
         const arrayToSort = skipFilteredUpdate ? this.filteredProcesses : this.processes;
-        
+
         arrayToSort.sort((a, b) => {
             let aValue = this.getSortValue(a, column);
             let bValue = this.getSortValue(b, column);
@@ -197,7 +219,7 @@ export class ProcessListComponent implements OnInit {
 
             // Compare based on type
             if (typeof aValue === 'string' && typeof bValue === 'string') {
-                return this.sortDirection === 'asc' 
+                return this.sortDirection === 'asc'
                     ? aValue.localeCompare(bValue)
                     : bValue.localeCompare(aValue);
             } else {
@@ -243,13 +265,9 @@ export class ProcessListComponent implements OnInit {
 
     // Helper to check if any filter is active
     get isFilterActive(): boolean {
-        return !!this.searchText || 
-               this.selectedStages.length > 0 ||
-               this.selectedWorkModes.length > 0 ||
-               !!this.locationText ||
-               !!this.techStackText ||
-               this.minInteractions !== null ||
-               this.maxInteractions !== null ||
+        return !!this.searchText ||
+               !!this.selectedStage ||
+               !!this.selectedWorkMode ||
                this.showAllProcesses;
     }
 
@@ -257,12 +275,8 @@ export class ProcessListComponent implements OnInit {
     get activeFilterCount(): number {
         let count = 0;
         if (this.searchText) count++;
-        count += this.selectedStages.length;
-        count += this.selectedWorkModes.length;
-        if (this.locationText) count++;
-        if (this.techStackText) count++;
-        if (this.minInteractions !== null) count++;
-        if (this.maxInteractions !== null) count++;
+        if (this.selectedStage) count++;
+        if (this.selectedWorkMode) count++;
         if (this.showAllProcesses) count++;
         return count;
     }

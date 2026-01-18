@@ -8,7 +8,8 @@ import Chart from 'chart.js/auto';
     selector: 'app-analytics',
     standalone: true,
     imports: [CommonModule, FormsModule],
-    templateUrl: './analytics.component.html'
+    templateUrl: './analytics.component.html',
+    styleUrls: ['./analytics.component.css']
 })
 export class AnalyticsComponent implements OnInit {
     @ViewChild('interactionChart') interactionChart!: ElementRef;
@@ -92,6 +93,10 @@ export class AnalyticsComponent implements OnInit {
         setTimeout(() => {
             if (this.chart) this.chart.destroy();
 
+            const isDark = document.body.classList.contains('dark-theme');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
             this.chart = new Chart(this.interactionChart.nativeElement, {
                 type: 'line',
                 data: {
@@ -99,13 +104,15 @@ export class AnalyticsComponent implements OnInit {
                     datasets: [{
                         label: 'Interactions',
                         data: interactionCounts,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 6,
-                        pointBackgroundColor: '#2563eb',
-                        pointHoverRadius: 8
+                        pointBackgroundColor: '#4f46e5',
+                        pointHoverRadius: 8,
+                        pointBorderColor: isDark ? '#1e293b' : '#ffffff',
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
@@ -114,6 +121,13 @@ export class AnalyticsComponent implements OnInit {
                     plugins: {
                         legend: { display: false },
                         tooltip: {
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            titleColor: isDark ? '#f8fafc' : '#0f172a',
+                            bodyColor: isDark ? '#cbd5e1' : '#475569',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
                             callbacks: {
                                 label: (context) => ` ${context.parsed.y} Interactions`
                             }
@@ -122,12 +136,19 @@ export class AnalyticsComponent implements OnInit {
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { stepSize: 1, font: { size: 11 } },
-                            grid: { color: '#f3f4f6' }
+                            ticks: {
+                                stepSize: 1,
+                                font: { size: 11, family: "'Inter', sans-serif" },
+                                color: textColor
+                            },
+                            grid: { color: gridColor }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { font: { size: 11 } }
+                            ticks: {
+                                font: { size: 11, family: "'Inter', sans-serif" },
+                                color: textColor
+                            }
                         }
                     }
                 }
