@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ProcessesService {
-    private apiUrl = 'http://localhost:3000/processes';
+    private apiUrl = '/api/processes';
 
     constructor(private http: HttpClient) { }
 

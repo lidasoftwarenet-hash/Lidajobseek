@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class InteractionsService {
-    private apiUrl = 'http://localhost:3000/interactions';
+    private apiUrl = '/api/interactions';
 
     constructor(private http: HttpClient) { }
 

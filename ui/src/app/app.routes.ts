@@ -12,19 +12,28 @@ import { CoachHubComponent } from './pages/coach-hub/coach-hub.component';
 import { DecisionBoardComponent } from './pages/decision-board/decision-board.component';
 import { CalendarComponent } from './pages/calendar/calendar.component';
 import { ScheduleInterviewComponent } from './pages/schedule-interview/schedule-interview.component';
+import { LoginComponent } from './pages/login/login.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-    { path: '', component: ProcessListComponent },
-    { path: 'analytics', component: AnalyticsComponent },
-    { path: 'decision-board', component: DecisionBoardComponent },
-    { path: 'coach-hub', component: CoachHubComponent },
-    { path: 'calendar', component: CalendarComponent },
-    { path: 'schedule-interview', component: ScheduleInterviewComponent },
-    { path: 'new', component: ProcessCreateComponent },
-    { path: 'process/:id', component: ProcessDetailsComponent },
-    { path: 'process/:id/edit', component: ProcessEditComponent },
-    { path: 'process/:id/interaction/new', component: InteractionCreateComponent },
-    { path: 'process/:pid/interaction/:id/edit', component: InteractionEditComponent },
-    { path: 'process/:id/review/new', component: ReviewCreateComponent },
-    { path: 'process/:pid/review/:id/edit', component: ReviewEditComponent }
+    { path: 'login', component: LoginComponent },
+    {
+        path: '',
+        canActivate: [AuthGuard],
+        children: [
+            { path: '', component: ProcessListComponent },
+            { path: 'analytics', component: AnalyticsComponent },
+            { path: 'decision-board', component: DecisionBoardComponent },
+            { path: 'coach-hub', component: CoachHubComponent },
+            { path: 'calendar', component: CalendarComponent },
+            { path: 'schedule-interview', component: ScheduleInterviewComponent },
+            { path: 'new', component: ProcessCreateComponent },
+            { path: 'process/:id', component: ProcessDetailsComponent },
+            { path: 'process/:id/edit', component: ProcessEditComponent },
+            { path: 'process/:id/interaction/new', component: InteractionCreateComponent },
+            { path: 'process/:pid/interaction/:id/edit', component: InteractionEditComponent },
+            { path: 'process/:id/review/new', component: ReviewCreateComponent },
+            { path: 'process/:pid/review/:id/edit', component: ReviewEditComponent }
+        ]
+    }
 ];

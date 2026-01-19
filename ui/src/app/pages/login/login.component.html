@@ -1,0 +1,14 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Access Required</h2>
+    <p>Please enter the password to access the application.</p>
+
+    <div class="form-group">
+      <input type="password" [(ngModel)]="password" (keyup.enter)="login()" placeholder="Password" class="input-field">
+    </div>
+
+    <p *ngIf="error" class="error-message">{{ error }}</p>
+
+    <button (click)="login()" class="btn-primary">Enter</button>
+  </div>
+</div>

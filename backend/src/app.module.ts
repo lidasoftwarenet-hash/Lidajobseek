@@ -11,14 +11,22 @@ import { PrismaService } from './prisma.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ResourcesModule } from './resources/resources.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
-    }),
+    AuthModule,
+    ServeStaticModule.forRoot(
+      {
+        rootPath: join(process.cwd(), 'uploads'),
+        serveRoot: '/uploads',
+      },
+      {
+        rootPath: join(__dirname, 'public'),
+        exclude: ['/api/(.*)'],
+      },
+    ),
     ProcessesModule,
     InteractionsModule,
     ReviewsModule,

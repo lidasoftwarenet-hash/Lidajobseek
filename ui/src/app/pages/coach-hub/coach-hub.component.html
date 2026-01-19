@@ -72,7 +72,7 @@
 
             <div class="res-body">
                 <div *ngIf="isFilePath(res.content); else textContent" class="file-preview">
-                    <a [href]="'http://localhost:3000' + res.content" target="_blank" class="btn-file">
+                    <a [href]="res.content" target="_blank" class="btn-file">
                         📄 Open File
                     </a>
                 </div>

@@ -1,0 +1,29 @@
+{
+  "name": "lidajobseek",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "ui"
+  ],
+  "scripts": {
+    "build": "npx prisma generate --schema backend/prisma/schema.prisma && npm run build -w backend && npm run build -w ui && cp -r dist/public/browser/* dist/public/ && rm -rf dist/public/browser",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/serve-static": "^5.0.4",
+    "@prisma/client": "^6.19.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/node": "^22.10.7",
+    "typescript": "^5.7.3"
+  }
+}
