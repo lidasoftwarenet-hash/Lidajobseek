@@ -7,7 +7,7 @@
     "ui"
   ],
   "scripts": {
-    "build": "npx prisma generate --schema backend/prisma/schema.prisma && npm run build -w backend && npm run build -w ui && cp -r dist/public/browser/* dist/public/ && rm -rf dist/public/browser",
+    "build": " npm run build -w backend && npm run build -w ui && cp -r dist/public/browser/* dist/public/ && rm -rf dist/public/browser",
     "start": "node dist/main.js"
   },
   "dependencies": {
@@ -18,7 +18,8 @@
     "@nestjs/serve-static": "^5.0.4",
     "@prisma/client": "^6.19.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "prisma": "6.19.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
