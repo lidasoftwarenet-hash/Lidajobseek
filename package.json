@@ -7,9 +7,9 @@
     "ui"
   ],
   "scripts": {
-    "build": " npm run build -w backend && npm run build -w ui && cp -r dist/public/browser/* dist/public/ && rm -rf dist/public/browser",
-    "start": "node dist/main.js"
-  },
+  "build": "npm run prisma:generate -w backend && npm run build -w backend && npm run build -w ui && cp -r dist/public/browser/* dist/public/ && rm -rf dist/public/browser",
+  "start": "node dist/main.js"
+},
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
