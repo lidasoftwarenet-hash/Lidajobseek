@@ -112,6 +112,7 @@ model SelfReview {
 }
 
 model Pass {
-  id    Int    @id @default(autoincrement())
-  value String @unique
+  id        Int      @id @default(autoincrement())
+  value     String
+  createdAt DateTime @default(now())
 }

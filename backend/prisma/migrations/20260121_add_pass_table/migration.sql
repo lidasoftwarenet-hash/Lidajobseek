@@ -1,0 +1,5 @@
+CREATE TABLE app."Pass" (
+  id SERIAL PRIMARY KEY,
+  value TEXT NOT NULL,
+  "createdAt" TIMESTAMP NOT NULL DEFAULT now()
+);
