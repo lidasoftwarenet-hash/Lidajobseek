@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { ToastComponent } from './components/toast/toast.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,12 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
 export class AppComponent implements OnInit {
   title = 'ui';
   isDarkTheme = true; // Default to dark theme as per user request
+
+  constructor(private authService: AuthService) {}
+
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
 
   ngOnInit() {
     this.applyTheme();

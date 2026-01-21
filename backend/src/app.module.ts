@@ -23,8 +23,8 @@ import { AuthModule } from './auth/auth.module';
         serveRoot: '/uploads',
       },
       {
-        rootPath: join(__dirname, 'public'),
-        exclude: ['/api/(.*)'],
+        rootPath: join(process.cwd(), 'dist', 'public', 'browser'),
+        exclude: ['/api'],
       },
     ),
     ProcessesModule,

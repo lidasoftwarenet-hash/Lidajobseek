@@ -9,8 +9,9 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body('password') password: string) {
-    if (this.authService.validatePassword(password)) {
+  async login(@Body('password') password: string) {
+    const isValid = await this.authService.validatePassword(password);
+    if (isValid) {
       return { success: true };
     }
     throw new UnauthorizedException('Invalid password');

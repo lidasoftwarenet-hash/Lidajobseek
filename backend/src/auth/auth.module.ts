@@ -3,11 +3,13 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
+import { PrismaService } from '../prisma.service';
 
 @Module({
   controllers: [AuthController],
   providers: [
     AuthService,
+    PrismaService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

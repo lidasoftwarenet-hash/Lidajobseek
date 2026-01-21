@@ -1,6 +1,6 @@
 <div class="app-layout">
-    <!-- Sidebar Navigation -->
-    <aside class="app-sidebar">
+    <!-- Sidebar Navigation - Only show when authenticated -->
+    <aside *ngIf="isAuthenticated" class="app-sidebar">
         <div class="sidebar-header">
             <a routerLink="/" class="app-logo">
                 <div class="logo-icon">
@@ -75,7 +75,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="app-main">
+    <main [class.app-main]="isAuthenticated" [class.app-main-no-sidebar]="!isAuthenticated">
         <div class="content-wrapper">
             <router-outlet></router-outlet>
         </div>

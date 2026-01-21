@@ -110,3 +110,8 @@ model SelfReview {
 
   process       Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
 }
+
+model Pass {
+  id    Int    @id @default(autoincrement())
+  value String @unique
+}

@@ -7,7 +7,7 @@
     "ui"
   ],
   "scripts": {
-  "build": "npm run prisma:generate -w backend && npm run build -w backend && npm run build -w ui && cp -r dist/public/browser/* dist/public/ && rm -rf dist/public/browser",
+  "build": "npm run prisma:generate -w backend && npm run build -w backend && npm run build -w ui && (if exist dist/public/browser (xcopy /E /Y dist/public/browser\\* dist/public\\ && rmdir /S /Q dist/public/browser) else echo No browser directory found)",
   "start": "node dist/main.js"
 },
   "dependencies": {

@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common'; // Wait, this is Angular
 import { HttpClient } from '@angular/common/http';
-import { Injectable as AngularInjectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 
-@AngularInjectable({
+@Injectable({
   providedIn: 'root'
 })
 export class AuthService {
