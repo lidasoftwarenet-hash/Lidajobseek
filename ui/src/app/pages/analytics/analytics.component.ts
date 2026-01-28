@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProcessesService } from '../../services/processes.service';
@@ -11,67 +11,200 @@ import Chart from 'chart.js/auto';
     templateUrl: './analytics.component.html',
     styleUrls: ['./analytics.component.css']
 })
-export class AnalyticsComponent implements OnInit {
-    @ViewChild('interactionChart') interactionChart!: ElementRef;
+export class AnalyticsComponent implements OnInit, AfterViewInit {
+    @ViewChild('interactionChart') interactionChartRef!: ElementRef;
+    @ViewChild('statusChart') statusChartRef!: ElementRef;
+    @ViewChild('sourceChart') sourceChartRef!: ElementRef;
+    @ViewChild('timelineChart') timelineChartRef!: ElementRef;
 
     stats: any = {
         total: 0,
         active: 0,
-        funnel: [],
+        offers: 0,
+        interviewRate: 0,
         rejectionRate: 0,
-        averageInteractions: 0
+        avgDaysInProcess: 0
     };
 
-    daysRange = 14;
-    private chart: any;
+    daysRange = 30; // Default to 30 days for trend
+    private charts: { [key: string]: any } = {};
     private rawProcesses: any[] = [];
 
     constructor(private processesService: ProcessesService) { }
 
     ngOnInit() {
+        // Data fetching happens in AfterViewInit to ensure canvas elements are ready 
+        // but we can fetch data here
         this.processesService.getAll().subscribe(processes => {
             this.rawProcesses = processes;
-            this.calculateStats(processes);
-            this.generateChart();
+            this.calculateStats();
+            this.initCharts();
         });
+    }
+
+    ngAfterViewInit() {
+        // Chart initialization handled in subscription callback
     }
 
     onRangeChange() {
-        this.generateChart();
+        this.updateTrendChart();
     }
 
-    calculateStats(processes: any[]) {
-        const total = processes.length;
+    calculateStats() {
+        const total = this.rawProcesses.length;
         if (total === 0) return;
 
+        const p = this.rawProcesses;
+
         this.stats.total = total;
-        this.stats.active = processes.filter(p => p.currentStage !== 'Rejected' && p.currentStage !== 'Withdrawn' && p.currentStage !== 'Offer' && p.currentStage !== 'Signed').length;
+        this.stats.active = p.filter(x => ['Initial Call Scheduled', 'Interview Scheduled', 'Home Task Assigned', 'Final HR Interview Scheduled'].includes(x.currentStage)).length;
+        this.stats.offers = p.filter(x => x.currentStage === 'Offer' || x.currentStage === 'Signed').length;
 
-        const stages = ['Applied', 'Phone Screen', 'Technical Interview', 'Final Interview', 'Offer'];
-        this.stats.funnel = stages.map(stage => {
-            const stageIndex = stages.indexOf(stage);
-            const count = processes.filter(p => {
-                const currentStageIndex = stages.indexOf(p.currentStage);
-                return currentStageIndex >= stageIndex || (p.currentStage === 'Rejected' && stageIndex === 0);
-            }).length;
+        // Calculate Interview Rate (Processes that passed initial stage)
+        const interviewed = p.filter(x => x.currentStage !== 'Applied' && x.currentStage !== 'No Response (14+ Days)').length;
+        this.stats.interviewRate = Math.round((interviewed / total) * 100);
 
-            return { label: stage, count, percentage: Math.round((count / total) * 100) };
-        });
+        this.stats.rejectionRate = Math.round((p.filter(x => x.currentStage === 'Rejected').length / total) * 100);
 
-        this.stats.rejectionRate = Math.round((processes.filter(p => p.currentStage === 'Rejected').length / total) * 100);
-
-        const totalInteractions = processes.reduce((acc, p) => acc + (p._count?.interactions || 0), 0);
-        this.stats.averageInteractions = (totalInteractions / total).toFixed(1);
+        // Avg days active (simple approx for now)
+        const completed = p.filter(x => ['Rejected', 'Offer', 'Signed', 'Withdrawn'].includes(x.currentStage));
+        if (completed.length > 0) {
+            const totalDays = completed.reduce((acc, curr) => {
+                const start = new Date(curr.createdAt);
+                const end = new Date(curr.updatedAt);
+                const diffTime = Math.abs(end.getTime() - start.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return acc + diffDays;
+            }, 0);
+            this.stats.avgDaysInProcess = Math.round(totalDays / completed.length);
+        }
     }
 
-    generateChart() {
+    initCharts() {
+        if (!this.interactionChartRef) return; // Guard clause
+
+        this.createStatusChart();
+        this.createSourceChart();
+        this.createTimelineChart(); // Applications over time
+        this.updateTrendChart(); // Interaction activity
+    }
+
+    createStatusChart() {
+        const counts: { [key: string]: number } = {};
+        this.rawProcesses.forEach(p => {
+            counts[p.currentStage] = (counts[p.currentStage] || 0) + 1;
+        });
+
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+
+        this.charts['status'] = new Chart(this.statusChartRef.nativeElement, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#4f46e5', '#ec4899', '#10b981', '#f59e0b', '#6366f1', '#84cc16', '#ef4444', '#64748b'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { size: 11 }, usePointStyle: true } }
+                },
+                cutout: '75%'
+            }
+        });
+    }
+
+    createSourceChart() {
+        const counts: { [key: string]: number } = {};
+        this.rawProcesses.forEach(p => {
+            const source = p.source || 'Unknown';
+            counts[source] = (counts[source] || 0) + 1;
+        });
+
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5); // Top 5
+
+        this.charts['source'] = new Chart(this.sourceChartRef.nativeElement, {
+            type: 'bar',
+            data: {
+                labels: sorted.map(x => x[0]),
+                datasets: [{
+                    label: 'Applications',
+                    data: sorted.map(x => x[1]),
+                    backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    createTimelineChart() {
+        // Group by Month (last 6 months)
+        const months: string[] = [];
+        const data: number[] = [];
+        const today = new Date();
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            const monthLabel = d.toLocaleString('default', { month: 'short' });
+            months.push(monthLabel);
+
+            const count = this.rawProcesses.filter(p => {
+                const pDate = new Date(p.createdAt);
+                return pDate.getMonth() === d.getMonth() && pDate.getFullYear() === d.getFullYear();
+            }).length;
+            data.push(count);
+        }
+
+        this.charts['timeline'] = new Chart(this.timelineChartRef.nativeElement, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'New Applications',
+                    data: data,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4,
+                    barThickness: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    updateTrendChart() {
+        if (this.charts['trend']) this.charts['trend'].destroy();
+
         const allInteractions: any[] = [];
         this.rawProcesses.forEach(p => {
             if (p.interactions) allInteractions.push(...p.interactions);
         });
 
         const labels: string[] = [];
-        const interactionCounts: number[] = [];
+        const counts: number[] = [];
 
         for (let i = this.daysRange - 1; i >= 0; i--) {
             const d = new Date();
@@ -83,76 +216,40 @@ export class AnalyticsComponent implements OnInit {
                 return interDate === dateString;
             }).length;
 
-            // Format as dd/mm
             const day = d.getDate().toString().padStart(2, '0');
             const month = (d.getMonth() + 1).toString().padStart(2, '0');
             labels.push(`${day}/${month}`);
-            interactionCounts.push(count);
+            counts.push(count);
         }
 
-        setTimeout(() => {
-            if (this.chart) this.chart.destroy();
-
-            const isDark = document.body.classList.contains('dark-theme');
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-            const textColor = isDark ? '#94a3b8' : '#64748b';
-
-            this.chart = new Chart(this.interactionChart.nativeElement, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Interactions',
-                        data: interactionCounts,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 6,
-                        pointBackgroundColor: '#4f46e5',
-                        pointHoverRadius: 8,
-                        pointBorderColor: isDark ? '#1e293b' : '#ffffff',
-                        pointBorderWidth: 2
-                    }]
+        this.charts['trend'] = new Chart(this.interactionChartRef.nativeElement, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Activity',
+                    data: counts,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                            titleColor: isDark ? '#f8fafc' : '#0f172a',
-                            bodyColor: isDark ? '#cbd5e1' : '#475569',
-                            borderColor: isDark ? '#334155' : '#e2e8f0',
-                            borderWidth: 1,
-                            padding: 12,
-                            displayColors: false,
-                            callbacks: {
-                                label: (context) => ` ${context.parsed.y} Interactions`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                font: { size: 11, family: "'Inter', sans-serif" },
-                                color: textColor
-                            },
-                            grid: { color: gridColor }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: {
-                                font: { size: 11, family: "'Inter', sans-serif" },
-                                color: textColor
-                            }
-                        }
-                    }
-                }
-            });
-        }, 0);
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+            }
+        });
     }
 }

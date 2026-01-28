@@ -1,100 +1,222 @@
 <div class="hub-container">
     <header class="hub-header">
-        <div>
+        <div class="header-left">
             <h1>🧠 Interview Coach Hub</h1>
-            <p class="subtitle">Prepare, store, and organize your career assets.</p>
+            <p class="subtitle">Your professional career assets library</p>
         </div>
-        <button class="btn-primary" (click)="showForm = !showForm">
-            <span class="btn-icon">{{ showForm ? '×' : '+' }}</span>
-            {{ showForm ? 'Cancel' : 'Add Resource' }}
-        </button>
+        <div class="header-actions">
+            <button class="btn-secondary btn-icon-text" (click)="showConfig = !showConfig">
+                <span class="icon">⚙️</span>
+                {{ showConfig ? 'Close' : 'Configure' }}
+            </button>
+        </div>
     </header>
 
-    <!-- Add Resource Form -->
-    <div *ngIf="showForm" class="resource-form highlight-section">
-        <h3>Add New Asset</h3>
-        <div class="form-row">
+    <!-- Configuration Panel -->
+    <div *ngIf="showConfig" class="config-panel">
+        <div class="config-header">
+            <div>
+                <h3>📂 Manage Categories</h3>
+                <p class="config-hint">Customize your workspace by managing resource categories</p>
+            </div>
+            <button class="btn-primary btn-sm" (click)="showAddCategory = !showAddCategory">
+                <span class="btn-icon">{{ showAddCategory ? '×' : '+' }}</span>
+                {{ showAddCategory ? 'Cancel' : 'Add Category' }}
+            </button>
+        </div>
+
+        <!-- Add New Category Form -->
+        <div *ngIf="showAddCategory" class="add-category-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Category Name</label>
+                    <input type="text" [(ngModel)]="newCategory.name" placeholder="e.g. Cover Letters"
+                        class="input-field">
+                </div>
+                <div class="form-group">
+                    <label>Icon</label>
+                    <div class="icon-picker">
+                        <button *ngFor="let icon of availableIcons" type="button" class="icon-option"
+                            [class.selected]="newCategory.icon === icon" (click)="newCategory.icon = icon">
+                            {{ icon }}
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <div class="color-picker">
+                        <button *ngFor="let color of availableColors" type="button" class="color-option"
+                            [class.selected]="newCategory.color === color" [style.background]="color"
+                            (click)="newCategory.color = color">
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions-inline">
+                <button class="btn-primary" (click)="addNewCategory()">Create Category</button>
+                <button class="btn-secondary" (click)="showAddCategory = false; resetNewCategory()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Existing Categories -->
+        <div class="category-config-grid">
+            <div *ngFor="let cat of categories" class="config-item">
+                <div class="config-item-content">
+                    <div class="config-item-header">
+                        <span class="config-icon" [style.color]="cat.color">{{ cat.icon }}</span>
+                        <input *ngIf="cat.isEditing" type="text" [(ngModel)]="cat.name" class="edit-input"
+                            (keyup.enter)="saveRename(cat)" (keyup.escape)="cancelEdit(cat)">
+                        <span *ngIf="!cat.isEditing" class="config-name">{{ cat.name }}</span>
+                    </div>
+                    <div class="config-actions">
+                        <button *ngIf="!cat.isEditing" class="btn-icon-sm" (click)="startEditCategory(cat)"
+                            title="Rename">
+                            ✏️
+                        </button>
+                        <button *ngIf="cat.isEditing" class="btn-icon-sm success" (click)="saveRename(cat)"
+                            title="Save">
+                            ✓
+                        </button>
+                        <button *ngIf="cat.isEditing" class="btn-icon-sm danger" (click)="cancelEdit(cat)"
+                            title="Cancel">
+                            ×
+                        </button>
+                        <button *ngIf="!cat.isEditing" class="btn-icon-sm danger" (click)="deleteCategory(cat)"
+                            title="Delete">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" [(ngModel)]="cat.enabled" (change)="saveCategories()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb" *ngIf="selectedCategory">
+        <button class="breadcrumb-link" (click)="backToFolders()">
+            <span class="icon">🏠</span> Home
+        </button>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{{ selectedCategoryData?.name }}</span>
+    </div>
+
+    <!-- Folder View (Main Categories) -->
+    <div *ngIf="!selectedCategory" class="folder-view">
+        <div class="folder-grid">
+            <div *ngFor="let category of enabledCategories" class="folder-card" (click)="selectCategory(category.id)"
+                [style.--folder-color]="category.color">
+                <div class="folder-icon-wrapper">
+                    <div class="folder-icon">{{ category.icon }}</div>
+                </div>
+                <div class="folder-info">
+                    <h3 class="folder-name">{{ category.name }}</h3>
+                    <p class="folder-count">
+                        {{ (resources | filter: category.id).length }} item{{ (resources | filter: category.id).length
+                        !== 1 ? 's' : '' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="enabledCategories.length === 0" class="empty-state">
+            <div class="empty-icon">📂</div>
+            <h3>No categories enabled</h3>
+            <p>Enable at least one category in the configuration to get started</p>
+            <button class="btn-primary" (click)="showConfig = true">Configure Categories</button>
+        </div>
+    </div>
+
+    <!-- File List View (Inside a Category) -->
+    <div *ngIf="selectedCategory" class="file-view">
+        <div class="file-view-header">
+            <h2>
+                <span class="category-icon" [style.color]="selectedCategoryData?.color">
+                    {{ selectedCategoryData?.icon }}
+                </span>
+                {{ selectedCategoryData?.name }}
+            </h2>
+            <button class="btn-primary" (click)="showForm = !showForm">
+                <span class="btn-icon">{{ showForm ? '×' : '+' }}</span>
+                {{ showForm ? 'Cancel' : 'Add Item' }}
+            </button>
+        </div>
+
+        <!-- Add Resource Form -->
+        <div *ngIf="showForm" class="add-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" [(ngModel)]="newResource.title" placeholder="e.g. Senior Developer Resume 2024"
+                        class="input-field">
+                </div>
+            </div>
+
             <div class="form-group">
-                <label>Title</label>
-                <input type="text" [(ngModel)]="newResource.title" placeholder="e.g. Senior Backend Pitch"
+                <label>Content</label>
+                <div class="content-input-group">
+                    <textarea [(ngModel)]="newResource.content" rows="6"
+                        placeholder="Paste your content here or upload a file..." class="input-field"></textarea>
+                    <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none">
+                    <button type="button" class="btn-secondary btn-upload" (click)="fileInput.click()">
+                        📎 Attach File
+                    </button>
+                </div>
+                <p *ngIf="selectedFileName" class="file-selected">📄 {{ selectedFileName }}</p>
+            </div>
+
+            <div class="form-group">
+                <label>Tags (comma separated)</label>
+                <input type="text" [(ngModel)]="newResource.tags" placeholder="e.g. senior, backend, 2024"
                     class="input-field">
             </div>
-            <div class="form-group">
-                <label>Type</label>
-                <select [(ngModel)]="newResource.type" class="input-field">
-                    <option *ngFor="let t of types" [value]="t">{{t}}</option>
-                </select>
+
+            <div class="form-actions">
+                <button class="btn-primary" (click)="addResource()">Save Resource</button>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Content / URL / File</label>
-            <div class="input-group">
-                <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none">
-                <textarea [(ngModel)]="newResource.content" rows="4"
-                    placeholder="Write your pitch here, paste a link, or browse for a file..."
-                    class="input-field"></textarea>
-                <button type="button" class="btn-secondary browse-btn" (click)="fileInput.click()">
-                    📂 Browse
-                </button>
-            </div>
-            <p *ngIf="selectedFileName" class="file-hint">Selected: {{ selectedFileName }}</p>
-        </div>
-
-        <div class="form-group">
-            <label>Tags (comma separated)</label>
-            <input type="text" [(ngModel)]="newResource.tags" placeholder="e.g. generic, startup, tech"
-                class="input-field">
-        </div>
-
-        <div class="form-actions">
-            <button class="btn-primary" (click)="addResource()">Save Asset</button>
-        </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters">
-        <button class="filter-chip" [class.active]="filterType === 'All'"
-            (click)="filterType = 'All'; filterResources()">All</button>
-        <button *ngFor="let t of types" class="filter-chip" [class.active]="filterType === t"
-            (click)="filterType = t; filterResources()">{{t}}</button>
-    </div>
-
-    <!-- Resources List -->
-    <div class="resources-grid">
-        <div *ngFor="let res of filteredResources" class="resource-card">
-            <div class="card-header">
-                <span class="res-icon">{{ getIcon(res.type) }}</span>
-                <span class="res-type label-subtle">{{ res.type }}</span>
-                <button class="btn-icon danger" (click)="deleteResource(res.id)">&times;</button>
-            </div>
-            <h3 class="res-title">{{ res.title }}</h3>
-
-            <div class="res-body">
-                <div *ngIf="isFilePath(res.content); else textContent" class="file-preview">
-                    <a [href]="res.content" target="_blank" class="btn-file">
-                        📄 Open File
-                    </a>
+        <!-- File List -->
+        <div class="file-list">
+            <div *ngFor="let res of filteredResources" class="file-item">
+                <div class="file-item-icon">
+                    <span *ngIf="isFilePath(res.content)">📄</span>
+                    <span *ngIf="!isFilePath(res.content)">📝</span>
                 </div>
-                <ng-template #textContent>
-                    <p class="res-content">{{ res.content | slice:0:100 }}{{ res.content.length > 100 ? '...' : '' }}
+                <div class="file-item-content">
+                    <h4 class="file-title">{{ res.title }}</h4>
+                    <div class="file-meta">
+                        <span class="file-date">{{ res.updatedAt | date:'dd/MM/yyyy' }}</span>
+                        <span *ngIf="res.tags" class="file-tags">
+                            <span *ngFor="let tag of res.tags.split(',').slice(0, 3)" class="tag-badge">
+                                {{ tag.trim() }}
+                            </span>
+                        </span>
+                    </div>
+                    <p *ngIf="!isFilePath(res.content) && res.content" class="file-preview">
+                        {{ res.content | slice:0:120 }}{{ res.content.length > 120 ? '...' : '' }}
                     </p>
-                </ng-template>
-            </div>
-
-            <div class="res-tags" *ngIf="res.tags">
-                <span *ngFor="let tag of res.tags.split(',')" class="tag">{{ tag.trim() }}</span>
-            </div>
-            <div class="card-footer">
-                <span class="date">{{ res.updatedAt | date:'mediumDate' }}</span>
+                </div>
+                <div class="file-item-actions">
+                    <a *ngIf="isFilePath(res.content)" [href]="res.content" target="_blank" class="btn-action"
+                        title="Open file">
+                        👁️
+                    </a>
+                    <button class="btn-action btn-delete" (click)="deleteResource(res.id)" title="Delete">
+                        🗑️
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div *ngIf="filteredResources.length === 0" class="empty-state">
-        <div class="empty-icon">📚</div>
-        <h3>No resources found</h3>
-        <p>Add your first asset to get started!</p>
-        <button class="btn-primary" (click)="showForm = true">Add Resource</button>
+        <div *ngIf="filteredResources.length === 0 && !showForm" class="empty-folder">
+            <div class="empty-icon">📭</div>
+            <h3>No items yet</h3>
+            <p>Add your first item to get started</p>
+            <button class="btn-primary" (click)="showForm = true">+ Add Item</button>
+        </div>
     </div>
 </div>

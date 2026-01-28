@@ -18,18 +18,23 @@
         <div class="logo-container">
           <div class="logo-icon">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 16V8C21 6.89543 20.1046 6 19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18H19C20.1046 18 21 17.1046 21 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M7 15H7.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M11 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M21 16V8C21 6.89543 20.1046 6 19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18H19C20.1046 18 21 17.1046 21 16Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M7 15H7.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <path d="M11 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
             </svg>
           </div>
           <h1 class="app-title">JobSeek</h1>
         </div>
-        
+
         <h2 class="welcome-title">Welcome Back!</h2>
         <p class="welcome-subtitle">Your Career Intelligence Platform</p>
-        
+
         <div class="features-list">
           <div class="feature-item">
             <div class="feature-icon">✨</div>
@@ -75,61 +80,104 @@
     <div class="login-section">
       <div class="login-card">
         <div class="card-glow"></div>
-        
+
         <div class="lock-icon">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M19 11H5C3.89543 11 3 11.8954 3 13V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V13C21 11.8954 20.1046 11 19 11Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path
+              d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
 
         <h2 class="login-title">Secure Access</h2>
         <p class="login-subtitle">Enter your credentials to continue</p>
 
-        <form class="login-form" (ngSubmit)="login()">
+        <form class="login-form" (ngSubmit)="submit()">
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <span class="label-text">Email</span>
+              <span class="label-icon">✉️</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Enter your email"
+                class="input-field" required>
+              <div class="input-border"></div>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="isRegister">
+            <label for="name" class="form-label">
+              <span class="label-text">Name</span>
+              <span class="label-icon">👤</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" id="name" [(ngModel)]="name" name="name" placeholder="Enter your name"
+                class="input-field">
+              <div class="input-border"></div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="password" class="form-label">
               <span class="label-text">Password</span>
               <span class="label-icon">🔐</span>
             </label>
             <div class="input-wrapper">
-              <input 
-                type="password" 
-                id="password"
-                [(ngModel)]="password" 
-                name="password"
-                (keyup.enter)="login()" 
-                placeholder="Enter your password" 
-                class="input-field"
-                [class.error]="error"
+              <input type="password" id="password" [(ngModel)]="password" name="password" (keyup.enter)="submit()"
+                placeholder="Enter your password" class="input-field" [class.error]="error"
                 autocomplete="current-password">
               <div class="input-border"></div>
             </div>
           </div>
 
+          <div class="form-group" *ngIf="isRegister">
+            <label for="code" class="form-label">
+              <span class="label-text">Verification Code</span>
+              <span class="label-icon">🔑</span>
+            </label>
+            <div class="input-wrapper">
+              <input type="text" id="code" [(ngModel)]="verificationCode" name="code"
+                placeholder="Enter invitation code" class="input-field">
+              <div class="input-border"></div>
+            </div>
+            <p class="hint-text">
+              Don't have a code? <a href="mailto:support@lidasoftware.net?subject=Request Access"
+                class="link-text">Contact Lida Software</a> to request access.
+            </p>
+          </div>
+
           <div *ngIf="error" class="error-message">
             <svg class="error-icon" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="12" cy="16" r="1" fill="currentColor"/>
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+              <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <circle cx="12" cy="16" r="1" fill="currentColor" />
             </svg>
             {{ error }}
           </div>
 
           <button type="submit" class="btn-primary">
-            <span class="btn-text">Enter Application</span>
+            <span class="btn-text">{{ isRegister ? 'Register Account' : 'Enter Application' }}</span>
             <span class="btn-icon">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
               </svg>
             </span>
             <div class="btn-glow"></div>
+          </button>
+
+          <button type="button" class="btn-link" (click)="toggleMode()">
+            {{ isRegister ? 'Already have an account? Login' : 'Need an account? Register' }}
           </button>
         </form>
 
         <div class="security-badge">
           <svg class="shield-icon" viewBox="0 0 24 24" fill="none">
-            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           <span>Protected by enterprise-grade security</span>
         </div>

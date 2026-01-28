@@ -1,13 +1,15 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthService } from './auth.service';
+import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from './public.decorator';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(private reflector: Reflector, private authService: AuthService) {}
+export class AuthGuard extends PassportAuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
 
-  canActivate(context: ExecutionContext): boolean {
+  canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -15,13 +17,14 @@ export class AuthGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
+    return super.canActivate(context);
+  }
 
-    const request = context.switchToHttp().getRequest();
-    const token = request.headers['x-access-token'];
-
-    if (!token || !this.authService.validatePassword(token)) {
-      throw new UnauthorizedException();
+  handleRequest(err: any, user: any, info: any) {
+    // You can throw an exception based on either "info" or "err" arguments
+    if (err || !user) {
+      throw err || new UnauthorizedException();
     }
-    return true;
+    return user;
   }
 }

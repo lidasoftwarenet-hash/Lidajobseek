@@ -266,9 +266,9 @@ export class ProcessListComponent implements OnInit {
     // Helper to check if any filter is active
     get isFilterActive(): boolean {
         return !!this.searchText ||
-               !!this.selectedStage ||
-               !!this.selectedWorkMode ||
-               this.showAllProcesses;
+            !!this.selectedStage ||
+            !!this.selectedWorkMode ||
+            this.showAllProcesses;
     }
 
     // Get count of active filters
@@ -279,5 +279,24 @@ export class ProcessListComponent implements OnInit {
         if (this.selectedWorkMode) count++;
         if (this.showAllProcesses) count++;
         return count;
+    }
+
+    // Stats helper methods
+    getActiveCount(): number {
+        return this.filteredProcesses.filter(p =>
+            !['Rejected', 'Withdrawn', 'Offer', 'Signed'].includes(p.currentStage)
+        ).length;
+    }
+
+    getInterviewCount(): number {
+        return this.filteredProcesses.filter(p =>
+            ['Interview Scheduled', 'Technical Interview', 'Final Interview', 'Final HR Interview Scheduled'].includes(p.currentStage)
+        ).length;
+    }
+
+    getOfferCount(): number {
+        return this.filteredProcesses.filter(p =>
+            ['Offer', 'Signed'].includes(p.currentStage)
+        ).length;
     }
 }

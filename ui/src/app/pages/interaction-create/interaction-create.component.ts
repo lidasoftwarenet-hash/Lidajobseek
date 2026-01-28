@@ -3,15 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InteractionsService } from '../../services/interactions.service';
+import { ProcessesService } from '../../services/processes.service';
 
 @Component({
     selector: 'app-interaction-create',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule],
-    templateUrl: './interaction-create.component.html'
+    templateUrl: './interaction-create.component.html' // Fixed path
 })
 export class InteractionCreateComponent implements OnInit {
     processId!: number;
+    existingContacts: any[] = [];
+
     interaction: any = {
         date: '',
         interviewType: 'zoom',
@@ -23,10 +26,17 @@ export class InteractionCreateComponent implements OnInit {
         invitationExtended: null // 'yes', 'later', or 'no'
     };
 
-    availableRoles = ['HR', 'Tech Lead', 'Team Member', 'Team Lead', 'Manager', 'CTO', 'Director', 'Group Leader', 'Architect'];
+    availableRoles = ['HR', 'Tech Lead', 'Team Member', 'Team Lead', 'Manager', 'CTO', 'Director', 'Group Leader', 'Architect', 'Recruiter', 'Hiring Manager', 'VP', 'Peer'];
 
     addParticipant() {
         this.interaction.participants.push({ role: 'HR', name: '' });
+    }
+
+    addFromContact(contact: any) {
+        this.interaction.participants.push({
+            role: contact.role || 'HR', // Default to HR if role missing, or maybe 'Recruiter' is safer default?
+            name: contact.name
+        });
     }
 
     removeParticipant(index: number) {
@@ -36,14 +46,34 @@ export class InteractionCreateComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private interactionsService: InteractionsService
+        private interactionsService: InteractionsService,
+        private processesService: ProcessesService
     ) { }
+
+    datePart: string = '';
+    timePart: string = '';
 
     ngOnInit() {
         this.processId = Number(this.route.snapshot.paramMap.get('id'));
+
+        // Fetch process to get contacts
+        this.processesService.getById(this.processId).subscribe(process => {
+            this.existingContacts = process.contacts || [];
+        });
+
         const now = new Date();
         const tzOffset = now.getTimezoneOffset() * 60000;
-        this.interaction.date = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
+        const localIso = new Date(now.getTime() - tzOffset).toISOString();
+
+        this.datePart = localIso.slice(0, 10);
+        this.timePart = localIso.slice(11, 16);
+        this.interaction.date = `${this.datePart}T${this.timePart}`;
+    }
+
+    updateDateTime() {
+        if (this.datePart && this.timePart) {
+            this.interaction.date = `${this.datePart}T${this.timePart}`;
+        }
     }
 
     onSubmit() {

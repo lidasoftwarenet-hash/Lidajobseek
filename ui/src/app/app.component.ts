@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
   title = 'ui';
   isDarkTheme = true; // Default to dark theme as per user request
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   get isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
@@ -39,5 +39,9 @@ export class AppComponent implements OnInit {
     }
     // Save preference to localStorage
     localStorage.setItem('theme', this.isDarkTheme ? 'dark' : 'light');
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

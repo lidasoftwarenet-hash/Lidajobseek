@@ -1,20 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma.service';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private configService: ConfigService,
-    private prisma: PrismaService
-  ) {}
+    private usersService: UsersService,
+    private jwtService: JwtService
+  ) { }
 
-  async validatePassword(password: string): Promise<boolean> {
-    // Check if password exists in the database
-    const passRecord = await this.prisma.pass.findFirst({
-      where: { value: password }
+  async validateUser(email: string, pass: string): Promise<any> {
+    const user = await this.usersService.findOne(email);
+    if (user && await bcrypt.compare(pass, user.password)) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
+  }
+
+  async login(user: any) {
+    const payload = { email: user.email, sub: user.id };
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: { id: user.id, email: user.email, name: user.name }
+    };
+  }
+
+  async register(registerDto: any) {
+    const validCode = process.env.REGISTER;
+    if (validCode && registerDto.code !== validCode) {
+      throw new UnauthorizedException('Invalid verification code. Please contact Lida Software.');
+    }
+
+    const existingUser = await this.usersService.findOne(registerDto.email);
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    return this.usersService.create({
+      email: registerDto.email,
+      password: hashedPassword,
+      name: registerDto.name
     });
-    
-    return !!passRecord;
+  }
+
+  // Deprecated helper to keep old code valid if called, but implementation changed
+  async validatePassword(password: string): Promise<boolean> {
+    // Logic moved to validateUser
+    return false;
   }
 }

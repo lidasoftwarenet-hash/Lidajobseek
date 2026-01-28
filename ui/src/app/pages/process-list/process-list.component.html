@@ -1,160 +1,184 @@
 <div class="dashboard-container">
-    <div class="dashboard-header">
-        <div>
-            <h1>Processes</h1>
-            <p class="subtitle">Manage your job applications</p>
-        </div>
-        <div class="header-actions">
-            <button class="btn-secondary" (click)="exportData()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Export
-            </button>
-            <button class="btn-secondary" (click)="fileInput.click()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Import
-            </button>
-            <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none" accept=".json">
-
-            <button class="btn-primary" routerLink="/new">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                New Process
-            </button>
+    <!-- Hero Header -->
+    <div class="hero-header">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Your Job Search</span>
+                    <span class="wave-emoji">👋</span>
+                </h1>
+                <p class="hero-subtitle">Track, manage, and succeed in your career journey</p>
+            </div>
+            <div class="hero-actions">
+                <button class="btn-glass" (click)="exportData()" title="Export Data">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Export</span>
+                </button>
+                <button class="btn-glass" (click)="fileInput.click()" title="Import Data">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Import</span>
+                </button>
+                <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none" accept=".json">
+                <button class="btn-primary-gradient" routerLink="/new">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>New Application</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Toolbar / Filters -->
-    <div class="toolbar">
-        <div class="search-wrapper">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ filteredProcesses.length }}</div>
+                <div class="stat-label">Total Applications</div>
+            </div>
+        </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ getActiveCount() }}</div>
+                <div class="stat-label">Active Processes</div>
+            </div>
+        </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ getInterviewCount() }}</div>
+                <div class="stat-label">Interviews</div>
+            </div>
+        </div>
+        <div class="stat-card stat-info">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-content">
+                <div class="stat-value">{{ getOfferCount() }}</div>
+                <div class="stat-label">Offers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="control-panel">
+        <div class="search-box">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input
-                type="text"
-                [(ngModel)]="searchText"
-                (ngModelChange)="applyFilters()"
-                placeholder="Search..."
-                class="search-input"
-            />
+            <input type="text" [(ngModel)]="searchText" (ngModelChange)="applyFilters()"
+                placeholder="Search companies, roles, locations..." class="search-input" />
         </div>
 
-        <div class="filters-row">
-            <select [(ngModel)]="selectedStage" (change)="onStageChange($event)" class="filter-select">
+        <div class="filter-chips">
+            <select [(ngModel)]="selectedStage" (change)="onStageChange($event)" class="filter-chip">
                 <option value="">All Stages</option>
                 <option *ngFor="let stage of availableStages" [value]="stage">{{ stage }}</option>
             </select>
 
-            <select [(ngModel)]="selectedWorkMode" (change)="onWorkModeChange($event)" class="filter-select">
+            <select [(ngModel)]="selectedWorkMode" (change)="onWorkModeChange($event)" class="filter-chip">
                 <option value="">All Work Modes</option>
                 <option *ngFor="let mode of availableWorkModes" [value]="mode">{{ mode | titlecase }}</option>
             </select>
 
-            <label class="checkbox-filter">
+            <label class="toggle-chip">
                 <input type="checkbox" [(ngModel)]="showAllProcesses" (change)="applyFilters()">
-                <span>Show Closed</span>
+                <span class="toggle-label">Show Closed</span>
             </label>
         </div>
     </div>
 
-    <!-- Data Grid -->
-    <div class="table-container" *ngIf="filteredProcesses.length > 0; else noData">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th (click)="sort('company')" class="sortable">
-                        Company
-                        <span class="sort-indicator" *ngIf="isSorted('company')">
-                            {{ getSortDirection('company') === 'asc' ? '↑' : '↓' }}
-                        </span>
-                    </th>
-                    <th (click)="sort('stage')" class="sortable">
-                        Stage
-                        <span class="sort-indicator" *ngIf="isSorted('stage')">
-                            {{ getSortDirection('stage') === 'asc' ? '↑' : '↓' }}
-                        </span>
-                    </th>
-                    <th (click)="sort('interactions')" class="sortable">
-                        Interactions
-                        <span class="sort-indicator" *ngIf="isSorted('interactions')">
-                            {{ getSortDirection('interactions') === 'asc' ? '↑' : '↓' }}
-                        </span>
-                    </th>
-                    <th (click)="sort('location')" class="sortable">
-                        Location
-                        <span class="sort-indicator" *ngIf="isSorted('location')">
-                            {{ getSortDirection('location') === 'asc' ? '↑' : '↓' }}
-                        </span>
-                    </th>
-                    <th (click)="sort('updated')" class="sortable">
-                        Updated
-                        <span class="sort-indicator" *ngIf="isSorted('updated')">
-                            {{ getSortDirection('updated') === 'asc' ? '↑' : '↓' }}
-                        </span>
-                    </th>
-                    <th></th> <!-- Actions -->
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let p of filteredProcesses" [class.closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'">
-                    <td>
-                        <div class="company-info">
-                            <span class="company-name">{{ p.companyName }}</span>
-                            <span class="role-title">{{ p.roleTitle }}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="status-badge" [ngClass]="getStatusClass(p.currentStage)">
-                            {{ p.currentStage }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="interaction-count">
-                            {{ p._count?.interactions || 0 }}
-                        </div>
-                    </td>
-                    <td class="text-secondary">
-                        {{ p.location }}
-                        <span *ngIf="p.workMode === 'hybrid'" class="hybrid-badge">Hybrid</span>
-                    </td>
-                    <td class="text-secondary">
-                        {{ p.updatedAt | date:'dd/MM/yy' }}
-                    </td>
-                    <td>
-                        <a [routerLink]="['/process', p.id]" class="btn-icon-link">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 18l6-6-6-6"/>
-                            </svg>
-                        </a>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- Process Cards Grid -->
+    <div class="processes-grid" *ngIf="filteredProcesses.length > 0; else noData">
+        <div *ngFor="let p of filteredProcesses" class="process-card"
+            [class.card-closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'"
+            [routerLink]="['/process', p.id]">
+            <div class="card-header">
+                <div class="company-logo">
+                    {{ p.companyName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="card-status">
+                    <span class="status-dot" [ngClass]="getStatusClass(p.currentStage)"></span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <h3 class="card-title">{{ p.companyName }}</h3>
+                <p class="card-role">{{ p.roleTitle }}</p>
+
+                <div class="card-meta">
+                    <div class="meta-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>{{ p.location }}</span>
+                    </div>
+                    <div class="meta-item" *ngIf="p.workMode">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <span>{{ p.workMode | titlecase }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="footer-left">
+                    <span class="badge-stage" [ngClass]="getStatusClass(p.currentStage)">
+                        {{ p.currentStage }}
+                    </span>
+                </div>
+                <div class="footer-right">
+                    <div class="interaction-badge" *ngIf="p._count?.interactions">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        {{ p._count.interactions }}
+                    </div>
+                    <span class="card-date">{{ p.updatedAt | date:'dd/MM' }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Empty State -->
     <ng-template #noData>
-        <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <div class="empty-state-modern">
+            <div class="empty-illustration">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="12" y1="18" x2="12" y2="12"></line>
                     <line x1="9" y1="15" x2="15" y2="15"></line>
                 </svg>
             </div>
-            <h3>No processes found</h3>
-            <p>Create a new process to get started tracking your applications.</p>
-            <button class="btn-primary" routerLink="/new">Create Process</button>
+            <h3>No Applications Yet</h3>
+            <p>Start your job search journey by creating your first application</p>
+            <button class="btn-primary-gradient" routerLink="/new">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Create Your First Application</span>
+            </button>
         </div>
     </ng-template>
 </div>

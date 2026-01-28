@@ -10,14 +10,21 @@ export class AuthService {
   private apiUrl = '/api/auth';
   private tokenKey = 'app_token';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router) { }
 
-  login(password: string) {
-    return this.http.post(`${this.apiUrl}/login`, { password }).pipe(
-      tap(() => {
-        localStorage.setItem(this.tokenKey, password);
+  login(email: string, password: string) {
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+      tap(res => {
+        localStorage.setItem(this.tokenKey, res.access_token);
+        if (res.user) {
+          localStorage.setItem('app_user', JSON.stringify(res.user));
+        }
       })
     );
+  }
+
+  register(email: string, password: string, name: string, code: string) {
+    return this.http.post(`${this.apiUrl}/register`, { email, password, name, code });
   }
 
   logout() {

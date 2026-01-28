@@ -22,9 +22,11 @@ export class ProcessCreateComponent {
         workMode: 'remote',
         daysFromOffice: null,
         source: '',
-        salaryExpectation: 35000, // Default salary
+        salaryExpectation: 35000,
+        salaryCurrency: 'ILS',
+        salaryPeriod: 'Month',
         currentStage: 'Initial Call Scheduled',
-       dataFromThePhoneCall: '',
+        dataFromThePhoneCall: '',
         initialInviteDate: '',
         initialInviteMethod: '',
         initialInviteContent: ''

@@ -4,10 +4,10 @@ import { CreateProcessDto } from './dto/create-process.dto';
 
 @Injectable()
 export class ProcessesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  create(dto: CreateProcessDto) {
-    const data: any = { ...dto };
+  create(dto: CreateProcessDto, userId: number) {
+    const data: any = { ...dto, userId };
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
     }
@@ -20,11 +20,12 @@ export class ProcessesService {
     });
   }
 
-  async findAll() {
+  async findAll(userId: number) {
     // First, check and update any processes that need automatic stage update
     await this.updateStaleProcesses();
 
     return this.prisma.process.findMany({
+      where: { userId },
       include: {
         interactions: true,
         reviews: true,
@@ -36,12 +37,12 @@ export class ProcessesService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, userId: number) {
     // First, check and update any processes that need automatic stage update
     await this.updateStaleProcesses();
 
-    return this.prisma.process.findUnique({
-      where: { id },
+    return this.prisma.process.findFirst({
+      where: { id, userId },
       include: {
         interactions: { orderBy: { date: 'desc' } },
         reviews: { orderBy: { createdAt: 'desc' } },
@@ -50,7 +51,7 @@ export class ProcessesService {
     });
   }
 
-  update(id: number, dto: any) {
+  update(id: number, dto: any, userId: number) {
     const data: any = { ...dto };
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
@@ -62,20 +63,21 @@ export class ProcessesService {
       data.offerDeadline = new Date(dto.offerDeadline);
     }
 
-    return this.prisma.process.update({
-      where: { id },
+    return this.prisma.process.updateMany({
+      where: { id, userId },
       data,
     });
   }
 
-  remove(id: number) {
-    return this.prisma.process.delete({
-      where: { id },
+  remove(id: number, userId: number) {
+    return this.prisma.process.deleteMany({
+      where: { id, userId },
     });
   }
 
-  async exportData() {
+  async exportData(userId: number) {
     return this.prisma.process.findMany({
+      where: { userId },
       include: {
         interactions: true,
         reviews: true,
@@ -84,17 +86,20 @@ export class ProcessesService {
     });
   }
 
-  async importData(processes: any[], mode: 'overwrite' | 'append') {
+  async importData(processes: any[], mode: 'overwrite' | 'append', userId: number) {
     if (mode === 'overwrite') {
-      await this.prisma.interaction.deleteMany({});
-      await this.prisma.selfReview.deleteMany({});
-      await this.prisma.contact.deleteMany({});
-      await this.prisma.process.deleteMany({});
+      // Delete interactions, reviews, contacts explicitly first? Or rely on Cascade?
+      // Delete user's processes
+      const userProcesses = await this.prisma.process.findMany({ where: { userId }, select: { id: true } });
+      const ids = userProcesses.map(p => p.id);
+
+      // Since cascade delete is configured in schema, deleting processes should suffice
+      await this.prisma.process.deleteMany({ where: { userId } });
     }
 
     let count = 0;
     for (const p of processes) {
-      const { id, interactions, reviews, contacts, _count, ...processData } = p;
+      const { id, interactions, reviews, contacts, _count, userId: oldUserId, ...processData } = p;
 
       // Convert date strings to Date objects
       if (processData.createdAt) processData.createdAt = new Date(processData.createdAt);
@@ -106,6 +111,7 @@ export class ProcessesService {
       await this.prisma.process.create({
         data: {
           ...processData,
+          userId, // Force current user ID
           interactions: {
             create: interactions?.map((i: any) => {
               const { id, processId, ...iData } = i;

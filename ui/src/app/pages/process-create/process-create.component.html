@@ -7,40 +7,39 @@
     <form #processForm="ngForm" (ngSubmit)="onSubmit()" class="data-form">
         <div class="form-section">
             <div class="form-group">
-                <label>Company Name</label>
+                <label>Company Name <span class="required">*</span></label>
                 <input type="text" name="companyName" [(ngModel)]="process.companyName" required
                     placeholder="e.g. Google" class="input-field">
             </div>
 
             <div class="form-group">
-                <label>Role Title</label>
+                <label>Role Title <span class="required">*</span></label>
                 <input type="text" name="roleTitle" [(ngModel)]="process.roleTitle" required
                     placeholder="e.g. Senior Software Engineer" class="input-field">
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>Location</label>
-                    <select name="locationSelect" [(ngModel)]="selectedLocation" required class="input-field" 
+                    <label>Location <span class="required">*</span></label>
+                    <select name="locationSelect" [(ngModel)]="selectedLocation" required class="input-field"
                         (change)="onLocationChange($event)">
                         <option value="">Select location</option>
-                        <option *ngFor="let loc of locationOptions" 
-                                [value]="loc" 
-                                [class.abroad-option]="loc === 'Abroad'"
-                                [class.other-option]="loc === 'Other'">
+                        <option *ngFor="let loc of locationOptions" [value]="loc"
+                            [class.abroad-option]="loc === 'Abroad'" [class.other-option]="loc === 'Other'">
                             {{loc}}
                         </option>
                     </select>
                     <div *ngIf="selectedLocation === 'Other'" class="form-group" style="margin-top: 12px;">
                         <label>Specify Location</label>
-                        <input type="text" name="location" [(ngModel)]="process.location" 
+                        <input type="text" name="location" [(ngModel)]="process.location"
                             placeholder="Enter location..." class="input-field" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Work Mode</label>
-                    <select name="workMode" [(ngModel)]="process.workMode" class="input-field" (change)="onWorkModeChange($event)">
+                    <select name="workMode" [(ngModel)]="process.workMode" class="input-field"
+                        (change)="onWorkModeChange($event)">
                         <option value="remote">Remote</option>
                         <option value="hybrid">Hybrid</option>
                         <option value="onsite">On-site</option>
@@ -56,7 +55,7 @@
             </div>
 
             <div class="form-group">
-                <label>Tech Stack</label>
+                <label>Tech Stack <span class="required">*</span></label>
                 <input type="text" name="techStack" [(ngModel)]="process.techStack" required
                     placeholder="e.g. Angular, NestJS, Postgres" class="input-field">
             </div>
@@ -68,69 +67,113 @@
                         class="input-field">
                 </div>
 
-                <div class="form-group">
+                <div class="form-group salary-group">
                     <label>Salary Expectation</label>
-                    <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
-                        placeholder="e.g. 35000" class="input-field">
-                </div>
-            </div>
+                    <div class="salary-inputs">
+                        <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
+                            placeholder="Amount" class="input-field amount-input">
 
-            <div class="form-group">
-                <label>Current Stage</label>
-                <select name="currentStage" [(ngModel)]="process.currentStage" required class="input-field">
-                    <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
-                </select>
-            </div>
+                        <select name="salaryCurrency" [(ngModel)]="process.salaryCurrency"
+                            class="input-field currency-select">
+                            <option value="ILS">₪ (Shekel)</option>
+                            <option value="USD">$ (Dollar)</option>
+                            <option value="EUR">€ (Euro)</option>
+                            <option value="RON">lei (RON)</option>
+                            <option value="GBP">£ (GBP)</option>
+                            <option value="JPY">¥ (JPY)</option>
+                            <option value="CNY">¥ (CNY)</option>
+                            <option value="AUD">A$ (AUD)</option>
+                            <option value="CAD">C$ (CAD)</option>
+                            <option value="CHF">CHF</option>
+                            <option value="HKD">HK$ (HKD)</option>
+                            <option value="SGD">S$ (SGD)</option>
+                            <option value="INR">₹ (INR)</option>
+                            <option value="RUB">₽ (RUB)</option>
+                        </select>
 
-            <div class="form-group">
-                <label>Data From the Phone Call</label>
-                <textarea name="dataFromThePhoneCall" [(ngModel)]="process.dataFromThePhoneCall" rows="4"
-                    placeholder="What did you learn in the initial call that makes you interested in this role?..." class="input-field"></textarea>
-                <p class="muted-hint">Capture key insights from your initial conversation with HR/recruiter.</p>
-            </div>
-
-            <!-- Initial Invitation Section -->
-            <div class="form-section highlight-section">
-                <div class="section-header">
-                    <h2>📨 Initial Invitation</h2>
-                    <p class="section-desc">Details about how you were initially contacted for this role.</p>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Invitation Date</label>
-                        <input type="date" name="initialInviteDate" [(ngModel)]="process.initialInviteDate" class="input-field">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Invitation Method</label>
-                        <select name="initialInviteMethod" [(ngModel)]="process.initialInviteMethod" class="input-field">
-                            <option value="">Select method</option>
-                            <option value="Email">Email</option>
-                            <option value="LinkedIn">LinkedIn</option>
-                            <option value="Referral">Referral</option>
-                            <option value="Phone Call">Phone Call</option>
-                            <option value="Job Board">Job Board</option>
-                            <option value="Recruiter">Recruiter</option>
-                            <option value="Other">Other</option>
+                        <select name="salaryPeriod" [(ngModel)]="process.salaryPeriod"
+                            class="input-field period-select">
+                            <option value="Hour">/ Hour</option>
+                            <option value="Day">/ Day</option>
+                            <option value="Week">/ Week</option>
+                            <option value="Month">/ Month</option>
+                            <option value="Year">/ Year</option>
+                            <option value="Project">/ Project</option>
                         </select>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label>Current Stage <span class="required">*</span></label>
+                    <select name="currentStage" [(ngModel)]="process.currentStage" required class="input-field">
+                        <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
+                    </select>
+                </div>
 
                 <div class="form-group">
-                    <label>Invitation Content</label>
-                    <textarea name="initialInviteContent" [(ngModel)]="process.initialInviteContent" rows="4"
-                        placeholder="Paste or write the invitation content here..." class="input-field"></textarea>
-                    <p class="muted-hint">What did the invitation say? Copy-paste or summarize the message.</p>
+                    <label>Data From the Phone Call</label>
+                    <textarea name="dataFromThePhoneCall" [(ngModel)]="process.dataFromThePhoneCall" rows="4"
+                        placeholder="What did you learn in the initial call that makes you interested in this role?..."
+                        class="input-field"></textarea>
+                    <p class="muted-hint">Capture key insights from your initial conversation with HR/recruiter.</p>
                 </div>
+
+                <!-- Initial Invitation Section -->
+                <div class="form-section highlight-section">
+                    <div class="section-header">
+                        <h2>📨 Initial Invitation</h2>
+                        <p class="section-desc">Details about how you were initially contacted for this role.</p>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Invitation Date</label>
+                            <div class="input-icon-wrapper">
+                                <!-- Helper text input to show dd/mm/yyyy -->
+                                <input type="text" [value]="process.initialInviteDate | date:'dd/MM/yyyy'"
+                                    (click)="datePicker.showPicker()" class="input-field date-display"
+                                    placeholder="dd/mm/yyyy" readonly>
+
+                                <!-- Hidden actual date input -->
+                                <input #datePicker type="date" name="initialInviteDate"
+                                    [(ngModel)]="process.initialInviteDate"
+                                    class="input-field date-input hidden-picker">
+
+                                <span class="field-icon" (click)="datePicker.showPicker()">📅</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Invitation Method</label>
+                            <select name="initialInviteMethod" [(ngModel)]="process.initialInviteMethod"
+                                class="input-field">
+                                <option value="">Select method</option>
+                                <option value="Email">Email</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Phone Call">Phone Call</option>
+                                <option value="Job Board">Job Board</option>
+                                <option value="Recruiter">Recruiter</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Invitation Content</label>
+                        <textarea name="initialInviteContent" [(ngModel)]="process.initialInviteContent" rows="4"
+                            placeholder="Paste or write the invitation content here..." class="input-field"></textarea>
+                        <p class="muted-hint">What did the invitation say? Copy-paste or summarize the message.</p>
+                    </div>
+                </div>
+
+
             </div>
 
-         
-        </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" routerLink="/">Cancel</button>
+                <button type="submit" class="btn-primary">Create Process</button>
+            </div>
 
-        <div class="form-actions">
-            <button type="button" class="btn-secondary" routerLink="/">Cancel</button>
-            <button type="submit" class="btn-primary">Create Process</button>
         </div>
     </form>
 </div>
@@ -222,5 +265,79 @@
 
     body.dark-theme .other-option {
         color: #6ee7b7;
+    }
+
+    .input-icon-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .field-icon {
+        position: absolute;
+        right: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        pointer-events: none;
+        /* Let clicks pass through to input if needed, though we handle click explicitly */
+    }
+
+    /* Make the calendar icon clickable */
+    .field-icon {
+        pointer-events: auto;
+    }
+
+    .date-input::-webkit-calendar-picker-indicator {
+        opacity: 0;
+        /* Hide default indicator to use our custom one or just overlay it */
+        cursor: pointer;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .hidden-picker {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        z-index: 10;
+        cursor: pointer;
+    }
+
+    .date-display {
+        background-color: white;
+        cursor: pointer;
+    }
+
+    .salary-inputs {
+        display: flex;
+        gap: 8px;
+    }
+
+    .amount-input {
+        flex: 2;
+    }
+
+    .currency-select {
+        flex: 1;
+        min-width: 80px;
+    }
+
+    .period-select {
+        flex: 1.5;
+        min-width: 100px;
+    }
+
+    .required {
+        color: #ef4444;
+        font-weight: bold;
+        margin-left: 2px;
     }
 </style>

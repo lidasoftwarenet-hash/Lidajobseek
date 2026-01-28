@@ -4,16 +4,22 @@ import { Public } from './public.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body('password') password: string) {
-    const isValid = await this.authService.validatePassword(password);
-    if (isValid) {
-      return { success: true };
+  async login(@Body() body: any) {
+    const valid = await this.authService.validateUser(body.email, body.password);
+    if (!valid) {
+      throw new UnauthorizedException('Invalid credentials');
     }
-    throw new UnauthorizedException('Invalid password');
+    return this.authService.login(valid);
+  }
+
+  @Public()
+  @Post('register')
+  async register(@Body() body: any) {
+    return this.authService.register(body);
   }
 }

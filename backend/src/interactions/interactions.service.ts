@@ -4,10 +4,10 @@ import { CreateInteractionDto } from './dto/create-interaction.dto';
 
 @Injectable()
 export class InteractionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateInteractionDto) {
-    return this.prisma.interaction.create({
+    const interaction = await this.prisma.interaction.create({
       data: {
         processId: dto.processId,
         date: new Date(dto.date),
@@ -27,6 +27,35 @@ export class InteractionsService {
         invitationExtended: dto.invitationExtended,
       },
     });
+
+    // Auto-add network contacts
+    if (dto.participants && Array.isArray(dto.participants)) {
+      for (const p of dto.participants) {
+        const participant = p as any;
+        if (participant.name) {
+          // Check if this contact already exists for this process
+          const existingContact = await this.prisma.contact.findFirst({
+            where: {
+              processId: dto.processId,
+              name: participant.name
+            }
+          });
+
+          if (!existingContact) {
+            await this.prisma.contact.create({
+              data: {
+                processId: dto.processId,
+                name: participant.name,
+                role: participant.role || 'Interviewer',
+                // We don't have email/linkedIn here yet, can be updated later
+              }
+            });
+          }
+        }
+      }
+    }
+
+    return interaction;
   }
 
   async findAll(startDate?: string, endDate?: string, processId?: number) {

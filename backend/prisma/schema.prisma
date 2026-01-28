@@ -20,6 +20,8 @@ model Process {
   daysFromOffice    Int?           // For hybrid work mode: days per week in office
   source            String?
   salaryExpectation Int?
+  salaryCurrency    String?        @default("ILS") // ILS, RON, USD, EUR
+  salaryPeriod      String?        @default("Month") // Hour, Day, Week, Month, Year, Project
   currentStage      String
  dataFromThePhoneCall       String?
   createdAt         DateTime       @default(now())
@@ -51,6 +53,9 @@ model Process {
   interactions      Interaction[]
   reviews           SelfReview[]
   contacts          Contact[]
+  
+  userId            Int
+  user              User           @relation(fields: [userId], references: [id])
 }
 
 model Resource {
@@ -61,6 +66,9 @@ model Resource {
   tags      String?  // Comma separated tags
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Contact {
@@ -111,8 +119,14 @@ model SelfReview {
   process       Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
 }
 
-model Pass {
-  id        Int      @id @default(autoincrement())
-  value     String
-  createdAt DateTime @default(now())
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  processes Process[]
+  resources Resource[]
 }

@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ResourcesService } from './resources.service';
@@ -17,7 +18,7 @@ import { extname } from 'path';
 
 @Controller('resources')
 export class ResourcesController {
-  constructor(private readonly resourcesService: ResourcesService) {}
+  constructor(private readonly resourcesService: ResourcesService) { }
 
   @Post()
   @UseInterceptors(
@@ -32,32 +33,32 @@ export class ResourcesController {
       }),
     }),
   )
-  create(@Body() body: any, @UploadedFile() file: Express.Multer.File) {
+  create(@Body() body: any, @UploadedFile() file: Express.Multer.File, @Req() req: any) {
     if (file) {
       body.content = `/uploads/${file.filename}`;
       // Allow overriding title if not provided
       if (!body.title) body.title = file.originalname;
     }
-    return this.resourcesService.create(body);
+    return this.resourcesService.create(body, req.user.userId);
   }
 
   @Get()
-  findAll() {
-    return this.resourcesService.findAll();
+  findAll(@Req() req: any) {
+    return this.resourcesService.findAll(req.user.userId);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.resourcesService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.resourcesService.findOne(id, req.user.userId);
   }
 
   @Put(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() data: any) {
-    return this.resourcesService.update(id, data);
+  update(@Param('id', ParseIntPipe) id: number, @Body() data: any, @Req() req: any) {
+    return this.resourcesService.update(id, data, req.user.userId);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.resourcesService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.resourcesService.remove(id, req.user.userId);
   }
 }

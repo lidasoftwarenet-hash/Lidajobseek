@@ -7,46 +7,47 @@ import {
   ParseIntPipe,
   Patch,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { ProcessesService } from './processes.service';
 import { CreateProcessDto } from './dto/create-process.dto';
 
 @Controller('processes')
 export class ProcessesController {
-  constructor(private readonly processesService: ProcessesService) {}
+  constructor(private readonly processesService: ProcessesService) { }
 
   @Post()
-  create(@Body() createProcessDto: CreateProcessDto) {
-    return this.processesService.create(createProcessDto);
+  create(@Body() createProcessDto: CreateProcessDto, @Req() req: any) {
+    return this.processesService.create(createProcessDto, req.user.userId);
   }
 
   @Get()
-  findAll() {
-    return this.processesService.findAll();
+  findAll(@Req() req: any) {
+    return this.processesService.findAll(req.user.userId);
   }
 
   @Get('export')
-  exportData() {
-    return this.processesService.exportData();
+  exportData(@Req() req: any) {
+    return this.processesService.exportData(req.user.userId);
   }
 
   @Post('import')
-  importData(@Body() data: { processes: any[]; mode: 'overwrite' | 'append' }) {
-    return this.processesService.importData(data.processes, data.mode);
+  importData(@Body() data: { processes: any[]; mode: 'overwrite' | 'append' }, @Req() req: any) {
+    return this.processesService.importData(data.processes, data.mode, req.user.userId);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.processesService.findOne(id);
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.processesService.findOne(id, req.user.userId);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateProcessDto: any) {
-    return this.processesService.update(id, updateProcessDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateProcessDto: any, @Req() req: any) {
+    return this.processesService.update(id, updateProcessDto, req.user.userId);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.processesService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.processesService.remove(id, req.user.userId);
   }
 }
