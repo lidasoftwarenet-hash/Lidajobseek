@@ -38,4 +38,8 @@ export class AppComponent implements OnInit {
   closeSettings() {
     this.showSettings = false;
   }
+
+  logout() {
+    this.authService.logout();
+  }
 }
