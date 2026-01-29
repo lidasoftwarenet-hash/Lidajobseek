@@ -7,7 +7,7 @@
     "ui"
   ],
   "scripts": {
-  "prebuild": "cd backend && npx prisma generate",
+  "prebuild": "cd backend",
   "build": "npm run build -w backend && npm run build -w ui && node -e \"const fs = require('fs'); const path = require('path'); const browserDir = path.join(__dirname, 'dist', 'public', 'browser'); const publicDir = path.join(__dirname, 'dist', 'public'); if (fs.existsSync(browserDir)) { const files = fs.readdirSync(browserDir); files.forEach(file => { const src = path.join(browserDir, file); const dest = path.join(publicDir, file); fs.renameSync(src, dest); }); fs.rmSync(browserDir, { recursive: true, force: true }); console.log('Moved browser files to public directory'); } else { console.log('No browser directory found'); }\"",
   "start": "node dist/main.js"
 },
@@ -17,10 +17,8 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/serve-static": "^5.0.4",
-    "@prisma/client": "^6.19.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-    "prisma": "6.19.2"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
