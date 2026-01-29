@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Process" ALTER COLUMN "source" DROP NOT NULL,
-ALTER COLUMN "whyThisRole" DROP NOT NULL;

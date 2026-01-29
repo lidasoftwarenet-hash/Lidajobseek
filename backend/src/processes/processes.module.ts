@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ProcessesService } from './processes.service';
 import { ProcessesController } from './processes.controller';
-import { PrismaService } from '../prisma.service';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { Process } from './process.entity';
 
 @Module({
+  imports: [MikroOrmModule.forFeature([Process])],
   controllers: [ProcessesController],
-  providers: [ProcessesService, PrismaService],
+  providers: [ProcessesService],
 })
 export class ProcessesModule {}

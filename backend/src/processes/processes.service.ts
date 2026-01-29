@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
+import { Process } from './process.entity';
+import { Interaction } from '../interactions/interaction.entity';
+import { SelfReview } from '../reviews/self-review.entity';
+import { Contact } from '../contacts/contact.entity';
 import { CreateProcessDto } from './dto/create-process.dto';
 
 @Injectable()
 export class ProcessesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    @InjectRepository(Process)
+    private readonly processRepository: EntityRepository<Process>,
+    private readonly em: EntityManager,
+  ) { }
 
-  create(dto: CreateProcessDto, userId: number) {
+  async create(dto: CreateProcessDto, userId: number): Promise<Process> {
     const data: any = { ...dto, userId };
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
@@ -15,43 +24,58 @@ export class ProcessesService {
       data.nextFollowUp = new Date(dto.nextFollowUp);
     }
 
-    return this.prisma.process.create({
-      data,
-    });
+    const process = this.processRepository.create(data);
+    await this.em.persistAndFlush(process);
+    return process;
   }
 
-  async findAll(userId: number) {
+  async findAll(userId: number): Promise<any[]> {
     // First, check and update any processes that need automatic stage update
     await this.updateStaleProcesses();
 
-    return this.prisma.process.findMany({
-      where: { userId },
-      include: {
-        interactions: true,
-        reviews: true,
-        _count: {
-          select: { interactions: true },
-        },
+    const processes = await this.processRepository.find(
+      { userId },
+      {
+        populate: ['interactions', 'reviews'],
+        orderBy: { updatedAt: QueryOrder.DESC },
       },
-      orderBy: { updatedAt: 'desc' },
-    });
+    );
+
+    // Add interaction count manually
+    return processes.map(process => ({
+      ...process,
+      _count: {
+        interactions: process.interactions.length,
+      },
+    }));
   }
 
-  async findOne(id: number, userId: number) {
+  async findOne(id: number, userId: number): Promise<Process | null> {
     // First, check and update any processes that need automatic stage update
     await this.updateStaleProcesses();
 
-    return this.prisma.process.findFirst({
-      where: { id, userId },
-      include: {
-        interactions: { orderBy: { date: 'desc' } },
-        reviews: { orderBy: { createdAt: 'desc' } },
-        contacts: true,
+    const process = await this.processRepository.findOne(
+      { id, userId },
+      {
+        populate: ['interactions', 'reviews', 'contacts'],
       },
-    });
+    );
+
+    if (process) {
+      // Sort interactions and reviews
+      process.interactions.getItems().sort((a, b) => b.date.getTime() - a.date.getTime());
+      process.reviews.getItems().sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+
+    return process;
   }
 
-  update(id: number, dto: any, userId: number) {
+  async update(id: number, dto: any, userId: number): Promise<Process | null> {
+    const process = await this.processRepository.findOne({ id, userId });
+    if (!process) {
+      return null;
+    }
+
     const data: any = { ...dto };
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
@@ -63,38 +87,32 @@ export class ProcessesService {
       data.offerDeadline = new Date(dto.offerDeadline);
     }
 
-    return this.prisma.process.updateMany({
-      where: { id, userId },
-      data,
-    });
+    Object.assign(process, data);
+    await this.em.flush();
+    return process;
   }
 
-  remove(id: number, userId: number) {
-    return this.prisma.process.deleteMany({
-      where: { id, userId },
-    });
+  async remove(id: number, userId: number): Promise<Process | null> {
+    const process = await this.processRepository.findOne({ id, userId });
+    if (process) {
+      await this.em.removeAndFlush(process);
+    }
+    return process;
   }
 
-  async exportData(userId: number) {
-    return this.prisma.process.findMany({
-      where: { userId },
-      include: {
-        interactions: true,
-        reviews: true,
-        contacts: true,
+  async exportData(userId: number): Promise<Process[]> {
+    return this.processRepository.find(
+      { userId },
+      {
+        populate: ['interactions', 'reviews', 'contacts'],
       },
-    });
+    );
   }
 
-  async importData(processes: any[], mode: 'overwrite' | 'append', userId: number) {
+  async importData(processes: any[], mode: 'overwrite' | 'append', userId: number): Promise<{ count: number }> {
     if (mode === 'overwrite') {
-      // Delete interactions, reviews, contacts explicitly first? Or rely on Cascade?
-      // Delete user's processes
-      const userProcesses = await this.prisma.process.findMany({ where: { userId }, select: { id: true } });
-      const ids = userProcesses.map(p => p.id);
-
-      // Since cascade delete is configured in schema, deleting processes should suffice
-      await this.prisma.process.deleteMany({ where: { userId } });
+      const userProcesses = await this.processRepository.find({ userId });
+      await this.em.removeAndFlush(userProcesses);
     }
 
     let count = 0;
@@ -108,36 +126,48 @@ export class ProcessesService {
       if (processData.offerDeadline) processData.offerDeadline = new Date(processData.offerDeadline);
       if (processData.nextFollowUp) processData.nextFollowUp = new Date(processData.nextFollowUp);
 
-      await this.prisma.process.create({
-        data: {
-          ...processData,
-          userId, // Force current user ID
-          interactions: {
-            create: interactions?.map((i: any) => {
-              const { id, processId, ...iData } = i;
-              if (iData.date) iData.date = new Date(iData.date);
-              if (iData.nextInviteDate) iData.nextInviteDate = new Date(iData.nextInviteDate);
-              if (iData.createdAt) iData.createdAt = new Date(iData.createdAt);
-              return iData;
-            }),
-          },
-          reviews: {
-            create: reviews?.map((r: any) => {
-              const { id, processId, ...rData } = r;
-              if (rData.createdAt) rData.createdAt = new Date(rData.createdAt);
-              return rData;
-            }),
-          },
-          contacts: {
-            create: contacts?.map((c: any) => {
-              const { id, processId, ...cData } = c;
-              return cData;
-            }),
-          },
-        },
+      const process = this.processRepository.create({
+        ...processData,
+        userId,
       });
+
+      // Add nested relations
+      if (interactions && interactions.length > 0) {
+        for (const i of interactions) {
+          const { id, processId, ...iData } = i;
+          if (iData.date) iData.date = new Date(iData.date);
+          if (iData.nextInviteDate) iData.nextInviteDate = new Date(iData.nextInviteDate);
+          if (iData.createdAt) iData.createdAt = new Date(iData.createdAt);
+          
+          const interaction = this.em.create(Interaction, { ...iData, process });
+          process.interactions.add(interaction);
+        }
+      }
+
+      if (reviews && reviews.length > 0) {
+        for (const r of reviews) {
+          const { id, processId, ...rData } = r;
+          if (rData.createdAt) rData.createdAt = new Date(rData.createdAt);
+          
+          const review = this.em.create(SelfReview, { ...rData, process });
+          process.reviews.add(review);
+        }
+      }
+
+      if (contacts && contacts.length > 0) {
+        for (const c of contacts) {
+          const { id, processId, ...cData } = c;
+          
+          const contact = this.em.create(Contact, { ...cData, process });
+          process.contacts.add(contact);
+        }
+      }
+
+      this.em.persist(process);
       count++;
     }
+    
+    await this.em.flush();
     return { count };
   }
 
@@ -147,35 +177,21 @@ export class ProcessesService {
    * - Current stage is NOT "Rejected" or "Withdrawn"
    * - Current stage is NOT already "No Response (14+ Days)"
    */
-  private async updateStaleProcesses() {
+  private async updateStaleProcesses(): Promise<void> {
     const fourteenDaysAgo = new Date();
     fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
     try {
-      const staleProcesses = await this.prisma.process.findMany({
-        where: {
-          updatedAt: {
-            lte: fourteenDaysAgo,
-          },
-          currentStage: {
-            notIn: ['Rejected', 'Withdrawn', 'No Response (14+ Days)'],
-          },
-        },
+      const staleProcesses = await this.processRepository.find({
+        updatedAt: { $lte: fourteenDaysAgo },
+        currentStage: { $nin: ['Rejected', 'Withdrawn', 'No Response (14+ Days)'] },
       });
 
       if (staleProcesses.length > 0) {
-        const updatePromises = staleProcesses.map((process: any) =>
-          this.prisma.process.update({
-            where: { id: process.id },
-            data: {
-              currentStage: 'No Response (14+ Days)',
-              // Keep the original updatedAt timestamp to avoid infinite updates
-              // We'll update a different field or add a note if needed
-            },
-          }),
-        );
-
-        await Promise.all(updatePromises);
+        for (const process of staleProcesses) {
+          process.currentStage = 'No Response (14+ Days)';
+        }
+        await this.em.flush();
         console.log(
           `Automatically updated ${staleProcesses.length} process(es) to "No Response (14+ Days)"`,
         );

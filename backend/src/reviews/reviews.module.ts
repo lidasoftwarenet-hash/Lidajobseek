@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { ReviewsController } from './reviews.controller';
-import { PrismaService } from '../prisma.service';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { SelfReview } from './self-review.entity';
 
 @Module({
+  imports: [MikroOrmModule.forFeature([SelfReview])],
   controllers: [ReviewsController],
-  providers: [ReviewsService, PrismaService],
+  providers: [ReviewsService],
 })
 export class ReviewsModule {}

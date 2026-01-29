@@ -1,37 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
+import { Resource } from './resource.entity';
 
 @Injectable()
 export class ResourcesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    @InjectRepository(Resource)
+    private readonly resourceRepository: EntityRepository<Resource>,
+    private readonly em: EntityManager,
+  ) { }
 
-  create(data: any, userId: number) {
-    return this.prisma.resource.create({ data: { ...data, userId } });
+  async create(data: any, userId: number): Promise<Resource> {
+    const resource = this.resourceRepository.create({ ...data, userId });
+    await this.em.persistAndFlush(resource);
+    return resource;
   }
 
-  findAll(userId: number) {
-    return this.prisma.resource.findMany({
-      where: { userId },
-      orderBy: { updatedAt: 'desc' },
-    });
+  async findAll(userId: number): Promise<Resource[]> {
+    return this.resourceRepository.find(
+      { userId },
+      { orderBy: { updatedAt: QueryOrder.DESC } },
+    );
   }
 
-  findOne(id: number, userId: number) {
-    return this.prisma.resource.findFirst({
-      where: { id, userId },
-    });
+  async findOne(id: number, userId: number): Promise<Resource | null> {
+    return this.resourceRepository.findOne({ id, userId });
   }
 
-  update(id: number, data: any, userId: number) {
-    return this.prisma.resource.updateMany({
-      where: { id, userId },
-      data,
-    });
+  async update(id: number, data: any, userId: number): Promise<Resource | null> {
+    const resource = await this.resourceRepository.findOne({ id, userId });
+    if (!resource) {
+      return null;
+    }
+    Object.assign(resource, data);
+    await this.em.flush();
+    return resource;
   }
 
-  remove(id: number, userId: number) {
-    return this.prisma.resource.deleteMany({
-      where: { id, userId },
-    });
+  async remove(id: number, userId: number): Promise<Resource | null> {
+    const resource = await this.resourceRepository.findOne({ id, userId });
+    if (resource) {
+      await this.em.removeAndFlush(resource);
+    }
+    return resource;
   }
 }

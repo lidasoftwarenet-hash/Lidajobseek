@@ -1,32 +1,41 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository, EntityManager } from '@mikro-orm/postgresql';
+import { Contact } from './contact.entity';
 
 @Injectable()
 export class ContactsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Contact)
+    private readonly contactRepository: EntityRepository<Contact>,
+    private readonly em: EntityManager,
+  ) {}
 
-  async create(data: any) {
-    return this.prisma.contact.create({
-      data,
-    });
+  async create(data: any): Promise<Contact> {
+    const contact = this.contactRepository.create(data);
+    await this.em.persistAndFlush(contact);
+    return contact;
   }
 
-  async findAllByProcess(processId: number) {
-    return this.prisma.contact.findMany({
-      where: { processId },
-    });
+  async findAllByProcess(processId: number): Promise<Contact[]> {
+    return this.contactRepository.find({ processId });
   }
 
-  async update(id: number, data: any) {
-    return this.prisma.contact.update({
-      where: { id },
-      data,
-    });
+  async update(id: number, data: any): Promise<Contact | null> {
+    const contact = await this.contactRepository.findOne({ id });
+    if (!contact) {
+      return null;
+    }
+    Object.assign(contact, data);
+    await this.em.flush();
+    return contact;
   }
 
-  async remove(id: number) {
-    return this.prisma.contact.delete({
-      where: { id },
-    });
+  async remove(id: number): Promise<Contact | null> {
+    const contact = await this.contactRepository.findOne({ id });
+    if (contact) {
+      await this.em.removeAndFlush(contact);
+    }
+    return contact;
   }
 }

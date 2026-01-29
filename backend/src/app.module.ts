@@ -7,15 +7,19 @@ import { InteractionsModule } from './interactions/interactions.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ContactsService } from './contacts/contacts.service';
 import { ContactsController } from './contacts/contacts.controller';
-import { PrismaService } from './prisma.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ResourcesModule } from './resources/resources.module';
 import { AuthModule } from './auth/auth.module';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+import config from '../mikro-orm.config';
+import { Contact } from './contacts/contact.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    MikroOrmModule.forRoot(config),
+    MikroOrmModule.forFeature([Contact]),
     AuthModule,
     ServeStaticModule.forRoot(
       {
@@ -33,6 +37,6 @@ import { AuthModule } from './auth/auth.module';
     ResourcesModule,
   ],
   controllers: [AppController, ContactsController],
-  providers: [AppService, ContactsService, PrismaService],
+  providers: [AppService, ContactsService],
 })
 export class AppModule {}

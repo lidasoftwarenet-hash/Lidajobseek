@@ -1,32 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma.service';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
+import { Interaction } from './interaction.entity';
+import { Process } from '../processes/process.entity';
+import { Contact } from '../contacts/contact.entity';
 import { CreateInteractionDto } from './dto/create-interaction.dto';
 
 @Injectable()
 export class InteractionsService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    @InjectRepository(Interaction)
+    private readonly interactionRepository: EntityRepository<Interaction>,
+    @InjectRepository(Contact)
+    private readonly contactRepository: EntityRepository<Contact>,
+    @InjectRepository(Process)
+    private readonly processRepository: EntityRepository<Process>,
+    private readonly em: EntityManager,
+  ) { }
 
-  async create(dto: CreateInteractionDto) {
-    const interaction = await this.prisma.interaction.create({
-      data: {
-        processId: dto.processId,
-        date: new Date(dto.date),
-        interviewType: dto.interviewType,
-        participants: dto.participants,
-        summary: dto.summary,
-        testsAssessment: dto.testsAssessment,
-        roleInsights: dto.roleInsights,
-        notes: dto.notes,
-        headsup: dto.headsup,
-        nextInviteStatus: dto.nextInviteStatus,
-        nextInviteDate: dto.nextInviteDate
-          ? new Date(dto.nextInviteDate)
-          : null,
-        nextInviteLink: dto.nextInviteLink,
-        nextInviteType: dto.nextInviteType,
-        invitationExtended: dto.invitationExtended,
-      },
-    });
+  async create(dto: CreateInteractionDto): Promise<Interaction> {
+    const process = await this.processRepository.findOne({ id: dto.processId });
+    if (!process) {
+      throw new Error('Process not found');
+    }
+
+    const interaction = this.interactionRepository.create({
+      processId: dto.processId,
+      date: new Date(dto.date),
+      interviewType: dto.interviewType,
+      participants: dto.participants,
+      summary: dto.summary,
+      testsAssessment: dto.testsAssessment,
+      roleInsights: dto.roleInsights,
+      notes: dto.notes,
+      headsup: dto.headsup,
+      nextInviteStatus: dto.nextInviteStatus,
+      nextInviteDate: dto.nextInviteDate ? new Date(dto.nextInviteDate) : undefined,
+      nextInviteLink: dto.nextInviteLink,
+      nextInviteType: dto.nextInviteType,
+      invitationExtended: dto.invitationExtended,
+      process,
+    } as any);
+
+    await this.em.persistAndFlush(interaction);
 
     // Auto-add network contacts
     if (dto.participants && Array.isArray(dto.participants)) {
@@ -34,22 +50,19 @@ export class InteractionsService {
         const participant = p as any;
         if (participant.name) {
           // Check if this contact already exists for this process
-          const existingContact = await this.prisma.contact.findFirst({
-            where: {
-              processId: dto.processId,
-              name: participant.name
-            }
+          const existingContact = await this.contactRepository.findOne({
+            processId: dto.processId,
+            name: participant.name,
           });
 
           if (!existingContact) {
-            await this.prisma.contact.create({
-              data: {
-                processId: dto.processId,
-                name: participant.name,
-                role: participant.role || 'Interviewer',
-                // We don't have email/linkedIn here yet, can be updated later
-              }
-            });
+            const contact = this.contactRepository.create({
+              processId: dto.processId,
+              name: participant.name,
+              role: participant.role || 'Interviewer',
+              process,
+            } as any);
+            await this.em.persistAndFlush(contact);
           }
         }
       }
@@ -58,7 +71,7 @@ export class InteractionsService {
     return interaction;
   }
 
-  async findAll(startDate?: string, endDate?: string, processId?: number) {
+  async findAll(startDate?: string, endDate?: string, processId?: number): Promise<any[]> {
     const where: any = {};
 
     if (processId) {
@@ -67,73 +80,82 @@ export class InteractionsService {
 
     if (startDate && endDate) {
       where.date = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
       };
     } else if (startDate) {
       where.date = {
-        gte: new Date(startDate),
+        $gte: new Date(startDate),
       };
     } else if (endDate) {
       where.date = {
-        lte: new Date(endDate),
+        $lte: new Date(endDate),
       };
     }
 
-    return this.prisma.interaction.findMany({
-      where,
-      include: {
-        process: {
-          select: {
-            companyName: true,
-            roleTitle: true,
-          },
-        },
+    const interactions = await this.interactionRepository.find(where, {
+      populate: ['process'],
+      orderBy: { date: QueryOrder.ASC },
+    });
+
+    // Format response to match expected structure
+    return interactions.map(interaction => ({
+      ...interaction,
+      process: {
+        companyName: interaction.process.companyName,
+        roleTitle: interaction.process.roleTitle,
       },
-      orderBy: { date: 'asc' },
-    });
+    }));
   }
 
-  async findByProcess(processId: number) {
-    return this.prisma.interaction.findMany({
-      where: { processId },
-      orderBy: { date: 'desc' },
-    });
+  async findByProcess(processId: number): Promise<Interaction[]> {
+    return this.interactionRepository.find(
+      { processId },
+      { orderBy: { date: QueryOrder.DESC } },
+    );
   }
 
-  async update(id: number, dto: any) {
+  async update(id: number, dto: any): Promise<Interaction | null> {
+    const interaction = await this.interactionRepository.findOne({ id });
+    if (!interaction) {
+      return null;
+    }
+
     const data: any = { ...dto };
     if (dto.date) data.date = new Date(dto.date);
     if (dto.nextInviteDate) data.nextInviteDate = new Date(dto.nextInviteDate);
 
-    return this.prisma.interaction.update({
-      where: { id },
-      data,
-    });
+    Object.assign(interaction, data);
+    await this.em.flush();
+    return interaction;
   }
 
-  async remove(id: number) {
-    return this.prisma.interaction.delete({
-      where: { id },
-    });
+  async remove(id: number): Promise<Interaction | null> {
+    const interaction = await this.interactionRepository.findOne({ id });
+    if (interaction) {
+      await this.em.removeAndFlush(interaction);
+    }
+    return interaction;
   }
 
-  async exportData() {
-    return this.prisma.interaction.findMany({
-      include: {
-        process: {
-          select: {
-            companyName: true,
-            roleTitle: true,
-          },
-        },
+  async exportData(): Promise<any[]> {
+    const interactions = await this.interactionRepository.findAll({
+      populate: ['process'],
+    });
+
+    return interactions.map(interaction => ({
+      ...interaction,
+      process: {
+        companyName: interaction.process.companyName,
+        roleTitle: interaction.process.roleTitle,
       },
-    });
+    }));
   }
 
-  async importData(interactions: any[], mode: 'overwrite' | 'append') {
+  async importData(interactions: any[], mode: 'overwrite' | 'append'): Promise<{ count: number }> {
     if (mode === 'overwrite') {
-      await this.prisma.interaction.deleteMany({});
+      const allInteractions = await this.interactionRepository.findAll();
+      await this.em.removeAndFlush(allInteractions);
     }
 
     let count = 0;
@@ -146,17 +168,16 @@ export class InteractionsService {
       if (interactionData.createdAt) interactionData.createdAt = new Date(interactionData.createdAt);
 
       // Check if process exists
-      const processExists = await this.prisma.process.findUnique({
-        where: { id: interactionData.processId },
-      });
+      const processExists = await this.processRepository.findOne({ id: interactionData.processId });
 
       if (processExists) {
-        await this.prisma.interaction.create({
-          data: interactionData,
-        });
+        const interaction = this.interactionRepository.create(interactionData);
+        this.em.persist(interaction);
         count++;
       }
     }
+    
+    await this.em.flush();
     return { count };
   }
 }
