@@ -16,7 +16,7 @@ export class ProcessesService {
   ) { }
 
   async create(dto: CreateProcessDto, userId: number): Promise<Process> {
-    const data: any = { ...dto, userId };
+    const data: any = { ...dto, user: userId };
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
     }
@@ -34,7 +34,7 @@ export class ProcessesService {
     await this.updateStaleProcesses();
 
     const processes = await this.processRepository.find(
-      { userId },
+      { user: userId },
       {
         populate: ['interactions', 'reviews'],
         orderBy: { updatedAt: QueryOrder.DESC },
@@ -55,7 +55,7 @@ export class ProcessesService {
     await this.updateStaleProcesses();
 
     const process = await this.processRepository.findOne(
-      { id, userId },
+      { id, user: userId },
       {
         populate: ['interactions', 'reviews', 'contacts'],
       },
@@ -71,7 +71,7 @@ export class ProcessesService {
   }
 
   async update(id: number, dto: any, userId: number): Promise<Process | null> {
-    const process = await this.processRepository.findOne({ id, userId });
+    const process = await this.processRepository.findOne({ id, user: userId });
     if (!process) {
       return null;
     }
@@ -93,7 +93,7 @@ export class ProcessesService {
   }
 
   async remove(id: number, userId: number): Promise<Process | null> {
-    const process = await this.processRepository.findOne({ id, userId });
+    const process = await this.processRepository.findOne({ id, user: userId });
     if (process) {
       await this.em.removeAndFlush(process);
     }
@@ -102,7 +102,7 @@ export class ProcessesService {
 
   async exportData(userId: number): Promise<Process[]> {
     return this.processRepository.find(
-      { userId },
+      { user: userId },
       {
         populate: ['interactions', 'reviews', 'contacts'],
       },
@@ -111,7 +111,7 @@ export class ProcessesService {
 
   async importData(processes: any[], mode: 'overwrite' | 'append', userId: number): Promise<{ count: number }> {
     if (mode === 'overwrite') {
-      const userProcesses = await this.processRepository.find({ userId });
+      const userProcesses = await this.processRepository.find({ user: userId });
       await this.em.removeAndFlush(userProcesses);
     }
 
@@ -128,7 +128,7 @@ export class ProcessesService {
 
       const process = this.processRepository.create({
         ...processData,
-        userId,
+        user: userId,
       });
 
       // Add nested relations

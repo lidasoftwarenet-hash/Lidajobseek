@@ -18,7 +18,7 @@ export class ContactsService {
   }
 
   async findAllByProcess(processId: number): Promise<Contact[]> {
-    return this.contactRepository.find({ processId });
+    return this.contactRepository.find({ process: processId });
   }
 
   async update(id: number, data: any): Promise<Contact | null> {

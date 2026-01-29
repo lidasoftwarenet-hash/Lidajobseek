@@ -12,24 +12,24 @@ export class ResourcesService {
   ) { }
 
   async create(data: any, userId: number): Promise<Resource> {
-    const resource = this.resourceRepository.create({ ...data, userId });
+    const resource = this.resourceRepository.create({ ...data, user: userId } as any);
     await this.em.persistAndFlush(resource);
     return resource;
   }
 
   async findAll(userId: number): Promise<Resource[]> {
     return this.resourceRepository.find(
-      { userId },
+      { user: userId } as any,
       { orderBy: { updatedAt: QueryOrder.DESC } },
     );
   }
 
   async findOne(id: number, userId: number): Promise<Resource | null> {
-    return this.resourceRepository.findOne({ id, userId });
+    return this.resourceRepository.findOne({ id, user: userId } as any);
   }
 
   async update(id: number, data: any, userId: number): Promise<Resource | null> {
-    const resource = await this.resourceRepository.findOne({ id, userId });
+    const resource = await this.resourceRepository.findOne({ id, user: userId } as any);
     if (!resource) {
       return null;
     }
@@ -39,7 +39,7 @@ export class ResourcesService {
   }
 
   async remove(id: number, userId: number): Promise<Resource | null> {
-    const resource = await this.resourceRepository.findOne({ id, userId });
+    const resource = await this.resourceRepository.findOne({ id, user: userId } as any);
     if (resource) {
       await this.em.removeAndFlush(resource);
     }

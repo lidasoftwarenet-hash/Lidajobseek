@@ -25,7 +25,6 @@ export class InteractionsService {
     }
 
     const interaction = this.interactionRepository.create({
-      processId: dto.processId,
       date: new Date(dto.date),
       interviewType: dto.interviewType,
       participants: dto.participants,
@@ -51,13 +50,12 @@ export class InteractionsService {
         if (participant.name) {
           // Check if this contact already exists for this process
           const existingContact = await this.contactRepository.findOne({
-            processId: dto.processId,
+            process: dto.processId,
             name: participant.name,
           });
 
           if (!existingContact) {
             const contact = this.contactRepository.create({
-              processId: dto.processId,
               name: participant.name,
               role: participant.role || 'Interviewer',
               process,
@@ -75,7 +73,7 @@ export class InteractionsService {
     const where: any = {};
 
     if (processId) {
-      where.processId = processId;
+      where.process = processId;
     }
 
     if (startDate && endDate) {
@@ -110,7 +108,7 @@ export class InteractionsService {
 
   async findByProcess(processId: number): Promise<Interaction[]> {
     return this.interactionRepository.find(
-      { processId },
+      { process: processId },
       { orderBy: { date: QueryOrder.DESC } },
     );
   }
@@ -171,7 +169,8 @@ export class InteractionsService {
       const processExists = await this.processRepository.findOne({ id: interactionData.processId });
 
       if (processExists) {
-        const interaction = this.interactionRepository.create(interactionData);
+        const { processId, ...data } = interactionData;
+        const interaction = this.interactionRepository.create({ ...data, process: processExists } as any);
         this.em.persist(interaction);
         count++;
       }

@@ -24,9 +24,6 @@ export class Resource {
   @Property({ onCreate: () => new Date(), onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
-  @Property()
-  userId!: number;
-
   @ManyToOne(() => User)
   user!: User;
 }

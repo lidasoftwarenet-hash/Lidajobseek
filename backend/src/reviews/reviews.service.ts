@@ -20,7 +20,7 @@ export class ReviewsService {
 
   async findByProcess(processId: number): Promise<SelfReview[]> {
     return this.reviewRepository.find(
-      { processId },
+      { process: processId },
       { orderBy: { createdAt: QueryOrder.DESC } },
     );
   }

@@ -7,9 +7,6 @@ export class Interaction {
   id!: number;
 
   @Property()
-  processId!: number;
-
-  @Property()
   date!: Date;
 
   @Property()

@@ -21,9 +21,6 @@ export class Contact {
   @Property({ nullable: true })
   email?: string;
 
-  @Property()
-  processId!: number;
-
   @ManyToOne(() => Process)
   process!: Process;
 }

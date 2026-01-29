@@ -7,9 +7,6 @@ export class SelfReview {
   id!: number;
 
   @Property()
-  processId!: number;
-
-  @Property()
   stage!: string;
 
   @Property()

@@ -105,9 +105,6 @@ export class Process {
   @OneToMany(() => Contact, contact => contact.process, { orphanRemoval: true })
   contacts = new Collection<Contact>(this);
 
-  @Property()
-  userId!: number;
-
   @ManyToOne(() => User)
   user!: User;
 }
