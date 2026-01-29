@@ -101,8 +101,30 @@
         </div>
     </div>
 
+    <!-- Loading Skeleton -->
+    <div class="processes-grid" *ngIf="isLoading">
+        <div *ngFor="let i of [1,2,3,4,5,6]" class="process-card skeleton-card">
+            <div class="card-header">
+                <div class="skeleton skeleton-avatar"></div>
+                <div class="skeleton skeleton-dot"></div>
+            </div>
+            <div class="card-body">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-text" style="width: 80%;"></div>
+                <div class="card-meta">
+                    <div class="skeleton skeleton-text" style="width: 100px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 80px;"></div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="skeleton skeleton-badge"></div>
+                <div class="skeleton skeleton-text" style="width: 60px;"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Process Cards Grid -->
-    <div class="processes-grid" *ngIf="filteredProcesses.length > 0; else noData">
+    <div class="processes-grid" *ngIf="!isLoading && filteredProcesses.length > 0">
         <div *ngFor="let p of filteredProcesses" class="process-card"
             [class.card-closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'"
             [routerLink]="['/process', p.id]">

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ConfirmService, ConfirmOptions } from '../../services/confirm.service';
 
@@ -7,9 +7,17 @@ import { ConfirmService, ConfirmOptions } from '../../services/confirm.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="overlay" *ngIf="options$ | async as options">
-      <div class="dialog">
-        <h3 class="dialog-title">{{ options.title }}</h3>
+    <div class="overlay" *ngIf="options$ | async as options" (click)="onOverlayClick($event)">
+      <div class="dialog" (click)="$event.stopPropagation()">
+        <div class="dialog-header">
+          <h3 class="dialog-title">{{ options.title }}</h3>
+          <button class="dialog-close" (click)="onCancel()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
         <p class="dialog-message">{{ options.message }}</p>
         <div class="dialog-actions">
           <ng-container *ngIf="options.buttons; else defaultButtons">
@@ -24,6 +32,7 @@ import { ConfirmService, ConfirmOptions } from '../../services/confirm.service';
             <button class="btn-primary" (click)="onConfirm()">{{ options.confirmText }}</button>
           </ng-template>
         </div>
+        <div class="keyboard-hint">Press <kbd>ESC</kbd> to dismiss</div>
       </div>
     </div>
   `,
@@ -81,6 +90,16 @@ export class ConfirmDialogComponent {
 
   constructor(public confirmService: ConfirmService) {
     this.options$ = this.confirmService.confirmState$;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: KeyboardEvent) {
+    this.onCancel();
+  }
+
+  onOverlayClick(event: MouseEvent) {
+    // Click outside to dismiss
+    this.onCancel();
   }
 
   onConfirm() {

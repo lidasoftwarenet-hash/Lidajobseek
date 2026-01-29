@@ -577,3 +577,69 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ===== SKELETON LOADING STATES ===== */
+.skeleton-card {
+    pointer-events: none;
+    cursor: default;
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--gray-200) 0%,
+        var(--gray-100) 50%,
+        var(--gray-200) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-md);
+}
+
+.skeleton-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+}
+
+.skeleton-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.skeleton-title {
+    height: 20px;
+    width: 60%;
+    margin-bottom: var(--space-sm);
+}
+
+.skeleton-text {
+    height: 14px;
+    width: 100%;
+    margin-bottom: var(--space-xs);
+}
+
+.skeleton-badge {
+    height: 24px;
+    width: 120px;
+    border-radius: 20px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+body.dark-theme .skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--gray-700) 0%,
+        var(--gray-600) 50%,
+        var(--gray-700) 100%
+    );
+}

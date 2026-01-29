@@ -24,8 +24,8 @@
                     <select name="locationSelect" [(ngModel)]="selectedLocation" required class="input-field"
                         (change)="onLocationChange($event)">
                         <option value="">Select location</option>
-                        <option *ngFor="let loc of locationOptions" 
-                                [value]="loc" 
+                        <option *ngFor="let loc of locationOptions"
+                                [value]="loc"
                                 [class.abroad-option]="loc === 'Abroad'"
                                 [class.other-option]="loc === 'Other'">
                             {{loc}}
@@ -33,7 +33,7 @@
                     </select>
                     <div *ngIf="selectedLocation === 'Other'" class="form-group" style="margin-top: 12px;">
                         <label>Specify Location</label>
-                        <input type="text" name="location" [(ngModel)]="process.location" 
+                        <input type="text" name="location" [(ngModel)]="process.location"
                             placeholder="Enter location..." class="input-field" required>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
             </div>
         </div>
 
-     
+
 
         <!-- Coach Hub moved to standalone page -->
 
@@ -158,140 +158,3 @@
         </div>
     </form>
 </div>
-
-<style>
-    .form-view {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .view-header {
-        margin-bottom: 32px;
-    }
-
-    .subtitle {
-        color: var(--text-secondary);
-        margin-top: 4px;
-        font-size: 15px;
-    }
-
-    .data-form {
-        display: flex;
-        flex-direction: column;
-        gap: 32px;
-    }
-
-    .form-section {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        padding-top: 24px;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .highlight-section {
-        background: var(--accent-light);
-        padding: 24px;
-        border: 1px solid rgba(67, 97, 238, 0.2);
-        border-radius: var(--radius-md);
-    }
-
-    .section-header h2 {
-        margin: 0;
-        font-size: 18px;
-    }
-
-    .section-desc {
-        font-size: 13px;
-        color: var(--text-secondary);
-        margin-top: 4px;
-        margin-bottom: 16px;
-    }
-
-    .muted-hint {
-        font-size: 12px;
-        color: var(--text-muted);
-        margin-top: 4px;
-        font-style: italic;
-    }
-
-    .score-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 24px;
-    }
-
-    .score-item {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .score-slider {
-        width: 100%;
-        height: 6px;
-        border-radius: 3px;
-        background: #e5e7eb;
-        outline: none;
-        -webkit-appearance: none;
-    }
-
-    .score-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: var(--accent-color);
-        cursor: pointer;
-    }
-
-    .score-slider::-moz-range-thumb {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: var(--accent-color);
-        cursor: pointer;
-        border: none;
-    }
-
-    .score-value {
-        font-size: 14px;
-        font-weight: 100;
-        color: var(--accent-color);
-        text-align: right;
-    }
-
-    /* Style for Abroad option */
-    .abroad-option {
-        color: #dc2626;
-        font-weight: 600;
-    }
-
-    /* Style for Other option */
-    .other-option {
-        color: #059669;
-        font-weight: 600;
-    }
-
-    /* Dark theme adjustments */
-    body.dark-theme .abroad-option {
-        color: #fca5a5;
-    }
-
-    body.dark-theme .other-option {
-        color: #6ee7b7;
-    }
-</style>

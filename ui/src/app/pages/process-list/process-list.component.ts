@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { TableSkeletonComponent } from '../../components/skeleton/table-skeleton.component';
 
 @Component({
     selector: 'app-process-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableSkeletonComponent],
     templateUrl: './process-list.component.html',
     styleUrls: ['./process-list.component.css']
 })
@@ -18,6 +19,7 @@ export class ProcessListComponent implements OnInit {
     processesOnActioin: any[] = [];
     filteredProcesses: any[] = [];
     tasks: any[] = [];
+    isLoading: boolean = true;
 
     // Sorting properties
     sortColumn: string = '';
@@ -53,11 +55,20 @@ export class ProcessListComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.processesService.getAll().subscribe(data => {
-            this.processes = data;
-            this.processesOnActioin = data.filter((p: any) => p.currentStage !== 'Rejected' && p.currentStage !== 'Withdrawn');
-            this.applyFilters(); // Apply filters on initial load
-            this.findTasks();
+        this.isLoading = true;
+        this.processesService.getAll().subscribe({
+            next: (data) => {
+                this.processes = data;
+                this.processesOnActioin = data.filter((p: any) => p.currentStage !== 'Rejected' && p.currentStage !== 'Withdrawn');
+                this.applyFilters(); // Apply filters on initial load
+                this.findTasks();
+                this.isLoading = false;
+            },
+            error: (err) => {
+                console.error('Failed to load processes', err);
+                this.toastService.show('Failed to load processes', 'error');
+                this.isLoading = false;
+            }
         });
     }
 
