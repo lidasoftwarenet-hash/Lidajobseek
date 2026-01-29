@@ -5,12 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
-import { TableSkeletonComponent } from '../../components/skeleton/table-skeleton.component';
 
 @Component({
     selector: 'app-process-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableSkeletonComponent],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './process-list.component.html',
     styleUrls: ['./process-list.component.css']
 })
