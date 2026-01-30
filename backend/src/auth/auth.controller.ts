@@ -22,4 +22,10 @@ export class AuthController {
   async register(@Body() body: any) {
     return this.authService.register(body);
   }
+
+  @Public()
+  @Post('verify-code')
+  async verifyCode(@Body('code') code: string) {
+    return this.authService.verifyInvitationCode(code);
+  }
 }

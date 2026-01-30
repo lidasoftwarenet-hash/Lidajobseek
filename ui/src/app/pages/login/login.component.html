@@ -17,22 +17,12 @@
       <div class="branding-content">
         <div class="logo-container">
           <div class="logo-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M21 16V8C21 6.89543 20.1046 6 19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18H19C20.1046 18 21 17.1046 21 16Z"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-              <path d="M7 15H7.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-              <path d="M11 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
+            <img src="assets/logo.png" alt="Lida Logo" style="width: 50px; height: auto;">
           </div>
-          <h1 class="app-title">JobSeek</h1>
+          <h1 class="app-title">Lida Job assistance</h1>
         </div>
 
-        <h2 class="welcome-title">Welcome Back!</h2>
+        <h2 class="welcome-title">Find your next role.</h2>
         <p class="welcome-subtitle">Your Career Intelligence Platform</p>
 
         <div class="features-list">
@@ -92,8 +82,11 @@
           </svg>
         </div>
 
-        <h2 class="login-title">Secure Access</h2>
-        <p class="login-subtitle">Enter your credentials to continue</p>
+        <div class="mode-pill">{{ isRegister ? 'Register' : 'Login' }}</div>
+        <h2 class="login-title">{{ isRegister ? 'Create your account' : 'Welcome' }}</h2>
+        <p class="login-subtitle">
+          {{ isRegister ? 'Register to access Lida Job assistance' : 'Enter your credentials to continue' }}
+        </p>
 
         <form class="login-form" (ngSubmit)="submit()">
           <div class="form-group">
@@ -169,9 +162,65 @@
             <div class="btn-glow"></div>
           </button>
 
-          <button type="button" class="btn-link" (click)="toggleMode()">
-            {{ isRegister ? 'Already have an account? Login' : 'Need an account? Register' }}
-          </button>
+          <div class="form-divider">
+            <span>{{ isRegister ? 'Already have access?' : 'OR' }}</span>
+          </div>
+
+          <div class="social-login" *ngIf="!isRegister">
+            <div class="social-title">Continue with</div>
+            <div class="social-grid">
+              <button type="button" class="social-btn facebook" (click)="openVerificationModal('facebook')">
+                <span class="social-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M22 12.06C22 6.55 17.52 2.06 12 2.06C6.48 2.06 2 6.55 2 12.06C2 17.06 5.66 21.2 10.44 22V14.89H7.9V12.06H10.44V9.9C10.44 7.4 11.93 6.01 14.2 6.01C15.29 6.01 16.44 6.2 16.44 6.2V8.66H15.18C13.95 8.66 13.56 9.43 13.56 10.23V12.06H16.32L15.88 14.89H13.56V22C18.34 21.2 22 17.06 22 12.06Z"
+                    />
+                  </svg>
+                </span>
+                Facebook
+              </button>
+              <button type="button" class="social-btn linkedin" (click)="openVerificationModal('linkedin')">
+                <span class="social-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M20.45 20.45H16.9V14.9C16.9 13.58 16.88 11.87 15.05 11.87C13.2 11.87 12.92 13.31 12.92 14.81V20.45H9.38V9H12.78V10.56H12.83C13.31 9.7 14.47 8.79 16.2 8.79C19.78 8.79 20.45 11.12 20.45 14.15V20.45ZM5.35 7.43C4.2 7.43 3.28 6.49 3.28 5.36C3.28 4.23 4.2 3.3 5.35 3.3C6.49 3.3 7.41 4.23 7.41 5.36C7.41 6.49 6.49 7.43 5.35 7.43ZM7.12 20.45H3.57V9H7.12V20.45Z"
+                    />
+                  </svg>
+                </span>
+                LinkedIn
+              </button>
+              <button type="button" class="social-btn google" (click)="openVerificationModal('google')">
+                <span class="social-icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M21.35 12.18c0-.57-.05-1.12-.15-1.66H12v3.14h5.26c-.23 1.24-.93 2.3-1.99 3.01v2.49h3.22c1.88-1.73 2.96-4.27 2.96-6.98z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 22c2.7 0 4.97-.9 6.63-2.44l-3.22-2.49c-.9.6-2.05.96-3.41.96-2.62 0-4.84-1.77-5.63-4.15H3.06v2.61C4.72 19.98 8.1 22 12 22z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M6.37 13.88a5.98 5.98 0 0 1 0-3.76V7.51H3.06a10 10 0 0 0 0 8.98l3.31-2.61z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.96c1.47 0 2.8.5 3.84 1.49l2.88-2.88C16.96 2.88 14.7 2 12 2 8.1 2 4.72 4.02 3.06 7.51l3.31 2.61C7.16 7.74 9.38 5.96 12 5.96z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                </span>
+                Google
+              </button>
+            </div>
+            <p class="social-note">Verification code is required before continuing.</p>
+          </div>
+
+          <div class="toggle-section">
+            <button type="button" class="btn-link" (click)="toggleMode()">
+              {{ isRegister ? 'Login to your account' : "Don't have an account yet? Create one" }}
+            </button>
+          </div>
         </form>
 
         <div class="security-badge">
@@ -181,6 +230,46 @@
           </svg>
           <span>Protected by enterprise-grade security</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verification-overlay" *ngIf="showVerificationModal">
+    <div class="verification-modal" (click)="$event.stopPropagation()">
+      <div class="verification-header">
+        <div class="verification-icon">🔐</div>
+        <div>
+          <h3>Verification Required</h3>
+          <p>Enter the invitation code to continue with {{ socialProvider | titlecase }}.</p>
+        </div>
+        <button class="verification-close" type="button" (click)="closeVerificationModal()">✕</button>
+      </div>
+      <div class="verification-body">
+        <label class="verification-label" for="social-code">Invitation Code</label>
+        <input
+          id="social-code"
+          type="text"
+          [(ngModel)]="socialVerificationCode"
+          name="social-code"
+          placeholder="Enter your invitation code"
+          class="verification-input"
+        />
+        <div class="verification-message">
+          <span>{{ verificationPrompt }}</span>
+          <a
+            *ngIf="verificationPrompt === 'Invalid verification code. Please contact Lida Software.'"
+            href="https://www.lidasoftware.online/#contact"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="verification-link"
+          >
+            Contact LiDa Software
+          </a>
+        </div>
+      </div>
+      <div class="verification-actions">
+        <button type="button" class="verification-btn ghost" (click)="closeVerificationModal()">Cancel</button>
+        <button type="button" class="verification-btn primary" (click)="submitSocialVerification()">Verify & Continue</button>
       </div>
     </div>
   </div>

@@ -9,6 +9,7 @@ import { ContactsService } from './contacts/contacts.service';
 import { ContactsController } from './contacts/contacts.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { existsSync } from 'fs';
 import { ResourcesModule } from './resources/resources.module';
 import { AuthModule } from './auth/auth.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
@@ -17,17 +18,47 @@ import { Contact } from './contacts/contact.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: (() => {
+        const backendEnv = join(process.cwd(), 'backend', '.env');
+        const rootEnv = join(process.cwd(), '.env');
+        const parentBackendEnv = join(process.cwd(), '..', 'backend', '.env');
+        if (existsSync(backendEnv)) {
+          return backendEnv;
+        }
+        if (existsSync(parentBackendEnv)) {
+          return parentBackendEnv;
+        }
+        return rootEnv;
+      })(),
+    }),
     MikroOrmModule.forRoot(config),
     MikroOrmModule.forFeature([Contact]),
     AuthModule,
     ServeStaticModule.forRoot(
       {
-        rootPath: join(process.cwd(), 'uploads'),
+        rootPath: (() => {
+          const uploadsRoot = join(process.cwd(), 'uploads');
+          const uploadsParent = join(process.cwd(), '..', 'uploads');
+          return existsSync(uploadsRoot) ? uploadsRoot : uploadsParent;
+        })(),
         serveRoot: '/uploads',
       },
       {
-        rootPath: join(process.cwd(), 'dist', 'public'),
+        rootPath: (() => {
+          const distPublicRoot = join(process.cwd(), 'dist', 'public');
+          const distPublicParent = join(process.cwd(), '..', 'dist', 'public');
+          const uiBrowserRoot = join(process.cwd(), 'ui', 'dist', 'ui', 'browser');
+          const uiBrowserParent = join(process.cwd(), '..', 'ui', 'dist', 'ui', 'browser');
+          if (existsSync(distPublicRoot)) {
+            return distPublicRoot;
+          }
+          if (existsSync(distPublicParent)) {
+            return distPublicParent;
+          }
+          return existsSync(uiBrowserRoot) ? uiBrowserRoot : uiBrowserParent;
+        })(),
         exclude: ['/api'],
       },
     ),

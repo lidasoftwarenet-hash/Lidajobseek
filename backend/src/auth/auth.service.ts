@@ -45,6 +45,14 @@ export class AuthService {
     });
   }
 
+  async verifyInvitationCode(code: string) {
+    const validCode = process.env.REGISTER;
+    if (validCode && code !== validCode) {
+      throw new UnauthorizedException('Invalid verification code. Please contact Lida Software.');
+    }
+    return { success: true };
+  }
+
   // Deprecated helper to keep old code valid if called, but implementation changed
   async validatePassword(password: string): Promise<boolean> {
     // Logic moved to validateUser

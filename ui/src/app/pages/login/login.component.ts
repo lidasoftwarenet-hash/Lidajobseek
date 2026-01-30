@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -30,15 +31,71 @@ export class LoginComponent {
   isRegister = false;
   verificationCode = '';
   error = '';
+  showVerificationModal = false;
+  verificationPrompt = '';
+  socialProvider: 'facebook' | 'linkedin' | 'google' | 'register' | null = null;
+  socialVerificationCode = '';
+  pendingRegisterToggle = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private toastService: ToastService
+  ) { }
 
   toggleMode() {
-    this.isRegister = !this.isRegister;
+    if (!this.isRegister) {
+      this.pendingRegisterToggle = true;
+      this.openVerificationModal('register');
+      return;
+    }
+
+    this.isRegister = false;
     this.error = '';
     this.name = '';
     this.password = '';
     this.verificationCode = '';
+    this.closeVerificationModal();
+  }
+
+  openVerificationModal(provider: 'facebook' | 'linkedin' | 'google' | 'register') {
+    this.socialProvider = provider;
+    this.socialVerificationCode = '';
+    this.verificationPrompt = '';
+    this.showVerificationModal = true;
+  }
+
+  closeVerificationModal() {
+    this.showVerificationModal = false;
+    this.verificationPrompt = '';
+    this.socialProvider = null;
+    this.socialVerificationCode = '';
+    this.pendingRegisterToggle = false;
+  }
+
+  submitSocialVerification() {
+    if (!this.socialVerificationCode.trim()) {
+      this.verificationPrompt = 'Verification code is required to proceed.';
+      return;
+    }
+
+    this.authService.verifyInvitationCode(this.socialVerificationCode.trim()).subscribe({
+      next: () => {
+        if (this.pendingRegisterToggle) {
+          this.isRegister = true;
+          this.toastService.show('Verification confirmed. You can create your account now.', 'success');
+          this.closeVerificationModal();
+          return;
+        }
+
+        const providerName = this.socialProvider ? this.socialProvider.toUpperCase() : 'SOCIAL';
+        this.toastService.show(`${providerName} verification confirmed. Continue with sign-in.`, 'success');
+        this.closeVerificationModal();
+      },
+      error: (err) => {
+        this.verificationPrompt = err.error?.message || 'Invalid verification code.';
+      }
+    });
   }
 
   submit() {
@@ -51,7 +108,8 @@ export class LoginComponent {
       this.authService.register(this.email, this.password, this.name, this.verificationCode).subscribe({
         next: () => {
           this.isRegister = false;
-          this.error = 'Registration successful! Please login.';
+          this.toastService.show('Registration successful! Please login.', 'success');
+          this.error = '';
         },
         error: (err) => {
           this.error = err.error?.message || 'Registration failed. Try again.';

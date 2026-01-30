@@ -28,6 +28,10 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, { email, password, name, code });
   }
 
+  verifyInvitationCode(code: string) {
+    return this.http.post(`${this.apiUrl}/verify-code`, { code });
+  }
+
   logout() {
     localStorage.removeItem(this.tokenKey);
     this.router.navigate(['/login']);
