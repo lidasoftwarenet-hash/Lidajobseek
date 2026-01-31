@@ -1,6 +1,6 @@
 <div class="app-layout">
-    <!-- Modern Sidebar Navigation -->
-    <aside *ngIf="isAuthenticated" class="app-sidebar">
+    <!-- Top Navigation Bar -->
+    <header *ngIf="isAuthenticated" class="app-navbar">
         <!-- Logo Header -->
         <div class="sidebar-header">
             <a routerLink="/" class="app-logo">
@@ -106,7 +106,7 @@
                 <span class="footer-btn-label">Logout</span>
             </button>
         </div>
-    </aside>
+    </header>
 
     <!-- Main Content Area -->
     <main [class.app-main]="isAuthenticated" [class.app-main-no-sidebar]="!isAuthenticated">

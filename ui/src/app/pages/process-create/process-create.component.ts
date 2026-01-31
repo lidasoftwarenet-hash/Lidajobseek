@@ -1,15 +1,18 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
+import { SettingsService } from '../../services/settings.service';
+import countriesData from '../../../assets/countries.json';
 
 @Component({
     selector: 'app-process-create',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule],
-    templateUrl: './process-create.component.html'
+    templateUrl: './process-create.component.html',
+    styleUrls: ['./process-create.component.css']
 })
 export class ProcessCreateComponent {
     @ViewChild('processForm') processForm!: NgForm;
@@ -22,8 +25,8 @@ export class ProcessCreateComponent {
         workMode: 'remote',
         daysFromOffice: null,
         source: '',
-        salaryExpectation: 35000,
-        salaryCurrency: 'ILS',
+        salaryExpectation: '',
+        salaryCurrency: '',
         salaryPeriod: 'Month',
         currentStage: 'Initial Call Scheduled',
         dataFromThePhoneCall: '',
@@ -32,7 +35,8 @@ export class ProcessCreateComponent {
         initialInviteContent: ''
     };
 
-    selectedLocation: string = '';
+    locationSearch = '';
+    showLocationDropdown = false;
 
     stages = [
         'Initial Call Scheduled',
@@ -48,44 +52,74 @@ export class ProcessCreateComponent {
         'No Response (14+ Days)'
     ];
 
-    locationOptions = [
-        'Tel-Aviv',
-        'Raanana',
-        'Hod Hasharon',
-        'Ramat hasharon',
-        'Ramat Gan',
-        'Givataiim',
-        'Bnei Brak',
-        'Netania',
-        'Hertzlia',
-        'Rosh Haain',
-        'Petah Tikva',
-        'Yowneam',
-        'Haifa',
-        'Shfaim',
-        'Binyamina',
-        'Cesaria',
-        'Ramat-Tivon',
-        'Krayot',
-        'Abroad',
-        'Other'
-    ];
+    locationOptions: string[] = [];
+    selectedCountry = '';
 
     constructor(
         private processesService: ProcessesService,
         private router: Router,
-        private toastService: ToastService
-    ) { }
+        private toastService: ToastService,
+        private settingsService: SettingsService
+    ) {
+        const settings = this.settingsService.getSettings();
+        this.selectedCountry = settings.country;
+        this.locationOptions = this.getLocationsForCountry(settings.country);
 
-    onLocationChange(event: any) {
-        const selectedValue = event.target.value;
+        this.settingsService.settings$.subscribe(updatedSettings => {
+            if (updatedSettings.country !== this.selectedCountry) {
+                this.selectedCountry = updatedSettings.country;
+                this.locationOptions = this.getLocationsForCountry(updatedSettings.country);
+                this.process.location = '';
+                this.locationSearch = '';
+                this.showLocationDropdown = false;
+            }
+        });
+    }
 
-        // If selecting "Other", clear the location field to show placeholder
-        if (selectedValue === 'Other') {
-            this.process.location = '';
-        } else if (selectedValue !== '') {
-            // Set location to the selected value
-            this.process.location = selectedValue;
+    private getLocationsForCountry(country: string): string[] {
+        return country ? (countriesData as Record<string, string[]>)[country] ?? [] : [];
+    }
+
+    get filteredLocationOptions(): string[] {
+        const term = this.locationSearch.trim().toLowerCase();
+        if (!term) {
+            return this.locationOptions;
+        }
+
+        return this.locationOptions.filter(location =>
+            location.toLowerCase().includes(term)
+        );
+    }
+
+    onLocationSearchChange() {
+        this.showLocationDropdown = true;
+    }
+
+    toggleLocationDropdown() {
+        this.showLocationDropdown = !this.showLocationDropdown;
+    }
+
+    selectLocation(location: string) {
+        this.locationSearch = location;
+        this.showLocationDropdown = false;
+        this.process.location = location;
+    }
+
+    @HostListener('document:keydown', ['$event'])
+    onDocumentKeydown(event: KeyboardEvent) {
+        if (event.key === 'Enter' && this.showLocationDropdown && this.locationSearch.trim()) {
+            const match = this.locationOptions.find(location =>
+                location.toLowerCase() === this.locationSearch.trim().toLowerCase()
+            );
+            this.selectLocation(match ?? this.locationSearch.trim());
+        }
+    }
+
+    @HostListener('document:click', ['$event'])
+    onDocumentClick(event: MouseEvent) {
+        const target = event.target as HTMLElement | null;
+        if (!target?.closest('.location-combobox')) {
+            this.showLocationDropdown = false;
         }
     }
 

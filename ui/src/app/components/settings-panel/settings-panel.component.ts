@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SettingsService, UserSettings } from '../../services/settings.service';
 import { AuthService } from '../../services/auth.service';
+import { ConfirmService } from '../../services/confirm.service';
+import countriesData from '../../../assets/countries.json';
 
 @Component({
   selector: 'app-settings-panel',
@@ -17,10 +19,14 @@ export class SettingsPanelComponent implements OnInit {
 
   settings!: UserSettings;
   currentUser: any = null;
+  countryOptions: string[] = [];
+  countrySearch = '';
+  showCountryDropdown = false;
 
   constructor(
     private settingsService: SettingsService,
     private authService: AuthService,
+    private confirmService: ConfirmService,
     private router: Router
   ) {}
 
@@ -28,7 +34,13 @@ export class SettingsPanelComponent implements OnInit {
     this.settings = this.settingsService.getSettings();
     this.settingsService.settings$.subscribe(settings => {
       this.settings = settings;
+      if (settings.country !== this.countrySearch) {
+        this.countrySearch = settings.country;
+      }
     });
+
+    this.countryOptions = Object.keys(countriesData).sort();
+    this.countrySearch = this.settings.country;
 
     // Get current user info from localStorage
     const userStr = localStorage.getItem('app_user');
@@ -53,6 +65,53 @@ export class SettingsPanelComponent implements OnInit {
     this.settingsService.setDateFormat(format);
   }
 
+  onCountryChange(country: string) {
+    this.settingsService.updateSettings({ country });
+  }
+
+  get filteredCountryOptions(): string[] {
+    const term = this.countrySearch.trim().toLowerCase();
+    if (!term) {
+      return this.countryOptions;
+    }
+
+    return this.countryOptions.filter(country =>
+      country.toLowerCase().includes(term)
+    );
+  }
+
+  onCountrySearchChange() {
+    this.showCountryDropdown = true;
+  }
+
+  toggleCountryDropdown() {
+    this.showCountryDropdown = !this.showCountryDropdown;
+  }
+
+  selectCountry(country: string) {
+    this.countrySearch = country;
+    this.onCountryChange(country);
+    this.showCountryDropdown = false;
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onDocumentKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && this.showCountryDropdown && this.countrySearch.trim()) {
+      const match = this.countryOptions.find(country =>
+        country.toLowerCase() === this.countrySearch.trim().toLowerCase()
+      );
+      this.selectCountry(match ?? this.countrySearch.trim());
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.country-combobox')) {
+      this.showCountryDropdown = false;
+    }
+  }
+
   onNotificationChange(key: keyof UserSettings['notifications'], value: boolean) {
     this.settingsService.updateNotificationSetting(key, value);
   }
@@ -61,8 +120,13 @@ export class SettingsPanelComponent implements OnInit {
     this.settingsService.updateDashboardSetting(key, value);
   }
 
-  resetSettings() {
-    if (confirm('Are you sure you want to reset all settings to default?')) {
+  async resetSettings() {
+    const confirmed = await this.confirmService.confirm(
+      'Are you sure you want to reset all settings to default?',
+      'Reset settings'
+    );
+
+    if (confirmed) {
       this.settingsService.resetSettings();
     }
   }

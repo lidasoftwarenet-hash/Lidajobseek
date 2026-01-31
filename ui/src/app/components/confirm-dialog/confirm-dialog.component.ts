@@ -43,37 +43,44 @@ import { ConfirmService, ConfirmOptions } from '../../services/confirm.service';
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(17, 24, 39, 0.55);
+      backdrop-filter: blur(3px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10000;
+      padding: 20px;
       animation: fadeIn 0.2s ease-out;
     }
     .dialog {
       background: var(--bg-card);
-      padding: 24px;
-      border-radius: var(--radius-md);
-      width: 90%;
-      max-width: 400px;
-      box-shadow: var(--shadow-lg);
+      padding: 28px 28px 24px;
+      border-radius: var(--radius-xl);
+      width: min(92vw, 440px);
+      box-shadow: var(--shadow-xl);
+      border: 1px solid var(--border-color);
       animation: scaleIn 0.2s ease-out;
     }
     .dialog-title {
       margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 18px;
-      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
     }
     .dialog-message {
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       color: var(--text-secondary);
-      line-height: 1.5;
+      line-height: 1.6;
+      font-size: 14.5px;
     }
     .dialog-actions {
       display: flex;
       justify-content: flex-end;
       gap: 12px;
+    }
+    .dialog-actions button {
+      min-width: 110px;
     }
     @keyframes fadeIn {
       from { opacity: 0; }

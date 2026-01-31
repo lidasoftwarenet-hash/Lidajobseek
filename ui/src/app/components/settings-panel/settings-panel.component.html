@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div class="panel-divider"></div>
+  
 
     <!-- Appearance Settings -->
     <div class="settings-section">
@@ -74,7 +74,7 @@
       </div>
     </div>
 
-    <div class="panel-divider"></div>
+
 
     <!-- Date & Time Settings -->
     <div class="settings-section">
@@ -138,7 +138,43 @@
       </div>
     </div>
 
-    <div class="panel-divider"></div>
+    <div class="settings-section">
+      <h3 class="section-title">🌍 Location</h3>
+
+      <div class="setting-item">
+        <label class="setting-label">Country</label>
+        <div class="country-combobox" [class.open]="showCountryDropdown">
+          <input
+            class="input-field"
+            type="text"
+            name="country"
+            autocomplete="off"
+            [(ngModel)]="countrySearch"
+            (input)="onCountrySearchChange()"
+            (focus)="onCountrySearchChange()"
+            placeholder="Start typing to search...">
+          <button
+            type="button"
+            class="country-toggle"
+            aria-label="Toggle country list"
+            (click)="toggleCountryDropdown()">
+            <span aria-hidden="true">▾</span>
+          </button>
+          <div class="country-dropdown" *ngIf="showCountryDropdown">
+            <button
+              type="button"
+              class="country-option"
+              *ngFor="let country of filteredCountryOptions"
+              (click)="selectCountry(country)">
+              {{ country }}
+            </button>
+            <div class="country-empty" *ngIf="filteredCountryOptions.length === 0">
+              No matches found
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Notifications Settings -->
     <div class="settings-section">
@@ -185,7 +221,6 @@
       </div>
     </div>
 
-    <div class="panel-divider"></div>
 
     <!-- Dashboard Settings -->
     <div class="settings-section">
@@ -236,7 +271,7 @@
       </div>
     </div>
 
-    <div class="panel-divider"></div>
+
 
     <!-- Actions -->
     <div class="settings-section">

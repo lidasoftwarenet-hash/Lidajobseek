@@ -5,6 +5,7 @@ export interface UserSettings {
   theme: 'light' | 'dark' | 'auto';
   clockFormat: '12' | '24';
   dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  country: string;
   notifications: {
     email: boolean;
     desktop: boolean;
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS: UserSettings = {
   theme: 'light',
   clockFormat: '24',
   dateFormat: 'DD/MM/YYYY',
+  country: '',
   notifications: {
     email: true,
     desktop: true,
