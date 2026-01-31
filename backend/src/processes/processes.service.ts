@@ -18,11 +18,33 @@ export class ProcessesService {
 
   async create(dto: CreateProcessDto, userId: number): Promise<Process> {
     const data: any = { ...dto, user: this.em.getReference(User, userId) };
+    
+    // Convert date strings to Date objects
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
     }
     if (dto.nextFollowUp) {
       data.nextFollowUp = new Date(dto.nextFollowUp);
+    }
+
+    // Convert empty strings to null for numeric fields
+    if (data.salaryExpectation === '' || data.salaryExpectation === undefined) {
+      data.salaryExpectation = null;
+    }
+    if (data.daysFromOffice === '' || data.daysFromOffice === undefined) {
+      data.daysFromOffice = null;
+    }
+    if (data.scoreTech === '' || data.scoreTech === undefined) {
+      data.scoreTech = 0;
+    }
+    if (data.scoreWLB === '' || data.scoreWLB === undefined) {
+      data.scoreWLB = 0;
+    }
+    if (data.scoreGrowth === '' || data.scoreGrowth === undefined) {
+      data.scoreGrowth = 0;
+    }
+    if (data.scoreVibe === '' || data.scoreVibe === undefined) {
+      data.scoreVibe = 0;
     }
 
     const process = this.processRepository.create(data);
@@ -78,6 +100,8 @@ export class ProcessesService {
     }
 
     const data: any = { ...dto };
+    
+    // Convert date strings to Date objects
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
     }
@@ -86,6 +110,20 @@ export class ProcessesService {
     }
     if (dto.offerDeadline) {
       data.offerDeadline = new Date(dto.offerDeadline);
+    }
+
+    // Convert empty strings to null for numeric fields
+    if (data.salaryExpectation === '') {
+      data.salaryExpectation = null;
+    }
+    if (data.daysFromOffice === '') {
+      data.daysFromOffice = null;
+    }
+    if (data.baseSalary === '') {
+      data.baseSalary = null;
+    }
+    if (data.signingBonus === '') {
+      data.signingBonus = null;
     }
 
     Object.assign(process, data);
