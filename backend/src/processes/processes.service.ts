@@ -5,6 +5,7 @@ import { Process } from './process.entity';
 import { Interaction } from '../interactions/interaction.entity';
 import { SelfReview } from '../reviews/self-review.entity';
 import { Contact } from '../contacts/contact.entity';
+import { User } from '../users/user.entity';
 import { CreateProcessDto } from './dto/create-process.dto';
 
 @Injectable()
@@ -16,7 +17,7 @@ export class ProcessesService {
   ) { }
 
   async create(dto: CreateProcessDto, userId: number): Promise<Process> {
-    const data: any = { ...dto, user: userId };
+    const data: any = { ...dto, user: this.em.getReference(User, userId) };
     if (dto.initialInviteDate) {
       data.initialInviteDate = new Date(dto.initialInviteDate);
     }
@@ -128,7 +129,7 @@ export class ProcessesService {
 
       const process = this.processRepository.create({
         ...processData,
-        user: userId,
+        user: this.em.getReference(User, userId),
       });
 
       // Add nested relations
