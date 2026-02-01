@@ -82,10 +82,33 @@
                     <div class="nav-indicator"></div>
                 </a>
             </div>
+
+            <div class="nav-section">
+                <span class="section-label">Account</span>
+                <a routerLink="/pricing" routerLinkActive="active" class="nav-item">
+                    <div class="nav-icon-wrapper">
+                        <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                            <line x1="12" y1="18" x2="12" y2="22"></line>
+                            <line x1="12" y1="2" x2="12" y2="6"></line>
+                        </svg>
+                    </div>
+                    <span class="nav-label">Pricing Plans</span>
+                    <div class="nav-indicator"></div>
+                </a>
+            </div>
         </nav>
 
         <!-- Sidebar Footer -->
         <div class="sidebar-footer">
+            <div class="keyboard-hint">
+                <button class="hint-btn" (click)="toggleShortcuts()" title="View keyboard shortcuts">
+                    <span class="hint-icon">⌨️</span>
+                    <span class="hint-text">Press <kbd>?</kbd> for shortcuts</span>
+                </button>
+            </div>
             <button class="footer-btn settings-btn" (click)="toggleSettings()">
                 <div class="footer-btn-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -119,3 +142,5 @@
 <app-toast></app-toast>
 <app-confirm-dialog></app-confirm-dialog>
 <app-settings-panel *ngIf="showSettings" (close)="closeSettings()"></app-settings-panel>
+<app-shortcuts-modal *ngIf="showShortcuts" (close)="closeShortcuts()"></app-shortcuts-modal>
+<app-scroll-to-top *ngIf="isAuthenticated"></app-scroll-to-top>

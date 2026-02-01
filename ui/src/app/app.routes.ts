@@ -13,10 +13,12 @@ import { DecisionBoardComponent } from './pages/decision-board/decision-board.co
 import { CalendarComponent } from './pages/calendar/calendar.component';
 import { ScheduleInterviewComponent } from './pages/schedule-interview/schedule-interview.component';
 import { LoginComponent } from './pages/login/login.component';
+import { PricingComponent } from './pages/pricing/pricing.component';
 import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
+    { path: 'pricing', component: PricingComponent },
     {
         path: '',
         canActivate: [AuthGuard],
