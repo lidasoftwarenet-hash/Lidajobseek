@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import config from '../mikro-orm.config';
 import { Contact } from './contacts/contact.entity';
+import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { Contact } from './contacts/contact.entity';
     InteractionsModule,
     ReviewsModule,
     ResourcesModule,
+    ProfilesModule,
   ],
   controllers: [AppController, ContactsController],
   providers: [AppService, ContactsService],

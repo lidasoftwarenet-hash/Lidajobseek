@@ -1,6 +1,7 @@
-import { Entity, PrimaryKey, Property, OneToMany, Collection } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, OneToMany, Collection, OneToOne } from '@mikro-orm/core';
 import { Process } from '../processes/process.entity';
 import { Resource } from '../resources/resource.entity';
+import { Profile } from '../profiles/profile.entity';
 
 @Entity({ schema: 'app' })
 export class User {
@@ -27,4 +28,7 @@ export class User {
 
   @OneToMany(() => Resource, resource => resource.user)
   resources = new Collection<Resource>(this);
+
+  @OneToOne(() => Profile, profile => profile.user, { nullable: true, mappedBy: 'user' })
+  profile?: Profile;
 }

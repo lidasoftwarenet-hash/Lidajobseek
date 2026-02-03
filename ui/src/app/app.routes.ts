@@ -15,6 +15,8 @@ import { ScheduleInterviewComponent } from './pages/schedule-interview/schedule-
 import { LoginComponent } from './pages/login/login.component';
 import { PricingComponent } from './pages/pricing/pricing.component';
 import { AuthGuard } from './guards/auth.guard';
+import { ProfileComponent } from './pages/profile/profile.component';
+import { ProfileCvComponent } from './pages/profile-cv/profile-cv.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -29,6 +31,8 @@ export const routes: Routes = [
             { path: 'coach-hub', component: CoachHubComponent },
             { path: 'calendar', component: CalendarComponent },
             { path: 'schedule-interview', component: ScheduleInterviewComponent },
+            { path: 'profile', component: ProfileComponent },
+            { path: 'profile/cv', component: ProfileCvComponent },
             { path: 'new', component: ProcessCreateComponent },
             { path: 'process/:id', component: ProcessDetailsComponent },
             { path: 'process/:id/edit', component: ProcessEditComponent },

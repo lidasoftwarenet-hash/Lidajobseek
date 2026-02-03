@@ -1,0 +1,37 @@
+import { Body, Controller, Get, Patch, Post, Req, Query } from '@nestjs/common';
+import { ProfilesService } from './profiles.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ShareProfileDto } from './dto/share-profile.dto';
+
+@Controller('profiles')
+export class ProfilesController {
+  constructor(private readonly profilesService: ProfilesService) {}
+
+  @Get('me')
+  getMyProfile(@Req() req: any) {
+    return this.profilesService.getProfileWithLastCv(req.user.userId);
+  }
+
+  @Patch('me')
+  updateMyProfile(@Body() dto: UpdateProfileDto, @Req() req: any) {
+    return this.profilesService.updateProfile(req.user.userId, dto);
+  }
+
+  @Post('share')
+  async shareProfile(@Body() dto: ShareProfileDto, @Req() req: any) {
+    const lookup = await this.profilesService.checkShareTarget(dto.email);
+    return {
+      exists: lookup.exists,
+      userId: lookup.userId,
+      profile: lookup.exists
+        ? await this.profilesService.getSharedProfile(req.user.userId, dto.email)
+        : null,
+    };
+  }
+
+  @Get('me/professional-cv')
+  getProfessionalCv(@Req() req: any, @Query('ai') ai?: string) {
+    const useAi = ai !== 'false';
+    return this.profilesService.getProfessionalCv(req.user.userId, useAi);
+  }
+}

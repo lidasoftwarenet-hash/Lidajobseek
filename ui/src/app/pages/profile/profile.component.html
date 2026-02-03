@@ -1,0 +1,138 @@
+<div class="form-view">
+    <div class="form-card">
+        <header class="form-hero">
+            <span class="form-badge">Profile</span>
+            <h1>Your Career Profile</h1>
+            <p class="subtitle">Build a rich “about me” page you can share with other users.</p>
+            <div class="form-meta">Everything here is optional — share the full profile when you’re ready.</div>
+        </header>
+
+        <form class="data-form" (ngSubmit)="saveProfile()">
+            <section class="form-section">
+                <div class="section-title">
+                    <h2>About you</h2>
+                    <p>Tell your story and summarize your strengths.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>About</label>
+                    <textarea name="about" [(ngModel)]="profile.about" rows="5"
+                        placeholder="Write a short professional bio..." class="input-field"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Top Skills</label>
+                    <textarea name="topSkills" [(ngModel)]="profile.topSkills" rows="3"
+                        placeholder="e.g. Angular, NestJS, System Design, Leadership..." class="input-field"></textarea>
+                    <p class="muted-hint">List the skills you want to be known for.</p>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <h2>Experience & activity</h2>
+                    <p>Showcase your recent activity, roles, and previous companies.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Activity</label>
+                    <textarea name="activity" [(ngModel)]="profile.activity" rows="3"
+                        placeholder="Talks, community work, awards, publications..." class="input-field"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Old Companies</label>
+                    <textarea name="oldCompanies" [(ngModel)]="profile.oldCompanies" rows="3"
+                        placeholder="Where have you worked before?" class="input-field"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Experience</label>
+                    <textarea name="experience" [(ngModel)]="profile.experience" rows="4"
+                        placeholder="Summarize your professional experience..." class="input-field"></textarea>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <h2>Projects & portfolio</h2>
+                    <p>Highlight private projects or side work you want to share.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Private Projects</label>
+                    <textarea name="privateProjects" [(ngModel)]="profile.privateProjects" rows="4"
+                        placeholder="Describe side projects or initiatives..." class="input-field"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Links</label>
+                    <textarea name="links" [(ngModel)]="profile.links" rows="2"
+                        placeholder="Portfolio, GitHub, LinkedIn, articles, demos..." class="input-field"></textarea>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
+                    <h2>Education & certifications</h2>
+                    <p>Add any relevant courses or certifications.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Education</label>
+                    <textarea name="education" [(ngModel)]="profile.education" rows="3"
+                        placeholder="Degrees, bootcamps, training..." class="input-field"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Certifications</label>
+                    <textarea name="certifications" [(ngModel)]="profile.certifications" rows="3"
+                        placeholder="Certificates and licenses..." class="input-field"></textarea>
+                </div>
+            </section>
+
+            <section class="form-section highlight-section">
+                <div class="section-title">
+                    <h2>Share your profile</h2>
+                    <p>Send a link to another user. If the email exists, we’ll confirm it for you.</p>
+                </div>
+
+                <div class="preview-action">
+                    <div class="preview-actions">
+                        <a class="btn-secondary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: false }">Generate CV</a>
+                        <a class="btn-primary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: true }">Generate CV with AI</a>
+                    </div>
+                    <p class="muted-hint">Choose a classic CV or let DeepSeek AI polish it.</p>
+                    <a *ngIf="profile.lastCvUrl" class="last-cv-link" [routerLink]="[profile.lastCvUrl]">
+                        View last generated CV ({{ profile.lastCvAi ? 'AI' : 'Standard' }})
+                    </a>
+                    <p *ngIf="profile.lastCvGeneratedAt" class="muted-hint">
+                        Last generated {{ profile.lastCvGeneratedAt | date: 'medium' }}
+                    </p>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email to share with</label>
+                        <input type="email" name="shareEmail" [(ngModel)]="shareEmail"
+                            placeholder="name@company.com" class="input-field">
+                    </div>
+
+                    <div class="form-group share-action">
+                        <button type="button" class="btn-primary" (click)="shareProfile()" [disabled]="loading">
+                            Share Profile
+                        </button>
+                        <p *ngIf="shareResult" class="share-status"
+                            [class.success]="shareResult.exists" [class.error]="!shareResult.exists">
+                            {{ shareResult.exists ? 'User found — profile shared.' : 'User not found.' }}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" [disabled]="loading">Save Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
