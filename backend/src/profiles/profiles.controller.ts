@@ -34,4 +34,16 @@ export class ProfilesController {
     const useAi = ai !== 'false';
     return this.profilesService.getProfessionalCv(req.user.userId, useAi);
   }
+
+  @Post('me/ai-suggestion')
+  getAiSuggestion(
+    @Req() req: any,
+    @Body() dto: { field: string; currentValue?: string },
+  ) {
+    return this.profilesService.getFieldSuggestion(
+      req.user.userId,
+      dto.field,
+      dto.currentValue,
+    );
+  }
 }

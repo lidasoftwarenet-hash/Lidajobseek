@@ -24,4 +24,11 @@ export class ProfilesService {
   shareProfile(email: string) {
     return this.http.post<any>(`${this.apiUrl}/share`, { email });
   }
+
+  getAiSuggestion(field: string, currentValue?: string) {
+    return this.http.post<{ suggestion: string; aiEnabled: boolean }>(
+      `${this.apiUrl}/me/ai-suggestion`,
+      { field, currentValue }
+    );
+  }
 }

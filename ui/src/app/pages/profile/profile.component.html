@@ -1,11 +1,41 @@
 <div class="form-view">
     <div class="form-card">
-        <header class="form-hero">
-            <span class="form-badge">Profile</span>
-            <h1>Your Career Profile</h1>
-            <p class="subtitle">Build a rich “about me” page you can share with other users.</p>
-            <div class="form-meta">Everything here is optional — share the full profile when you’re ready.</div>
-        </header>
+    <header class="form-hero">
+        <span class="form-badge">Profile</span>
+        <h1>Your Career Profile</h1>
+        <p class="subtitle">Build a rich "about me" page you can share with other users.</p>
+
+        <!-- Profile Completion Indicator -->
+        <div class="completion-card">
+            <div class="completion-header">
+                <span class="completion-title">Profile Completion</span>
+                <span class="completion-percentage" [style.color]="getCompletionColor()">
+                    {{ completionPercentage }}%
+                </span>
+            </div>
+            <div class="completion-bar">
+                <div class="completion-fill"
+                     [style.width.%]="completionPercentage"
+                     [style.background]="getCompletionColor()"></div>
+            </div>
+            <div *ngIf="missingFields.length > 0" class="missing-fields">
+                <p class="missing-title">Missing fields:</p>
+                <div class="missing-list">
+                    <span *ngFor="let field of missingFields.slice(0, 3)" class="missing-badge">
+                        {{ getPriorityIcon(field.priority) }} {{ field.label }}
+                    </span>
+                    <span *ngIf="missingFields.length > 3" class="missing-more">
+                        +{{ missingFields.length - 3 }} more
+                    </span>
+                </div>
+            </div>
+            <p *ngIf="completionPercentage === 100" class="completion-success">
+                🎉 Profile complete! You're ready to generate an impressive CV.
+            </p>
+        </div>
+
+        <div class="form-meta">Everything here is optional — share the full profile when you're ready.</div>
+    </header>
 
         <form class="data-form" (ngSubmit)="saveProfile()">
             <section class="form-section">
@@ -99,16 +129,22 @@
 
                 <div class="preview-action">
                     <div class="preview-actions">
-                        <a class="btn-secondary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: false }">Generate CV</a>
-                        <a class="btn-primary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: true }">Generate CV with AI</a>
+                        <a class="btn-secondary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: 'false' }">
+                            <span class="btn-icon">📄</span>
+                            Generate Template CV
+                        </a>
+                        <a class="btn-primary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: 'true' }">
+                            <span class="btn-icon">🤖</span>
+                            Generate AI-Powered CV
+                        </a>
                     </div>
-                    <p class="muted-hint">Choose a classic CV or let DeepSeek AI polish it.</p>
-                    <a *ngIf="profile.lastCvUrl" class="last-cv-link" [routerLink]="[profile.lastCvUrl]">
-                        View last generated CV ({{ profile.lastCvAi ? 'AI' : 'Standard' }})
+                    <p class="muted-hint">Choose a classic template-based CV or let DeepSeek AI create an enhanced version.</p>
+                    <a *ngIf="profile.lastCvUrl && profile.lastCvGeneratedAt" class="last-cv-link"
+                       [routerLink]="['/profile/cv']"
+                       [queryParams]="{ ai: profile.lastCvAi ? 'true' : 'false' }">
+                        📋 View last generated CV ({{ profile.lastCvAi ? 'AI-Enhanced' : 'Template' }}) -
+                        Generated {{ profile.lastCvGeneratedAt | date: 'short' }}
                     </a>
-                    <p *ngIf="profile.lastCvGeneratedAt" class="muted-hint">
-                        Last generated {{ profile.lastCvGeneratedAt | date: 'medium' }}
-                    </p>
                 </div>
 
                 <div class="form-row">
