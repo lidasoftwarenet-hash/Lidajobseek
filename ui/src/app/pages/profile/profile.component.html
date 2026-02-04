@@ -139,10 +139,10 @@
                         </a>
                     </div>
                     <p class="muted-hint">Choose a classic template-based CV or let DeepSeek AI create an enhanced version.</p>
-                    <a *ngIf="profile.lastCvUrl && profile.lastCvGeneratedAt" class="last-cv-link"
+                    <a *ngIf="profile.lastCvGeneratedAt" class="last-cv-link"
                        [routerLink]="['/profile/cv']"
                        [queryParams]="{ ai: profile.lastCvAi ? 'true' : 'false' }">
-                        📋 View last generated CV ({{ profile.lastCvAi ? 'AI-Enhanced' : 'Template' }}) -
+                        📋 View your last generated CV ({{ profile.lastCvAi ? 'AI-Enhanced' : 'Template' }}) before generating a new one –
                         Generated {{ profile.lastCvGeneratedAt | date: 'short' }}
                     </a>
                 </div>
