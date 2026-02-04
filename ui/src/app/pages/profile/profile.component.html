@@ -129,16 +129,23 @@
 
                 <div class="preview-action">
                     <div class="preview-actions">
-                        <a class="btn-secondary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: 'false' }">
+                        <a class="btn-secondary" [routerLink]="['/profile/cv']">
                             <span class="btn-icon">📄</span>
                             Generate Template CV
                         </a>
-                        <a class="btn-primary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: 'true' }">
+                        <a *ngIf="isPremiumUser" class="btn-primary" [routerLink]="['/profile/cv']" [queryParams]="{ ai: 'true' }">
                             <span class="btn-icon">🤖</span>
                             Generate AI-Powered CV
                         </a>
+                        <a *ngIf="!isPremiumUser" class="btn-primary premium-locked" [routerLink]="['/profile/cv']" [queryParams]="{ ai: 'true' }">
+                            <span class="btn-icon">🔒</span>
+                            Generate AI-Powered CV (Premium)
+                        </a>
                     </div>
-                    <p class="muted-hint">Choose a classic template-based CV or let DeepSeek AI create an enhanced version.</p>
+                    <p class="muted-hint">
+                        <span *ngIf="isPremiumUser">Choose a template-based CV or let AI create an enhanced version.</span>
+                        <span *ngIf="!isPremiumUser">Create a professional template-based CV. <a [routerLink]="['/pricing']" class="premium-link">Upgrade to Premium</a> to unlock AI-powered CV generation.</span>
+                    </p>
                     <a *ngIf="profile.lastCvGeneratedAt" class="last-cv-link"
                        [routerLink]="['/profile/cv']"
                        [queryParams]="{ ai: profile.lastCvAi ? 'true' : 'false' }">

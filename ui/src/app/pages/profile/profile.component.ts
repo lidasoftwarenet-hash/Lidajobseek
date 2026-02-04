@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ProfilesService } from '../../services/profiles.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-profile',
@@ -16,6 +17,10 @@ export class ProfileComponent implements OnInit {
   loading = false;
   completionPercentage = 0;
   missingFields: Array<{ key: string; label: string; priority: string }> = [];
+  
+  get isPremiumUser(): boolean {
+    return this.authService.isPremiumUser();
+  }
 
   profile: any = {
     about: '',
@@ -46,7 +51,8 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private profilesService: ProfilesService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {

@@ -45,4 +45,19 @@ export class AuthService {
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
   }
+
+  getUser(): any {
+    const userStr = localStorage.getItem('app_user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
+
+  isPremiumUser(): boolean {
+    const user = this.getUser();
+    return user?.pricingPlan === 'premium' || user?.pricingPlan === 'enterprise';
+  }
+
+  getPricingPlan(): string {
+    const user = this.getUser();
+    return user?.pricingPlan || 'free';
+  }
 }

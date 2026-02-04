@@ -34,7 +34,7 @@ export class ProfilesService {
   ) {}
 
   async getOrCreateProfile(userId: number): Promise<Profile> {
-    const existing = await this.profileRepository.findOne({ user: userId });
+    const existing = await this.profileRepository.findOne({ user: { id: userId } });
     if (existing) {
       return existing;
     }
@@ -78,7 +78,7 @@ export class ProfilesService {
   }
 
   async findByUserId(userId: number): Promise<Profile> {
-    const profile = await this.profileRepository.findOne({ user: userId });
+    const profile = await this.profileRepository.findOne({ user: { id: userId } });
     if (!profile) {
       return this.getOrCreateProfile(userId);
     }
@@ -129,44 +129,49 @@ export class ProfilesService {
     userId: number,
     useAi: boolean,
   ): Promise<ProfessionalCvPayload> {
-    const profile = await this.findByUserId(userId);
-    const now = new Date();
-    const cvUrl = `/profile/cv?ai=${useAi ? 'true' : 'false'}`;
+    try {
+      const profile = await this.findByUserId(userId);
+      const now = new Date();
+      const cvUrl = `/profile/cv?ai=${useAi ? 'true' : 'false'}`;
 
-    let cvData: Partial<ProfessionalCvPayload>;
+      let cvData: Partial<ProfessionalCvPayload>;
 
-    if (useAi && this.deepSeekService.isEnabled()) {
-      // AI-enhanced version
-      const prompt = this.buildCvPrompt(profile);
-      const aiResponse =
-        await this.deepSeekService.generateProfessionalCv(prompt);
-      cvData = this.parseAiResponse(aiResponse);
-    } else {
-      // Template version - use formatted profile data
-      cvData = this.formatTemplateCV(profile);
+      if (useAi && this.deepSeekService.isEnabled()) {
+        // AI-enhanced version
+        const prompt = this.buildCvPrompt(profile);
+        const aiResponse =
+          await this.deepSeekService.generateProfessionalCv(prompt);
+        cvData = this.parseAiResponse(aiResponse);
+      } else {
+        // Template version - use formatted profile data
+        cvData = this.formatTemplateCV(profile);
+      }
+
+      // Update profile with last generation info
+      profile.lastCvUrl = cvUrl;
+      profile.lastCvGeneratedAt = now;
+      profile.lastCvAi = useAi && this.deepSeekService.isEnabled();
+      await this.em.flush();
+
+      return {
+        about: cvData.about ?? profile.about ?? '',
+        topSkills: cvData.topSkills ?? profile.topSkills ?? '',
+        activity: cvData.activity ?? profile.activity ?? '',
+        oldCompanies: cvData.oldCompanies ?? profile.oldCompanies ?? '',
+        experience: cvData.experience ?? profile.experience ?? '',
+        privateProjects: cvData.privateProjects ?? profile.privateProjects ?? '',
+        education: cvData.education ?? profile.education ?? '',
+        certifications: cvData.certifications ?? profile.certifications ?? '',
+        links: cvData.links ?? profile.links ?? '',
+        aiEnabled: useAi && this.deepSeekService.isEnabled(),
+        lastCvUrl: profile.lastCvUrl,
+        lastCvGeneratedAt: profile.lastCvGeneratedAt?.toISOString(),
+        lastCvAi: profile.lastCvAi,
+      };
+    } catch (error) {
+      console.error('Error in getProfessionalCv:', error);
+      throw error;
     }
-
-    // Update profile with last generation info
-    profile.lastCvUrl = cvUrl;
-    profile.lastCvGeneratedAt = now;
-    profile.lastCvAi = useAi && this.deepSeekService.isEnabled();
-    await this.em.flush();
-
-    return {
-      about: cvData.about ?? profile.about ?? '',
-      topSkills: cvData.topSkills ?? profile.topSkills ?? '',
-      activity: cvData.activity ?? profile.activity ?? '',
-      oldCompanies: cvData.oldCompanies ?? profile.oldCompanies ?? '',
-      experience: cvData.experience ?? profile.experience ?? '',
-      privateProjects: cvData.privateProjects ?? profile.privateProjects ?? '',
-      education: cvData.education ?? profile.education ?? '',
-      certifications: cvData.certifications ?? profile.certifications ?? '',
-      links: cvData.links ?? profile.links ?? '',
-      aiEnabled: useAi && this.deepSeekService.isEnabled(),
-      lastCvUrl: profile.lastCvUrl,
-      lastCvGeneratedAt: profile.lastCvGeneratedAt?.toISOString(),
-      lastCvAi: profile.lastCvAi,
-    };
   }
 
   private formatTemplateCV(profile: Profile): Partial<ProfessionalCvPayload> {

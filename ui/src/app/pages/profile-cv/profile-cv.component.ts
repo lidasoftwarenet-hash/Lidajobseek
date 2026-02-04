@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProfilesService } from '../../services/profiles.service';
 import { ToastService } from '../../services/toast.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-profile-cv',
@@ -15,22 +16,32 @@ import { ToastService } from '../../services/toast.service';
 export class ProfileCvComponent implements OnInit {
   loading = false;
   profile: any = null;
-  aiProfile: any = null;
-  useAi = true;
+  cvData: any = null;
   downloadingPdf = false;
   shareEmail = '';
   shareResult: { exists: boolean } | null = null;
+  useAi = false;
+  showUpgradePrompt = false;
 
   constructor(
     private profilesService: ProfilesService,
     private toastService: ToastService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
-      this.useAi = params.get('ai') !== 'false';
-      this.fetchProfile();
+      const aiParam = params.get('ai');
+      this.useAi = aiParam === 'true';
+      
+      if (this.useAi && !this.authService.isPremiumUser()) {
+        this.showUpgradePrompt = true;
+        this.loading = false;
+      } else {
+        this.showUpgradePrompt = false;
+        this.fetchProfile();
+      }
     });
   }
 
@@ -51,23 +62,22 @@ export class ProfileCvComponent implements OnInit {
   fetchProfessionalCv() {
     this.profilesService.getProfessionalCv(this.useAi).subscribe({
       next: (data) => {
-        this.aiProfile = data;
+        this.cvData = data;
         this.loading = false;
       },
-      error: () => {
-        this.toastService.show('DeepSeek AI preview is unavailable', 'error');
+      error: (error) => {
+        if (this.useAi && (error.status === 403 || error.error?.message?.includes('premium'))) {
+          this.showUpgradePrompt = true;
+        } else {
+          this.toastService.show('Failed to load CV', 'error');
+        }
         this.loading = false;
       }
     });
   }
 
-  loadCv(useAi: boolean) {
-    this.useAi = useAi;
-    this.fetchProfessionalCv();
-  }
-
   async copyToClipboard() {
-    const cv = this.aiProfile || this.profile;
+    const cv = this.cvData || this.profile;
     const text = `
 CAREER PROFILE
 ${cv.about || ''}
@@ -110,14 +120,14 @@ ${cv.links || ''}
   }
 
   downloadAsText() {
-    const cv = this.aiProfile || this.profile;
+    const cv = this.cvData || this.profile;
     const text = `CAREER PROFILE\n${cv.about || ''}\n\nTOP SKILLS\n${cv.topSkills || ''}\n\nEXPERIENCE\n${cv.experience || ''}\n\nOLD COMPANIES\n${cv.oldCompanies || ''}\n\nACTIVITY\n${cv.activity || ''}\n\nPRIVATE PROJECTS\n${cv.privateProjects || ''}\n\nEDUCATION\n${cv.education || ''}\n\nCERTIFICATIONS\n${cv.certifications || ''}\n\nLINKS\n${cv.links || ''}`;
 
     const blob = new Blob([text], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `cv-${this.useAi ? 'ai' : 'template'}-${new Date().toISOString().split('T')[0]}.txt`;
+    link.download = `cv-${this.useAi ? 'ai-enhanced' : 'template'}-${new Date().toISOString().split('T')[0]}.txt`;
     link.click();
     window.URL.revokeObjectURL(url);
     this.toastService.show('CV downloaded as text file', 'success');
