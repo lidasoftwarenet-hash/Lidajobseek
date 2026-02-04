@@ -85,8 +85,22 @@ export class ProfilesService {
     return profile;
   }
 
-  async getProfileWithLastCv(userId: number): Promise<Profile> {
-    return this.findByUserId(userId);
+  async getProfileWithLastCv(
+    userId: number,
+  ): Promise<
+    Profile & { lastCvUrl?: string; lastCvGeneratedAt?: string | null; lastCvAi?: boolean }
+  > {
+    const profile = await this.findByUserId(userId);
+
+    // Ensure last CV metadata is always serialized in a frontend-friendly format
+    return {
+      ...(profile as any),
+      lastCvUrl: profile.lastCvUrl ?? undefined,
+      lastCvGeneratedAt: profile.lastCvGeneratedAt
+        ? profile.lastCvGeneratedAt.toISOString()
+        : null,
+      lastCvAi: profile.lastCvAi ?? undefined,
+    };
   }
 
   async checkShareTarget(

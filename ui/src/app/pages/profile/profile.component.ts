@@ -14,8 +14,6 @@ import { ToastService } from '../../services/toast.service';
 })
 export class ProfileComponent implements OnInit {
   loading = false;
-  shareEmail = '';
-  shareResult: { exists: boolean } | null = null;
   completionPercentage = 0;
   missingFields: Array<{ key: string; label: string; priority: string }> = [];
 
@@ -114,30 +112,5 @@ export class ProfileComponent implements OnInit {
     if (this.completionPercentage >= 80) return '#10b981';
     if (this.completionPercentage >= 50) return '#f59e0b';
     return '#ef4444';
-  }
-
-  shareProfile() {
-    const email = this.shareEmail.trim();
-    if (!email) {
-      this.toastService.show('Please enter an email address', 'warning');
-      return;
-    }
-
-    this.loading = true;
-    this.profilesService.shareProfile(email).subscribe({
-      next: (response) => {
-        this.shareResult = { exists: response.exists };
-        if (response.exists) {
-          this.toastService.show('Profile shared successfully', 'success');
-        } else {
-          this.toastService.show('User not found', 'warning');
-        }
-        this.loading = false;
-      },
-      error: () => {
-        this.toastService.show('Failed to share profile', 'error');
-        this.loading = false;
-      }
-    });
   }
 }

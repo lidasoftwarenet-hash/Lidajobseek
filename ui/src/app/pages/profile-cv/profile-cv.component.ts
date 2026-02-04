@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProfilesService } from '../../services/profiles.service';
 import { ToastService } from '../../services/toast.service';
@@ -7,7 +8,7 @@ import { ToastService } from '../../services/toast.service';
 @Component({
   selector: 'app-profile-cv',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './profile-cv.component.html',
   styleUrls: ['./profile-cv.component.css']
 })
@@ -17,6 +18,8 @@ export class ProfileCvComponent implements OnInit {
   aiProfile: any = null;
   useAi = true;
   downloadingPdf = false;
+  shareEmail = '';
+  shareResult: { exists: boolean } | null = null;
 
   constructor(
     private profilesService: ProfilesService,
@@ -159,5 +162,30 @@ ${cv.links || ''}
     } finally {
       this.downloadingPdf = false;
     }
+  }
+
+  shareCv() {
+    const email = this.shareEmail.trim();
+    if (!email) {
+      this.toastService.show('Please enter an email address', 'warning');
+      return;
+    }
+
+    this.loading = true;
+    this.profilesService.shareProfile(email).subscribe({
+      next: (response) => {
+        this.shareResult = { exists: response.exists };
+        if (response.exists) {
+          this.toastService.show('CV shared successfully', 'success');
+        } else {
+          this.toastService.show('User not found', 'warning');
+        }
+        this.loading = false;
+      },
+      error: () => {
+        this.toastService.show('Failed to share CV', 'error');
+        this.loading = false;
+      }
+    });
   }
 }
