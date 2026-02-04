@@ -8,6 +8,7 @@ import {
   Patch,
   Delete,
   Query,
+  Req,
 } from '@nestjs/common';
 import { InteractionsService } from './interactions.service';
 import { CreateInteractionDto } from './dto/create-interaction.dto';
@@ -17,8 +18,8 @@ export class InteractionsController {
   constructor(private readonly interactionsService: InteractionsService) {}
 
   @Post()
-  create(@Body() dto: CreateInteractionDto) {
-    return this.interactionsService.create(dto);
+  create(@Body() dto: CreateInteractionDto, @Req() req: any) {
+    return this.interactionsService.create(dto, req.user.userId);
   }
 
   @Get()
@@ -26,10 +27,12 @@ export class InteractionsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('processId') processId?: string,
+    @Req() req?: any,
   ) {
     // If startDate and endDate are provided, return interactions within date range
     // Otherwise return all interactions
     return this.interactionsService.findAll(
+      req.user.userId,
       startDate,
       endDate,
       processId ? parseInt(processId) : undefined,
@@ -37,27 +40,27 @@ export class InteractionsController {
   }
 
   @Get('export')
-  exportData() {
-    return this.interactionsService.exportData();
+  exportData(@Req() req: any) {
+    return this.interactionsService.exportData(req.user.userId);
   }
 
   @Post('import')
-  importData(@Body() data: { interactions: any[]; mode: 'overwrite' | 'append' }) {
-    return this.interactionsService.importData(data.interactions, data.mode);
+  importData(@Body() data: { interactions: any[]; mode: 'overwrite' | 'append' }, @Req() req: any) {
+    return this.interactionsService.importData(data.interactions, data.mode, req.user.userId);
   }
 
   @Get('process/:processId')
-  findByProcess(@Param('processId', ParseIntPipe) processId: number) {
-    return this.interactionsService.findByProcess(processId);
+  findByProcess(@Param('processId', ParseIntPipe) processId: number, @Req() req: any) {
+    return this.interactionsService.findByProcess(processId, req.user.userId);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: any) {
-    return this.interactionsService.update(id, dto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: any, @Req() req: any) {
+    return this.interactionsService.update(id, dto, req.user.userId);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.interactionsService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.interactionsService.remove(id, req.user.userId);
   }
 }

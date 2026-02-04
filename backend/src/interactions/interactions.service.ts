@@ -18,8 +18,8 @@ export class InteractionsService {
     private readonly em: EntityManager,
   ) { }
 
-  async create(dto: CreateInteractionDto): Promise<Interaction> {
-    const process = await this.processRepository.findOne({ id: dto.processId });
+  async create(dto: CreateInteractionDto, userId: number): Promise<Interaction> {
+    const process = await this.processRepository.findOne({ id: dto.processId, user: userId });
     if (!process) {
       throw new Error('Process not found');
     }
@@ -69,7 +69,7 @@ export class InteractionsService {
     return interaction;
   }
 
-  async findAll(startDate?: string, endDate?: string, processId?: number): Promise<any[]> {
+  async findAll(userId: number, startDate?: string, endDate?: string, processId?: number): Promise<any[]> {
     const where: any = {};
 
     if (processId) {
@@ -91,7 +91,10 @@ export class InteractionsService {
       };
     }
 
-    const interactions = await this.interactionRepository.find(where, {
+    const interactions = await this.interactionRepository.find({
+      ...where,
+      process: { user: userId },
+    }, {
       populate: ['process'],
       orderBy: { date: QueryOrder.ASC },
     });
@@ -106,15 +109,15 @@ export class InteractionsService {
     }));
   }
 
-  async findByProcess(processId: number): Promise<Interaction[]> {
+  async findByProcess(processId: number, userId: number): Promise<Interaction[]> {
     return this.interactionRepository.find(
-      { process: processId },
+      { process: { id: processId, user: userId } },
       { orderBy: { date: QueryOrder.DESC } },
     );
   }
 
-  async update(id: number, dto: any): Promise<Interaction | null> {
-    const interaction = await this.interactionRepository.findOne({ id });
+  async update(id: number, dto: any, userId: number): Promise<Interaction | null> {
+    const interaction = await this.interactionRepository.findOne({ id, process: { user: userId } });
     if (!interaction) {
       return null;
     }
@@ -128,16 +131,18 @@ export class InteractionsService {
     return interaction;
   }
 
-  async remove(id: number): Promise<Interaction | null> {
-    const interaction = await this.interactionRepository.findOne({ id });
+  async remove(id: number, userId: number): Promise<Interaction | null> {
+    const interaction = await this.interactionRepository.findOne({ id, process: { user: userId } });
     if (interaction) {
       await this.em.removeAndFlush(interaction);
     }
     return interaction;
   }
 
-  async exportData(): Promise<any[]> {
-    const interactions = await this.interactionRepository.findAll({
+  async exportData(userId: number): Promise<any[]> {
+    const interactions = await this.interactionRepository.find({
+      process: { user: userId },
+    }, {
       populate: ['process'],
     });
 
@@ -150,9 +155,9 @@ export class InteractionsService {
     }));
   }
 
-  async importData(interactions: any[], mode: 'overwrite' | 'append'): Promise<{ count: number }> {
+  async importData(interactions: any[], mode: 'overwrite' | 'append', userId: number): Promise<{ count: number }> {
     if (mode === 'overwrite') {
-      const allInteractions = await this.interactionRepository.findAll();
+      const allInteractions = await this.interactionRepository.find({ process: { user: userId } });
       await this.em.removeAndFlush(allInteractions);
     }
 
@@ -166,7 +171,7 @@ export class InteractionsService {
       if (interactionData.createdAt) interactionData.createdAt = new Date(interactionData.createdAt);
 
       // Check if process exists
-      const processExists = await this.processRepository.findOne({ id: interactionData.processId });
+      const processExists = await this.processRepository.findOne({ id: interactionData.processId, user: userId });
 
       if (processExists) {
         const { processId, ...data } = interactionData;

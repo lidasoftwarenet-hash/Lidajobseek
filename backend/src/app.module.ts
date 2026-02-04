@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import config from '../mikro-orm.config';
 import { Contact } from './contacts/contact.entity';
+import { Process } from './processes/process.entity';
 import { ProfilesModule } from './profiles/profiles.module';
 
 @Module({
@@ -35,7 +36,7 @@ import { ProfilesModule } from './profiles/profiles.module';
       })(),
     }),
     MikroOrmModule.forRoot(config),
-    MikroOrmModule.forFeature([Contact]),
+    MikroOrmModule.forFeature([Contact, Process]),
     AuthModule,
     ServeStaticModule.forRoot(
       {
