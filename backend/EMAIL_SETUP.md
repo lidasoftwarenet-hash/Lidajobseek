@@ -1,32 +1,26 @@
 # Email Setup for CV Sharing
 
-## Gmail SMTP Configuration
+## Resend API Configuration (Recommended)
 
-To enable sending CVs via email, you need to configure Gmail SMTP credentials.
+To enable sending CVs via email, configure Resend (HTTPS email API). This avoids SMTP timeouts on hosted environments like Render.
 
-### Step 1: Create Gmail App Password
+### Step 1: Create a Resend account & API key
 
-1. Go to your Google Account: https://myaccount.google.com/
-2. Navigate to **Security** → **2-Step Verification** (enable it if not already enabled)
-3. Scroll down to **App passwords**
-4. Select **Mail** and **Other (Custom name)**
-5. Enter "JobSeek Backend" as the name
-6. Click **Generate**
-7. Copy the 16-character app password (you'll need this for `SMTP_PASS`)
+1. Go to https://resend.com/
+2. Create a project and generate an API key
+3. Verify a sender domain or use a verified email address
 
 ### Step 2: Set Environment Variables
 
 Add these to your `.env` file in the backend directory:
 
 ```env
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=lidasoftwarenet@gmail.com
-SMTP_PASS=your_16_character_app_password_here
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM_EMAIL=lidasoftwarenet@gmail.com
 ```
 
-**Important:** 
-- Use the **App Password** (16 characters), NOT your regular Gmail password
+**Important:**
+- The `RESEND_FROM_EMAIL` must be a verified sender in Resend
 - Never commit the `.env` file with real credentials to git
 - On Render/deployment: Add these as environment variables in your service settings
 
@@ -37,7 +31,7 @@ cd backend
 npm install
 ```
 
-This will install `nodemailer` and `@types/nodemailer`.
+This will install the `resend` SDK.
 
 ### Testing
 

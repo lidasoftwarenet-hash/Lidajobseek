@@ -80,11 +80,6 @@ export class ProfilesController {
     @Body() dto: SendCvEmailDto,
     @UploadedFile() pdf?: Express.Multer.File,
   ) {
-    console.log('[ProfilesController] send-cv-email called', {
-      userId: req?.user?.userId,
-      email: dto?.email,
-      pdfSize: pdf?.buffer?.length,
-    });
     if (!dto?.email) {
       throw new ForbiddenException('Email is required');
     }
@@ -100,12 +95,6 @@ export class ProfilesController {
       );
       return { success: true, message: 'CV sent successfully' };
     } catch (error: any) {
-      console.error('[ProfilesController] send-cv-email failed', {
-        message: error?.message,
-        stack: error?.stack,
-        code: error?.code,
-        response: error?.response,
-      });
       throw new ForbiddenException(error?.message || 'Failed to send CV email');
     }
   }
