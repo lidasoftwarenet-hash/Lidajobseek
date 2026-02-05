@@ -1,4 +1,4 @@
 export class SendCvEmailDto {
   email!: string;
-  pdfBase64!: string;
+  pdfBase64?: string;
 }

@@ -32,10 +32,14 @@ export class ProfilesService {
     );
   }
 
-  sendCvByEmail(email: string, pdfBase64: string) {
+  sendCvByEmail(email: string, pdfFile: Blob) {
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('pdf', pdfFile, 'cv.pdf');
+
     return this.http.post<{ success: boolean; message: string }>(
       `${this.apiUrl}/me/send-cv-email`,
-      { email, pdfBase64 }
+      formData
     );
   }
 }

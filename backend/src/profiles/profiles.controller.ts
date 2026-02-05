@@ -1,4 +1,17 @@
-import { Body, Controller, Get, Patch, Post, Req, Query, UseGuards, ForbiddenException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  Query,
+  UseGuards,
+  ForbiddenException,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ProfilesService } from './profiles.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ShareProfileDto } from './dto/share-profile.dto';
@@ -61,11 +74,17 @@ export class ProfilesController {
   }
 
   @Post('me/send-cv-email')
-  async sendCvByEmail(@Req() req: any, @Body() dto: SendCvEmailDto) {
+  @UseInterceptors(FileInterceptor('pdf'))
+  async sendCvByEmail(
+    @Req() req: any,
+    @Body() dto: SendCvEmailDto,
+    @UploadedFile() pdf?: Express.Multer.File,
+  ) {
     await this.profilesService.sendCvByEmail(
       req.user.userId,
       dto.email,
       dto.pdfBase64,
+      pdf?.buffer,
     );
     return { success: true, message: 'CV sent successfully' };
   }

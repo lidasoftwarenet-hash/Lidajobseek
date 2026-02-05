@@ -175,7 +175,7 @@ ${cv.links || ''}
     }
   }
 
-  async generatePdfAsBase64(): Promise<string | null> {
+  async generatePdfBlob(): Promise<Blob | null> {
     try {
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
@@ -204,11 +204,9 @@ ${cv.links || ''}
 
       pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       
-      // Get PDF as base64 string (remove data:application/pdf;base64, prefix)
-      const pdfOutput = pdf.output('datauristring');
-      const base64 = pdfOutput.split(',')[1];
-      
-      return base64;
+      const pdfOutput = pdf.output('blob');
+
+      return pdfOutput as Blob;
     } catch (error) {
       console.error('PDF generation error:', error);
       return null;
@@ -232,17 +230,17 @@ ${cv.links || ''}
     this.sendingCv = true;
     
     try {
-      // Generate PDF as base64
-      const pdfBase64 = await this.generatePdfAsBase64();
+      // Generate PDF as blob
+      const pdfBlob = await this.generatePdfBlob();
       
-      if (!pdfBase64) {
+      if (!pdfBlob) {
         this.toastService.show('Failed to generate PDF. Please try again.', 'error');
         this.sendingCv = false;
         return;
       }
 
       // Send via email
-      this.profilesService.sendCvByEmail(email, pdfBase64).subscribe({
+      this.profilesService.sendCvByEmail(email, pdfBlob).subscribe({
         next: () => {
           this.shareResult = { exists: true };
           this.toastService.show(`CV sent successfully to ${email}`, 'success');
