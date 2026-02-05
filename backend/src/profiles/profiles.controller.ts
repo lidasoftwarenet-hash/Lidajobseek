@@ -80,6 +80,12 @@ export class ProfilesController {
     @Body() dto: SendCvEmailDto,
     @UploadedFile() pdf?: Express.Multer.File,
   ) {
+    if (!dto?.email) {
+      throw new ForbiddenException('Email is required');
+    }
+    if (!pdf?.buffer && !dto.pdfBase64) {
+      throw new ForbiddenException('PDF is required');
+    }
     await this.profilesService.sendCvByEmail(
       req.user.userId,
       dto.email,

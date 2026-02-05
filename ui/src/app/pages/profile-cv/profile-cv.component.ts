@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProfilesService } from '../../services/profiles.service';
+import { timeout, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -240,7 +242,12 @@ ${cv.links || ''}
       }
 
       // Send via email
-      this.profilesService.sendCvByEmail(email, pdfBlob).subscribe({
+      this.profilesService.sendCvByEmail(email, pdfBlob).pipe(
+        timeout(20000),
+        catchError((err) => {
+          return throwError(() => err);
+        })
+      ).subscribe({
         next: () => {
           this.shareResult = { exists: true };
           this.toastService.show(`CV sent successfully to ${email}`, 'success');
