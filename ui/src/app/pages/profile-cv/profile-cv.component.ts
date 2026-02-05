@@ -174,28 +174,90 @@ ${cv.links || ''}
     }
   }
 
-  shareCv() {
+  async generatePdfAsBase64(): Promise<string | null> {
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+
+      const element = document.querySelector('.cv-shell') as HTMLElement;
+      if (!element) {
+        throw new Error('CV content not found');
+      }
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Get PDF as base64 string (remove data:application/pdf;base64, prefix)
+      const pdfOutput = pdf.output('datauristring');
+      const base64 = pdfOutput.split(',')[1];
+      
+      return base64;
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      return null;
+    }
+  }
+
+  async shareCv() {
     const email = this.shareEmail.trim();
     if (!email) {
       this.toastService.show('Please enter an email address', 'warning');
       return;
     }
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.toastService.show('Please enter a valid email address', 'warning');
+      return;
+    }
+
     this.loading = true;
-    this.profilesService.shareProfile(email).subscribe({
-      next: (response) => {
-        this.shareResult = { exists: response.exists };
-        if (response.exists) {
-          this.toastService.show('CV shared successfully', 'success');
-        } else {
-          this.toastService.show('User not found', 'warning');
-        }
+    
+    try {
+      // Generate PDF as base64
+      const pdfBase64 = await this.generatePdfAsBase64();
+      
+      if (!pdfBase64) {
+        this.toastService.show('Failed to generate PDF. Please try again.', 'error');
         this.loading = false;
-      },
-      error: () => {
-        this.toastService.show('Failed to share CV', 'error');
-        this.loading = false;
+        return;
       }
-    });
+
+      // Send via email
+      this.profilesService.sendCvByEmail(email, pdfBase64).subscribe({
+        next: () => {
+          this.shareResult = { exists: true };
+          this.toastService.show(`CV sent successfully to ${email}`, 'success');
+          this.shareEmail = ''; // Clear the input
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Failed to send CV:', error);
+          this.toastService.show('Failed to send CV. Please try again.', 'error');
+          this.loading = false;
+        }
+      });
+    } catch (error) {
+      console.error('Error sharing CV:', error);
+      this.toastService.show('Failed to share CV. Please try again.', 'error');
+      this.loading = false;
+    }
   }
 }

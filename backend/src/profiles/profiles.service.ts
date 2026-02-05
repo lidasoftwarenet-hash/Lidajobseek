@@ -6,6 +6,7 @@ import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { DeepSeekService } from '../ai/deepseek.service';
+import { MailService } from '../mail/mail.service';
 
 export interface ProfessionalCvPayload {
   about: string;
@@ -31,6 +32,7 @@ export class ProfilesService {
     private readonly em: EntityManager,
     private readonly usersService: UsersService,
     private readonly deepSeekService: DeepSeekService,
+    private readonly mailService: MailService,
   ) {}
 
   async getOrCreateProfile(userId: number): Promise<Profile> {
@@ -282,5 +284,17 @@ Provide a helpful suggestion or example. Keep it concise and actionable.`;
       suggestion: suggestion.trim(),
       aiEnabled: true,
     };
+  }
+
+  async sendCvByEmail(
+    userId: number,
+    email: string,
+    pdfBase64: string,
+  ): Promise<void> {
+    const user = await this.usersService.findById(userId);
+    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+    const senderName = user?.name || user?.email || 'A user';
+
+    await this.mailService.sendCvByEmail(email, pdfBuffer, senderName);
   }
 }

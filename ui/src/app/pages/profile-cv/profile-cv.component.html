@@ -134,19 +134,18 @@
     <section class="cv-share-section no-print">
         <div class="cv-share-header">
             <h3>Share Your CV</h3>
-            <p>Send this CV to another user. If the email exists, we'll confirm it for you.</p>
+            <p>Enter any email address and we'll send the CV as a PDF attachment.</p>
         </div>
         <div class="cv-share-form">
             <div class="cv-share-input-group">
                 <input type="email" name="shareEmail" [(ngModel)]="shareEmail"
-                    placeholder="name@company.com" class="cv-share-input">
+                    placeholder="recipient@example.com" class="cv-share-input">
                 <button type="button" class="cv-share-btn" (click)="shareCv()" [disabled]="loading">
-                    {{ loading ? 'Sharing...' : 'Share CV' }}
+                    {{ loading ? 'Sending...' : 'Send CV' }}
                 </button>
             </div>
-            <p *ngIf="shareResult" class="cv-share-status"
-                [class.success]="shareResult.exists" [class.error]="!shareResult.exists">
-                {{ shareResult.exists ? '✓ User found — CV shared successfully.' : '✗ User not found.' }}
+            <p *ngIf="shareResult" class="cv-share-status success">
+                ✓ CV sent successfully!
             </p>
         </div>
     </section>

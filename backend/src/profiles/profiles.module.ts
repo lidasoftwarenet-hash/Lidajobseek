@@ -6,9 +6,10 @@ import { ProfilesController } from './profiles.controller';
 import { User } from '../users/user.entity';
 import { UsersModule } from '../users/users.module';
 import { DeepSeekService } from '../ai/deepseek.service';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([Profile, User]), UsersModule],
+  imports: [MikroOrmModule.forFeature([Profile, User]), UsersModule, MailModule],
   controllers: [ProfilesController],
   providers: [ProfilesService, DeepSeekService],
 })

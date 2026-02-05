@@ -2,6 +2,7 @@ import { Body, Controller, Get, Patch, Post, Req, Query, UseGuards, ForbiddenExc
 import { ProfilesService } from './profiles.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ShareProfileDto } from './dto/share-profile.dto';
+import { SendCvEmailDto } from './dto/send-cv-email.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { PremiumGuard } from '../auth/premium.guard';
 import { RequiresPremium } from '../auth/requires-premium.decorator';
@@ -57,5 +58,15 @@ export class ProfilesController {
       dto.field,
       dto.currentValue,
     );
+  }
+
+  @Post('me/send-cv-email')
+  async sendCvByEmail(@Req() req: any, @Body() dto: SendCvEmailDto) {
+    await this.profilesService.sendCvByEmail(
+      req.user.userId,
+      dto.email,
+      dto.pdfBase64,
+    );
+    return { success: true, message: 'CV sent successfully' };
   }
 }

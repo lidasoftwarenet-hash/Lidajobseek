@@ -31,4 +31,11 @@ export class ProfilesService {
       { field, currentValue }
     );
   }
+
+  sendCvByEmail(email: string, pdfBase64: string) {
+    return this.http.post<{ success: boolean; message: string }>(
+      `${this.apiUrl}/me/send-cv-email`,
+      { email, pdfBase64 }
+    );
+  }
 }
