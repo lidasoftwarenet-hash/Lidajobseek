@@ -91,12 +91,22 @@ export class ProfilesController {
     if (!pdf?.buffer && !dto.pdfBase64) {
       throw new ForbiddenException('PDF is required');
     }
-    await this.profilesService.sendCvByEmail(
-      req.user.userId,
-      dto.email,
-      dto.pdfBase64,
-      pdf?.buffer,
-    );
-    return { success: true, message: 'CV sent successfully' };
+    try {
+      await this.profilesService.sendCvByEmail(
+        req.user.userId,
+        dto.email,
+        dto.pdfBase64,
+        pdf?.buffer,
+      );
+      return { success: true, message: 'CV sent successfully' };
+    } catch (error: any) {
+      console.error('[ProfilesController] send-cv-email failed', {
+        message: error?.message,
+        stack: error?.stack,
+        code: error?.code,
+        response: error?.response,
+      });
+      throw new ForbiddenException(error?.message || 'Failed to send CV email');
+    }
   }
 }
