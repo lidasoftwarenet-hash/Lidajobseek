@@ -1,20 +1,22 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ProfilesService } from '../../services/profiles.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
+import { PremiumUpsellModalComponent } from '../../components/premium-upsell-modal/premium-upsell-modal.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, PremiumUpsellModalComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
   loading = false;
+  showPremiumUpsell = false;
   completionPercentage = 0;
   missingFields: Array<{ key: string; label: string; priority: string }> = [];
   
@@ -52,7 +54,8 @@ export class ProfileComponent implements OnInit {
   constructor(
     private profilesService: ProfilesService,
     private toastService: ToastService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -103,6 +106,19 @@ export class ProfileComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  openPremiumUpsell() {
+    this.showPremiumUpsell = true;
+  }
+
+  closePremiumUpsell() {
+    this.showPremiumUpsell = false;
+  }
+
+  upgradeToPremium() {
+    this.showPremiumUpsell = false;
+    this.router.navigate(['/pricing']);
   }
 
   getPriorityIcon(priority: string): string {

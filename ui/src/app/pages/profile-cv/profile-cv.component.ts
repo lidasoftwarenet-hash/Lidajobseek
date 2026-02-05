@@ -147,13 +147,13 @@ ${cv.links || ''}
       }
 
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1.25,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -163,7 +163,7 @@ ${cv.links || ''}
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       pdf.save(`cv-${this.useAi ? 'ai-enhanced' : 'template'}-${new Date().toISOString().split('T')[0]}.pdf`);
 
       this.toastService.show('CV downloaded as PDF!', 'success');
@@ -186,13 +186,13 @@ ${cv.links || ''}
       }
 
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 1.25,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff'
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -202,7 +202,7 @@ ${cv.links || ''}
       const imgWidth = 210; // A4 width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       
       // Get PDF as base64 string (remove data:application/pdf;base64, prefix)
       const pdfOutput = pdf.output('datauristring');

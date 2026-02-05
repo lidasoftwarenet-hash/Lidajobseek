@@ -137,10 +137,10 @@
                             <span class="btn-icon">🤖</span>
                             Generate AI-Powered CV
                         </a>
-                        <a *ngIf="!isPremiumUser" class="btn-primary premium-locked" [routerLink]="['/pricing']">
+                        <button *ngIf="!isPremiumUser" class="btn-primary premium-locked" type="button" (click)="openPremiumUpsell()">
                             <span class="btn-icon">🔒</span>
                             Generate AI-Powered CV (Premium)
-                        </a>
+                        </button>
                     </div>
                     <a *ngIf="profile.lastCvGeneratedAt" class="last-cv-link"
                        [routerLink]="['/profile/cv']"
@@ -157,3 +157,9 @@
         </form>
     </div>
 </div>
+
+<app-premium-upsell-modal
+  [open]="showPremiumUpsell"
+  (upgrade)="upgradeToPremium()"
+  (cancel)="closePremiumUpsell()">
+</app-premium-upsell-modal>
