@@ -7,6 +7,9 @@ export class MailService {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT || 587),
     secure: false,
+    connectionTimeout: Number(process.env.SMTP_CONNECTION_TIMEOUT || 15000),
+    greetingTimeout: Number(process.env.SMTP_GREETING_TIMEOUT || 15000),
+    socketTimeout: Number(process.env.SMTP_SOCKET_TIMEOUT || 20000),
     auth: {
       user: process.env.SMTP_USER || 'lidasoftwarenet@gmail.com',
       pass: process.env.SMTP_PASS || '',
@@ -18,6 +21,7 @@ export class MailService {
     pdfBuffer: Buffer,
     senderName?: string,
   ): Promise<void> {
+    console.log('[MailService] Sending CV email to', to, 'PDF size:', pdfBuffer?.length);
     const mailOptions = {
       from: `"JobSeek" <${process.env.SMTP_USER || 'lidasoftwarenet@gmail.com'}>`,
       to,
@@ -45,5 +49,6 @@ export class MailService {
     };
 
     await this.transporter.sendMail(mailOptions);
+    console.log('[MailService] CV email sent successfully to', to);
   }
 }

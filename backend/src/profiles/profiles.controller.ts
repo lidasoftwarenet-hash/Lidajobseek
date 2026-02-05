@@ -80,6 +80,11 @@ export class ProfilesController {
     @Body() dto: SendCvEmailDto,
     @UploadedFile() pdf?: Express.Multer.File,
   ) {
+    console.log('[ProfilesController] send-cv-email called', {
+      userId: req?.user?.userId,
+      email: dto?.email,
+      pdfSize: pdf?.buffer?.length,
+    });
     if (!dto?.email) {
       throw new ForbiddenException('Email is required');
     }
