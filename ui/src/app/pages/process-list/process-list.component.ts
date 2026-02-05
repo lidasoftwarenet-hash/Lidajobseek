@@ -65,7 +65,9 @@ export class ProcessListComponent implements OnInit {
             },
             error: (err) => {
                 console.error('Failed to load processes', err);
-                this.toastService.show('Failed to load processes', 'error');
+                if (err?.status !== 401) {
+                    this.toastService.show('Failed to load processes', 'error');
+                }
                 this.isLoading = false;
             }
         });

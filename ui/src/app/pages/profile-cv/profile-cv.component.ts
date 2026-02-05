@@ -18,6 +18,7 @@ export class ProfileCvComponent implements OnInit {
   profile: any = null;
   cvData: any = null;
   downloadingPdf = false;
+  sendingCv = false;
   shareEmail = '';
   shareResult: { exists: boolean } | null = null;
   useAi = false;
@@ -228,7 +229,7 @@ ${cv.links || ''}
       return;
     }
 
-    this.loading = true;
+    this.sendingCv = true;
     
     try {
       // Generate PDF as base64
@@ -236,7 +237,7 @@ ${cv.links || ''}
       
       if (!pdfBase64) {
         this.toastService.show('Failed to generate PDF. Please try again.', 'error');
-        this.loading = false;
+        this.sendingCv = false;
         return;
       }
 
@@ -246,18 +247,18 @@ ${cv.links || ''}
           this.shareResult = { exists: true };
           this.toastService.show(`CV sent successfully to ${email}`, 'success');
           this.shareEmail = ''; // Clear the input
-          this.loading = false;
+          this.sendingCv = false;
         },
         error: (error) => {
           console.error('Failed to send CV:', error);
           this.toastService.show('Failed to send CV. Please try again.', 'error');
-          this.loading = false;
+          this.sendingCv = false;
         }
       });
     } catch (error) {
       console.error('Error sharing CV:', error);
       this.toastService.show('Failed to share CV. Please try again.', 'error');
-      this.loading = false;
+      this.sendingCv = false;
     }
   }
 }

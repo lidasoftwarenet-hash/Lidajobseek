@@ -140,8 +140,8 @@
             <div class="cv-share-input-group">
                 <input type="email" name="shareEmail" [(ngModel)]="shareEmail"
                     placeholder="recipient@example.com" class="cv-share-input">
-                <button type="button" class="cv-share-btn" (click)="shareCv()" [disabled]="loading">
-                    {{ loading ? 'Sending...' : 'Send CV' }}
+                <button type="button" class="cv-share-btn" (click)="shareCv()" [disabled]="sendingCv">
+                    {{ sendingCv ? 'Sending...' : 'Send CV' }}
                 </button>
             </div>
             <p *ngIf="shareResult" class="cv-share-status success">
