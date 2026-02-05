@@ -147,11 +147,23 @@ export class ProfilesService {
         cvData = this.formatTemplateCV(profile);
       }
 
-      // Update profile with last generation info
+      // Update profile with last generation info (optional: requires last_cv_* columns)
+      const lastCvAi = useAi && this.deepSeekService.isEnabled();
       profile.lastCvUrl = cvUrl;
       profile.lastCvGeneratedAt = now;
-      profile.lastCvAi = useAi && this.deepSeekService.isEnabled();
-      await this.em.flush();
+      profile.lastCvAi = lastCvAi;
+      try {
+        await this.em.flush();
+      } catch (flushError: any) {
+        // If DB is missing last_cv_* columns, CV still works; only "last generated" isn't persisted
+        if (flushError?.code === '42703' || flushError?.message?.includes('last_cv')) {
+          console.warn(
+            'Profile last_cv_* columns missing. Run backend/SQL_ADD_PROFILE_LAST_CV_COLUMNS.sql. CV data still returned.',
+          );
+        } else {
+          throw flushError;
+        }
+      }
 
       return {
         about: cvData.about ?? profile.about ?? '',
