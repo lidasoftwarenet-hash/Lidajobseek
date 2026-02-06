@@ -4,6 +4,10 @@
 CREATE TABLE IF NOT EXISTS app.profile (
     id SERIAL PRIMARY KEY,
     user_id INT UNIQUE NOT NULL,
+    full_name VARCHAR(255),
+    first_name VARCHAR(120),
+    address VARCHAR(500),
+    id_number VARCHAR(120),
     about VARCHAR(4000),
     top_skills VARCHAR(2000),
     activity VARCHAR(3000),

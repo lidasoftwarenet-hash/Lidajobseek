@@ -6,6 +6,18 @@ export class Profile {
   @PrimaryKey()
   id!: number;
 
+  @Property({ nullable: true, length: 255 })
+  fullName?: string;
+
+  @Property({ nullable: true, length: 120 })
+  firstName?: string;
+
+  @Property({ nullable: true, length: 500 })
+  address?: string;
+
+  @Property({ nullable: true, length: 120 })
+  idNumber?: string;
+
   @Property({ nullable: true, length: 4000 })
   about?: string;
 

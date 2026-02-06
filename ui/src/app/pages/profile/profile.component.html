@@ -40,6 +40,37 @@
         <form class="data-form" (ngSubmit)="saveProfile()">
             <section class="form-section">
                 <div class="section-title">
+                    <h2>Identity details</h2>
+                    <p>These fields are initially taken from Settings. You can edit them here for your profile visibility.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input name="fullName" [(ngModel)]="profile.fullName"
+                        placeholder="Your full name" class="input-field" />
+                </div>
+
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input name="firstName" [(ngModel)]="profile.firstName"
+                        placeholder="Your first name" class="input-field" />
+                </div>
+
+                <div class="form-group">
+                    <label>Address</label>
+                    <input name="address" [(ngModel)]="profile.address"
+                        placeholder="Street, city, country" class="input-field" />
+                </div>
+
+                <div class="form-group">
+                    <label>ID Number</label>
+                    <input name="idNumber" [(ngModel)]="profile.idNumber"
+                        placeholder="ID / passport / other (optional)" class="input-field" />
+                </div>
+            </section>
+
+            <section class="form-section">
+                <div class="section-title">
                     <h2>About you</h2>
                     <p>Tell your story and summarize your strengths.</p>
                 </div>

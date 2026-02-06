@@ -26,6 +26,54 @@
 
   
 
+    <div class="settings-section">
+      <h3 class="section-title">🪪 Career Profile</h3>
+
+      <div class="setting-item">
+        <label class="setting-label" for="fullName">Full Name</label>
+        <input
+          id="fullName"
+          class="input-field"
+          type="text"
+          [(ngModel)]="careerProfile.fullName"
+          placeholder="Your full legal/professional name">
+      </div>
+
+      <div class="setting-item">
+        <label class="setting-label" for="firstName">First Name</label>
+        <input
+          id="firstName"
+          class="input-field"
+          type="text"
+          [(ngModel)]="careerProfile.firstName"
+          placeholder="Your first name">
+      </div>
+
+      <div class="setting-item">
+        <label class="setting-label" for="address">Address</label>
+        <input
+          id="address"
+          class="input-field"
+          type="text"
+          [(ngModel)]="careerProfile.address"
+          placeholder="Street, city, country">
+      </div>
+
+      <div class="setting-item">
+        <label class="setting-label" for="idNumber">ID Number</label>
+        <input
+          id="idNumber"
+          class="input-field"
+          type="text"
+          [(ngModel)]="careerProfile.idNumber"
+          placeholder="Government/company ID (optional)">
+      </div>
+
+      <button class="action-btn save-profile-btn" (click)="saveCareerProfile()" [disabled]="savingCareerProfile">
+        <span>{{ savingCareerProfile ? 'Saving...' : 'Save Career Profile' }}</span>
+      </button>
+    </div>
+
     <!-- Appearance Settings -->
     <div class="settings-section">
       <h3 class="section-title">🎨 Appearance</h3>

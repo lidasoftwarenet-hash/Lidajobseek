@@ -25,6 +25,10 @@ export class ProfileComponent implements OnInit {
   }
 
   profile: any = {
+    fullName: '',
+    firstName: '',
+    address: '',
+    idNumber: '',
     about: '',
     topSkills: '',
     activity: '',

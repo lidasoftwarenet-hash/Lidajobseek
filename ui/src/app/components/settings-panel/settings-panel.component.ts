@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { SettingsService, UserSettings } from '../../services/settings.service';
 import { AuthService } from '../../services/auth.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { ProfilesService } from '../../services/profiles.service';
+import { ToastService } from '../../services/toast.service';
 import countriesData from '../../../assets/countries.json';
 
 @Component({
@@ -22,11 +24,21 @@ export class SettingsPanelComponent implements OnInit {
   countryOptions: string[] = [];
   countrySearch = '';
   showCountryDropdown = false;
+  savingCareerProfile = false;
+
+  careerProfile = {
+    fullName: '',
+    firstName: '',
+    address: '',
+    idNumber: '',
+  };
 
   constructor(
     private settingsService: SettingsService,
     private authService: AuthService,
     private confirmService: ConfirmService,
+    private profilesService: ProfilesService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -51,6 +63,42 @@ export class SettingsPanelComponent implements OnInit {
         console.error('Failed to parse user', e);
       }
     }
+
+    this.loadCareerProfile();
+  }
+
+  loadCareerProfile() {
+    this.profilesService.getMyProfile().subscribe({
+      next: (profile) => {
+        this.careerProfile = {
+          fullName: profile?.fullName ?? '',
+          firstName: profile?.firstName ?? '',
+          address: profile?.address ?? '',
+          idNumber: profile?.idNumber ?? '',
+        };
+      },
+      error: () => {
+        this.toastService.show('Failed to load career profile', 'error');
+      },
+    });
+  }
+
+  saveCareerProfile() {
+    if (this.savingCareerProfile) {
+      return;
+    }
+
+    this.savingCareerProfile = true;
+    this.profilesService.updateMyProfile(this.careerProfile).subscribe({
+      next: () => {
+        this.toastService.show('Career profile saved', 'success');
+        this.savingCareerProfile = false;
+      },
+      error: () => {
+        this.toastService.show('Failed to save career profile', 'error');
+        this.savingCareerProfile = false;
+      },
+    });
   }
 
   onThemeChange(theme: 'light' | 'dark' | 'auto') {

@@ -53,28 +53,11 @@ export class ProfilesService {
 
   async updateProfile(userId: number, dto: UpdateProfileDto): Promise<Profile> {
     const profile = await this.getOrCreateProfile(userId);
-    const {
-      about,
-      topSkills,
-      activity,
-      oldCompanies,
-      experience,
-      privateProjects,
-      education,
-      certifications,
-      links,
-    } = dto;
-    Object.assign(profile, {
-      about,
-      topSkills,
-      activity,
-      oldCompanies,
-      experience,
-      privateProjects,
-      education,
-      certifications,
-      links,
-    });
+    const patch = Object.fromEntries(
+      Object.entries(dto).filter(([, value]) => value !== undefined),
+    );
+
+    Object.assign(profile, patch);
     await this.em.flush();
     return profile;
   }

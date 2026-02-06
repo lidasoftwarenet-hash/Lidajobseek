@@ -383,6 +383,22 @@
   margin-bottom: var(--space-sm);
 }
 
+.save-profile-btn {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.save-profile-btn:hover:not(:disabled) {
+  filter: brightness(0.95);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.save-profile-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .reset-btn {
   background: var(--bg-secondary);
   color: var(--text-primary);
