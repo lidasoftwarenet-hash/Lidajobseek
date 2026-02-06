@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import * as SibApiV3Sdk from 'sib-api-v3-sdk';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const SibApiV3Sdk: any = require('sib-api-v3-sdk');
 
 @Injectable()
 export class MailService {
-  private emailApi: SibApiV3Sdk.TransactionalEmailsApi;
+  private emailApi: any;
 
   constructor() {
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-    apiInstance.setApiKey(
-      SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY || '',
-    );
-    this.emailApi = apiInstance;
+    const client = SibApiV3Sdk.ApiClient.instance;
+    client.authentications['api-key'].apiKey =
+      process.env.BREVO_API_KEY || '';
+
+    this.emailApi = new SibApiV3Sdk.TransactionalEmailsApi();
   }
 
   async sendCvByEmail(
@@ -33,21 +33,17 @@ export class MailService {
       </div>
     `;
 
-    const email = new SibApiV3Sdk.SendSmtpEmail();
-    email.sender = {
-      name: 'JobSeek',
-      email: 'no-reply@jobseek.app',
-    };
-    email.to = [{ email: to }];
-    email.subject = 'Your CV from JobSeek';
-    email.htmlContent = html;
-    email.attachment = [
-      {
-        name: 'cv.pdf',
-        content: pdfBuffer.toString('base64'),
-      },
-    ];
-
-    await this.emailApi.sendTransacEmail(email);
+    await this.emailApi.sendTransacEmail({
+      sender: { name: 'JobSeek', email: 'no-reply@jobseek.app' },
+      to: [{ email: to }],
+      subject: 'Your CV from JobSeek',
+      htmlContent: html,
+      attachment: [
+        {
+          name: 'cv.pdf',
+          content: pdfBuffer.toString('base64'),
+        },
+      ],
+    });
   }
 }
