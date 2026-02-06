@@ -40,7 +40,7 @@ export class MailService {
       },
       
       to: [{ email: to }],
-      subject: 'Your CV from JobSeek',
+      subject: 'CV from Lida Software JobAssistant Application',
       htmlContent: html,
       attachment: [
         {

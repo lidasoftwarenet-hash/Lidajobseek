@@ -139,33 +139,7 @@ ${cv.links || ''}
   async downloadAsPdf() {
     this.downloadingPdf = true;
     try {
-      // Dynamic import to avoid issues if libraries aren't installed yet
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-
-      const element = document.querySelector('.cv-shell') as HTMLElement;
-      if (!element) {
-        throw new Error('CV content not found');
-      }
-
-      const canvas = await html2canvas(element, {
-        scale: 1.25,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      const pdf = await this.buildProfessionalPdf();
       pdf.save(`cv-${this.useAi ? 'ai-enhanced' : 'template'}-${new Date().toISOString().split('T')[0]}.pdf`);
 
       this.toastService.show('CV downloaded as PDF!', 'success');
@@ -179,32 +153,7 @@ ${cv.links || ''}
 
   async generatePdfBlob(): Promise<Blob | null> {
     try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-
-      const element = document.querySelector('.cv-shell') as HTMLElement;
-      if (!element) {
-        throw new Error('CV content not found');
-      }
-
-      const canvas = await html2canvas(element, {
-        scale: 1.25,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.8);
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      const pdf = await this.buildProfessionalPdf();
       
       const pdfOutput = pdf.output('blob');
 
@@ -265,5 +214,187 @@ ${cv.links || ''}
       this.toastService.show('Failed to share CV. Please try again.', 'error');
       this.sendingCv = false;
     }
+  }
+
+  private async buildProfessionalPdf() {
+    const jsPDF = (await import('jspdf')).default;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const cv = this.cvData || this.profile;
+    if (!cv) {
+      throw new Error('CV data not found');
+    }
+
+    const currentUser = this.authService.getUser();
+    const candidateName =
+      (currentUser?.name || currentUser?.email || 'Candidate').toString();
+    const candidateEmail = currentUser?.email ? String(currentUser.email) : '';
+
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const marginX = 16;
+    const marginTop = 16;
+    const contentWidth = pageWidth - marginX * 2;
+    const bottomLimit = pageHeight - 18;
+    let y = marginTop;
+
+    const addPageIfNeeded = (requiredHeight = 8) => {
+      if (y + requiredHeight > bottomLimit) {
+        pdf.addPage();
+        y = marginTop;
+      }
+    };
+
+    const addWrappedParagraph = (
+      text: string,
+      options?: { bullet?: boolean; fontSize?: number; lineHeight?: number }
+    ) => {
+      const fontSize = options?.fontSize ?? 10.5;
+      const lineHeight = options?.lineHeight ?? 5;
+      const isBullet = options?.bullet ?? false;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(fontSize);
+
+      if (!text.trim()) {
+        return;
+      }
+
+      if (!isBullet) {
+        const lines = pdf.splitTextToSize(text, contentWidth) as string[];
+        for (const line of lines) {
+          addPageIfNeeded(lineHeight + 1);
+          pdf.text(line, marginX, y);
+          y += lineHeight;
+        }
+        return;
+      }
+
+      const bulletX = marginX;
+      const bulletTextX = marginX + 5;
+      const bulletWidth = contentWidth - 5;
+      const bulletLines = pdf.splitTextToSize(text, bulletWidth) as string[];
+      if (!bulletLines.length) {
+        return;
+      }
+
+      addPageIfNeeded(lineHeight + 1);
+      pdf.text('•', bulletX, y);
+      pdf.text(bulletLines[0], bulletTextX, y);
+      y += lineHeight;
+
+      for (let i = 1; i < bulletLines.length; i++) {
+        addPageIfNeeded(lineHeight + 1);
+        pdf.text(bulletLines[i], bulletTextX, y);
+        y += lineHeight;
+      }
+    };
+
+    const toListItems = (content?: string): string[] => {
+      if (!content) {
+        return [];
+      }
+      return content
+        .split(/\r?\n|[•\-|;]+/g)
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    };
+
+    const addSection = (
+      title: string,
+      content?: string,
+      asBullets: boolean = false,
+    ) => {
+      const safeContent = (content || '').trim();
+      if (!safeContent) {
+        return;
+      }
+
+      const items = asBullets ? toListItems(safeContent) : [];
+
+      addPageIfNeeded(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(11.5);
+      pdf.setTextColor(27, 52, 90);
+      pdf.text(title, marginX, y);
+      y += 6;
+
+      pdf.setDrawColor(230, 235, 243);
+      pdf.line(marginX, y - 3, pageWidth - marginX, y - 3);
+
+      pdf.setTextColor(20, 20, 20);
+
+      if (asBullets && items.length > 1) {
+        for (const item of items) {
+          addWrappedParagraph(item, { bullet: true });
+        }
+      } else {
+        addWrappedParagraph(safeContent);
+      }
+
+      y += 3;
+    };
+
+    // Header strip
+    pdf.setFillColor(242, 246, 252);
+    pdf.rect(marginX, y - 7, contentWidth, 26, 'F');
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(20);
+    pdf.setTextColor(20, 20, 20);
+    pdf.text(candidateName, marginX + 3, y + 2);
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(11);
+    pdf.setTextColor(70, 70, 70);
+    pdf.text('Professional CV', marginX + 3, y + 9);
+
+    const headerMeta = [
+      candidateEmail,
+      cv.links ? 'Portfolio links included' : '',
+      `${this.useAi ? 'AI-Enhanced' : 'Template'} Version`
+    ]
+      .filter(Boolean)
+      .join('  •  ');
+
+    if (headerMeta) {
+      pdf.setFontSize(9.5);
+      const metaLines = pdf.splitTextToSize(headerMeta, contentWidth - 6) as string[];
+      for (const metaLine of metaLines) {
+        pdf.text(metaLine, marginX + 3, y + 15);
+        y += 4.5;
+      }
+    }
+
+    y += 14;
+
+    pdf.setDrawColor(220, 220, 220);
+    pdf.line(marginX, y, pageWidth - marginX, y);
+    y += 8;
+
+    addSection('Professional Summary', cv.about);
+    addSection('Top Skills', cv.topSkills, true);
+    addSection('Experience', cv.experience);
+    addSection('Career History / Old Companies', cv.oldCompanies, true);
+    addSection('Activity', cv.activity);
+    addSection('Private Projects', cv.privateProjects);
+    addSection('Education', cv.education, true);
+    addSection('Certifications', cv.certifications, true);
+    addSection('Links', cv.links, true);
+
+    const pageCount = (pdf as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(130, 130, 130);
+      pdf.text(`Page ${i} of ${pageCount}`, pageWidth - marginX - 22, pageHeight - 8);
+    }
+
+    return pdf;
   }
 }
