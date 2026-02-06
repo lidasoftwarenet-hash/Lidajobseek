@@ -34,7 +34,7 @@ export class MailService {
     `;
 
     await this.emailApi.sendTransacEmail({
-      sender: { name: 'JobSeek', email: 'no-reply@jobseek.app' },
+      sender: { name: 'JobSeek', email: 'THE_BREVO_DEFAULT_SENDER@brevo.com' },
       to: [{ email: to }],
       subject: 'Your CV from JobSeek',
       htmlContent: html,
