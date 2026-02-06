@@ -1,20 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import nodemailer, { Transporter } from 'nodemailer';
+import * as brevo from 'sib-api-v3-sdk';
 
 @Injectable()
 export class MailService {
-  private transporter: Transporter;
+  private emailApi: brevo.TransactionalEmailsApi;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-      port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+    const apiInstance = new brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(
+      brevo.TransactionalEmailsApiApiKeys.apiKey,
+      process.env.BREVO_API_KEY || '',
+    );
+    this.emailApi = apiInstance;
   }
 
   async sendCvByEmail(
@@ -36,18 +33,21 @@ export class MailService {
       </div>
     `;
 
-    await this.transporter.sendMail({
-      from: '"JobSeek" <no-reply@jobseek.app>',
-      to,
-      subject: 'Your CV from JobSeek',
-      html,
-      attachments: [
-        {
-          filename: 'cv.pdf',
-          content: pdfBuffer,
-          contentType: 'application/pdf',
-        },
-      ],
-    });
+    const email = new brevo.SendSmtpEmail();
+    email.sender = {
+      name: 'JobSeek',
+      email: 'no-reply@jobseek.app',
+    };
+    email.to = [{ email: to }];
+    email.subject = 'Your CV from JobSeek';
+    email.htmlContent = html;
+    email.attachment = [
+      {
+        name: 'cv.pdf',
+        content: pdfBuffer.toString('base64'),
+      },
+    ];
+
+    await this.emailApi.sendTransacEmail(email);
   }
 }
