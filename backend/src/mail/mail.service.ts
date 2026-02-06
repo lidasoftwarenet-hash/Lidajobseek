@@ -34,7 +34,11 @@ export class MailService {
     `;
 
     await this.emailApi.sendTransacEmail({
-      sender: { name: 'JobSeek', email: 'THE_BREVO_DEFAULT_SENDER@brevo.com' },
+      sender: {
+        name: 'Lida Software',
+        email: 'lidasoftwarenet@gmail.com',
+      },
+      
       to: [{ email: to }],
       subject: 'Your CV from JobSeek',
       htmlContent: html,
