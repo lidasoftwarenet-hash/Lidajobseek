@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import * as brevo from 'sib-api-v3-sdk';
+import * as SibApiV3Sdk from 'sib-api-v3-sdk';
 
 @Injectable()
 export class MailService {
-  private emailApi: brevo.TransactionalEmailsApi;
+  private emailApi: SibApiV3Sdk.TransactionalEmailsApi;
 
   constructor() {
-    const apiInstance = new brevo.TransactionalEmailsApi();
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     apiInstance.setApiKey(
-      brevo.TransactionalEmailsApiApiKeys.apiKey,
+      SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
       process.env.BREVO_API_KEY || '',
     );
     this.emailApi = apiInstance;
@@ -33,7 +33,7 @@ export class MailService {
       </div>
     `;
 
-    const email = new brevo.SendSmtpEmail();
+    const email = new SibApiV3Sdk.SendSmtpEmail();
     email.sender = {
       name: 'JobSeek',
       email: 'no-reply@jobseek.app',
