@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { NgxIntlTelInputModule } from 'ngx-intl-tel-input';
 
 type ValidationErrors = {
   email?: string;
@@ -15,7 +17,7 @@ type ValidationErrors = {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule,BsDropdownModule.forRoot() ,NgxIntlTelInputModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })
