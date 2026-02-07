@@ -9,14 +9,23 @@ export class Profile {
   @Property({ nullable: true, length: 255 })
   fullName?: string;
 
+  @Property({ nullable: true, length: 10 })
+  dateOfBirth?: string;
+
   @Property({ nullable: true, length: 120 })
-  firstName?: string;
+  title?: string;
+
+  @Property({ nullable: true, length: 120 })
+  degree?: string;
+
+  @Property({ nullable: true, length: 120 })
+  country?: string;
 
   @Property({ nullable: true, length: 500 })
   address?: string;
 
-  @Property({ nullable: true, length: 120 })
-  idNumber?: string;
+  @Property({ nullable: true, length: 255 })
+  currentWorkplace?: string;
 
   @Property({ nullable: true, length: 4000 })
   about?: string;

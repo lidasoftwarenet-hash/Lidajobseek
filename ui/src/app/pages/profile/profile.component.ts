@@ -19,6 +19,17 @@ export class ProfileComponent implements OnInit {
   showPremiumUpsell = false;
   completionPercentage = 0;
   missingFields: Array<{ key: string; label: string; priority: string }> = [];
+  degreeOptions: string[] = [
+    'High School',
+    'Vocational Certificate',
+    'Associate Degree',
+    "Bachelor's Degree",
+    "Master's Degree",
+    'MBA',
+    'Doctorate (PhD)',
+    'Postdoctoral',
+    'Other',
+  ];
   
   get isPremiumUser(): boolean {
     return this.authService.isPremiumUser();
@@ -26,9 +37,12 @@ export class ProfileComponent implements OnInit {
 
   profile: any = {
     fullName: '',
-    firstName: '',
+    dateOfBirth: '',
+    title: '',
+    degree: '',
+    country: '',
     address: '',
-    idNumber: '',
+    currentWorkplace: '',
     about: '',
     topSkills: '',
     activity: '',

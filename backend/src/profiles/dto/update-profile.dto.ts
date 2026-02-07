@@ -1,8 +1,11 @@
 export class UpdateProfileDto {
   fullName?: string;
-  firstName?: string;
+  dateOfBirth?: string;
+  title?: string;
+  degree?: string;
+  country?: string;
   address?: string;
-  idNumber?: string;
+  currentWorkplace?: string;
   about?: string;
   topSkills?: string;
   activity?: string;

@@ -51,21 +51,41 @@
                 </div>
 
                 <div class="form-group">
-                    <label>First Name</label>
-                    <input name="firstName" [(ngModel)]="profile.firstName"
-                        placeholder="Your first name" class="input-field" />
+                    <label>Date Of Birth</label>
+                    <input name="dateOfBirth" type="date" [(ngModel)]="profile.dateOfBirth"
+                        class="input-field" />
+                </div>
+
+                <div class="form-group">
+                    <label>Title</label>
+                    <input name="title" [(ngModel)]="profile.title"
+                        placeholder="Title" class="input-field" />
+                </div>
+
+                <div class="form-group">
+                    <label>Degree</label>
+                    <select name="degree" [(ngModel)]="profile.degree" class="input-field">
+                        <option value="">Select degree</option>
+                        <option *ngFor="let degree of degreeOptions" [value]="degree">{{ degree }}</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Country</label>
+                    <input name="country" [(ngModel)]="profile.country"
+                        placeholder="Country" class="input-field" />
                 </div>
 
                 <div class="form-group">
                     <label>Address</label>
                     <input name="address" [(ngModel)]="profile.address"
-                        placeholder="Street, city, country" class="input-field" />
+                        placeholder="Address" class="input-field" />
                 </div>
 
                 <div class="form-group">
-                    <label>ID Number</label>
-                    <input name="idNumber" [(ngModel)]="profile.idNumber"
-                        placeholder="ID / passport / other (optional)" class="input-field" />
+                    <label>Current Work Place</label>
+                    <input name="currentWorkplace" [(ngModel)]="profile.currentWorkplace"
+                        placeholder="Current Work Place" class="input-field" />
                 </div>
             </section>
 
