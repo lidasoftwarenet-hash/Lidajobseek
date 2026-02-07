@@ -19,8 +19,25 @@ export class UsersService {
         return this.userRepository.findOne({ id });
     }
 
-  async create(data: { email: string; password: string; name?: string }): Promise<User> {
+    async findByActivationToken(token: string): Promise<User | null> {
+        return this.userRepository.findOne({ activationToken: token });
+    }
+
+  async create(data: {
+    email: string;
+    password: string;
+    name?: string;
+    phone?: string;
+    isActive?: boolean;
+    activationToken?: string | null;
+    activationTokenExpiresAt?: Date | null;
+  }): Promise<User> {
     const user = this.userRepository.create(data as any);
+    await this.em.persistAndFlush(user);
+    return user;
+  }
+
+  async save(user: User): Promise<User> {
     await this.em.persistAndFlush(user);
     return user;
   }

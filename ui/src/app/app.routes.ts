@@ -13,6 +13,8 @@ import { DecisionBoardComponent } from './pages/decision-board/decision-board.co
 import { CalendarComponent } from './pages/calendar/calendar.component';
 import { ScheduleInterviewComponent } from './pages/schedule-interview/schedule-interview.component';
 import { LoginComponent } from './pages/login/login.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { ActivateAccountComponent } from './pages/activate-account/activate-account.component';
 import { PricingComponent } from './pages/pricing/pricing.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ProfileComponent } from './pages/profile/profile.component';
@@ -20,6 +22,8 @@ import { ProfileCvComponent } from './pages/profile-cv/profile-cv.component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
+    { path: 'register', component: RegisterComponent },
+    { path: 'activate-account', component: ActivateAccountComponent },
     { path: 'pricing', component: PricingComponent },
     {
         path: '',

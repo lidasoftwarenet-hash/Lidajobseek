@@ -82,11 +82,9 @@
           </svg>
         </div>
 
-        <div class="mode-pill">{{ isRegister ? 'Register' : 'Login' }}</div>
-        <h2 class="login-title">{{ isRegister ? 'Create your account' : 'Welcome' }}</h2>
-        <p class="login-subtitle">
-          {{ isRegister ? 'Register to access Lida Job assistance' : 'Enter your credentials to continue' }}
-        </p>
+        <div class="mode-pill">Login</div>
+        <h2 class="login-title">Welcome</h2>
+        <p class="login-subtitle">Enter your credentials to continue</p>
 
         <form class="login-form" (ngSubmit)="submit()">
           <div class="form-group">
@@ -97,18 +95,6 @@
             <div class="input-wrapper">
               <input type="email" id="email" [(ngModel)]="email" name="email" placeholder="Enter your email"
                 class="input-field" required>
-              <div class="input-border"></div>
-            </div>
-          </div>
-
-          <div class="form-group" *ngIf="isRegister">
-            <label for="name" class="form-label">
-              <span class="label-text">Name</span>
-              <span class="label-icon">👤</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="text" id="name" [(ngModel)]="name" name="name" placeholder="Enter your name"
-                class="input-field">
               <div class="input-border"></div>
             </div>
           </div>
@@ -126,22 +112,6 @@
             </div>
           </div>
 
-          <div class="form-group" *ngIf="isRegister">
-            <label for="code" class="form-label">
-              <span class="label-text">Verification Code</span>
-              <span class="label-icon">🔑</span>
-            </label>
-            <div class="input-wrapper">
-              <input type="text" id="code" [(ngModel)]="verificationCode" name="code"
-                placeholder="Enter invitation code" class="input-field">
-              <div class="input-border"></div>
-            </div>
-            <p class="hint-text">
-              Don't have a code? <a href="mailto:support@lidasoftware.net?subject=Request Access"
-                class="link-text">Contact Lida Software</a> to request access.
-            </p>
-          </div>
-
           <div *ngIf="error" class="error-message">
             <svg class="error-icon" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
@@ -152,7 +122,7 @@
           </div>
 
           <button type="submit" class="btn-primary">
-            <span class="btn-text">{{ isRegister ? 'Register Account' : 'Enter Application' }}</span>
+            <span class="btn-text">Enter Application</span>
             <span class="btn-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -163,7 +133,7 @@
           </button>
 
           <div class="form-divider">
-            <span>{{ isRegister ? 'Already have access?' : 'OR' }}</span>
+            <span>OR</span>
           </div>
 
           <div class="social-login" *ngIf="!isRegister">
@@ -218,7 +188,7 @@
 
           <div class="toggle-section">
             <button type="button" class="btn-link" (click)="toggleMode()">
-              {{ isRegister ? 'Login to your account' : "Don't have an account yet? Create one" }}
+              Create new account
             </button>
           </div>
         </form>

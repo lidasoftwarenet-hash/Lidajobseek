@@ -1,0 +1,26 @@
+<div class="activate-page">
+  <div class="activate-card">
+    <div class="status-icon" [class.success]="state === 'success'" [class.error]="state === 'error'">
+      <span *ngIf="state === 'loading'">⏳</span>
+      <span *ngIf="state === 'success'">✅</span>
+      <span *ngIf="state === 'error'">⚠️</span>
+    </div>
+
+    <h1>
+      <ng-container [ngSwitch]="state">
+        <span *ngSwitchCase="'loading'">Activating your account</span>
+        <span *ngSwitchCase="'success'">Account activated</span>
+        <span *ngSwitchDefault>Activation failed</span>
+      </ng-container>
+    </h1>
+
+    <p>{{ message }}</p>
+
+    <div class="actions" *ngIf="state !== 'loading'">
+      <button type="button" (click)="goToLogin()">Go to Login</button>
+      <button type="button" class="secondary" *ngIf="state === 'error'" (click)="goToRegister()">
+        Register Again
+      </button>
+    </div>
+  </div>
+</div>

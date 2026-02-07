@@ -27,9 +27,7 @@ import { ToastService } from '../../services/toast.service';
 export class LoginComponent {
   email = '';
   password = '';
-  name = '';
   isRegister = false;
-  verificationCode = '';
   error = '';
   showVerificationModal = false;
   verificationPrompt = '';
@@ -44,18 +42,7 @@ export class LoginComponent {
   ) { }
 
   toggleMode() {
-    if (!this.isRegister) {
-      this.pendingRegisterToggle = true;
-      this.openVerificationModal('register');
-      return;
-    }
-
-    this.isRegister = false;
-    this.error = '';
-    this.name = '';
-    this.password = '';
-    this.verificationCode = '';
-    this.closeVerificationModal();
+    this.router.navigate(['/register']);
   }
 
   openVerificationModal(provider: 'facebook' | 'linkedin' | 'google' | 'register') {
@@ -100,34 +87,18 @@ export class LoginComponent {
 
   submit() {
     this.error = '';
-    if (this.isRegister) {
-      if (!this.email || !this.password || !this.name || !this.verificationCode) {
-        this.error = 'Please fill all fields including verification code';
-        return;
-      }
-      this.authService.register(this.email, this.password, this.name, this.verificationCode).subscribe({
-        next: () => {
-          this.isRegister = false;
-          this.toastService.show('Registration successful! Please login.', 'success');
-          this.error = '';
-        },
-        error: (err) => {
-          this.error = err.error?.message || 'Registration failed. Try again.';
-        }
-      });
-    } else {
-      if (!this.email || !this.password) {
-        this.error = 'Please enter email and password';
-        return;
-      }
-      this.authService.login(this.email, this.password).subscribe({
-        next: () => {
-          this.router.navigate(['/']);
-        },
-        error: () => {
-          this.error = 'Invalid credentials';
-        }
-      });
+    if (!this.email || !this.password) {
+      this.error = 'Please enter email and password';
+      return;
     }
+
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Invalid credentials';
+      }
+    });
   }
 }

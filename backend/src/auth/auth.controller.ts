@@ -1,6 +1,16 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UnauthorizedException,
+  Get,
+  Query,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './public.decorator';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -19,7 +29,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  async register(@Body() body: any) {
+  async register(@Body() body: RegisterDto) {
     return this.authService.register(body);
   }
 
@@ -27,5 +37,11 @@ export class AuthController {
   @Post('verify-code')
   async verifyCode(@Body('code') code: string) {
     return this.authService.verifyInvitationCode(code);
+  }
+
+  @Public()
+  @Get('activate')
+  async activateAccount(@Query('token') token: string) {
+    return this.authService.activateAccount(token);
   }
 }

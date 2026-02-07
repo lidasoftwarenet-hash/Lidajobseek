@@ -17,6 +17,18 @@ export class User {
   @Property({ nullable: true })
   name?: string;
 
+  @Property({ nullable: true })
+  phone?: string;
+
+  @Property({ default: false })
+  isActive: boolean = false;
+
+  @Property({ nullable: true })
+  activationToken?: string | null;
+
+  @Property({ nullable: true, type: 'datetime' })
+  activationTokenExpiresAt?: Date | null;
+
   @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();
 

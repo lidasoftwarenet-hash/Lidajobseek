@@ -1,0 +1,64 @@
+<div class="register-page">
+  <div class="register-card" *ngIf="!isRegistered; else successState">
+    <div class="top-actions">
+      <button type="button" class="link top-link" (click)="goToLogin()">← Back to login</button>
+    </div>
+    <p class="eyebrow">Create Account</p>
+    <h1>Join Lida Job Assistance</h1>
+    <p class="subtitle">Professional onboarding in less than a minute.</p>
+
+    <form (ngSubmit)="submit()" novalidate>
+      <label>
+        <span>Email</span>
+        <input type="email" [(ngModel)]="form.email" name="email" placeholder="you@company.com" />
+        <small *ngIf="errors.email">{{ errors.email }}</small>
+      </label>
+
+      <label>
+        <span>User name</span>
+        <input type="text" [(ngModel)]="form.username" name="username" placeholder="Your full name" />
+        <small *ngIf="errors.username">{{ errors.username }}</small>
+      </label>
+
+      <label>
+        <span>Phone</span>
+        <input type="text" [(ngModel)]="form.phone" name="phone" placeholder="+972..." />
+        <small *ngIf="errors.phone">{{ errors.phone }}</small>
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input type="password" [(ngModel)]="form.password" name="password" placeholder="At least 8 characters" />
+        <small *ngIf="errors.password">{{ errors.password }}</small>
+      </label>
+
+      <button type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Creating Account...' : 'Create Account' }}
+      </button>
+
+      <button type="button" class="link" (click)="goToLogin()">Already have an account? Sign in</button>
+    </form>
+  </div>
+
+  <ng-template #successState>
+    <div class="register-card success">
+      <div class="top-actions success-top">
+        <button type="button" class="link top-link" (click)="goToLogin()">Go to login</button>
+      </div>
+      <div class="icon">✓</div>
+      <h1>Account created successfully</h1>
+      <p>
+        Your account is currently pending activation. Please check your email and click the activation link to continue.
+      </p>
+      <button type="button" (click)="goToLogin()">Back to Login</button>
+    </div>
+  </ng-template>
+
+  <div class="modal-backdrop" *ngIf="showPopup">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h3>{{ popupTitle }}</h3>
+      <p>{{ popupMessage }}</p>
+      <button type="button" (click)="closePopup()">Understood</button>
+    </div>
+  </div>
+</div>

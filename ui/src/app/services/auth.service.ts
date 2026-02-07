@@ -24,12 +24,18 @@ export class AuthService {
     );
   }
 
-  register(email: string, password: string, name: string, code: string) {
-    return this.http.post(`${this.apiUrl}/register`, { email, password, name, code });
+  register(payload: { email: string; username: string; phone: string; password: string }) {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/register`, payload);
   }
 
   verifyInvitationCode(code: string) {
     return this.http.post(`${this.apiUrl}/verify-code`, { code });
+  }
+
+  activateAccount(token: string) {
+    return this.http.get<{ success: boolean; message: string }>(`${this.apiUrl}/activate`, {
+      params: { token },
+    });
   }
 
   logout() {
