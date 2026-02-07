@@ -32,7 +32,7 @@ export class RegisterComponent {
   errors: ValidationErrors = {};
   isSubmitting = false;
   isRegistered = false;
-  countries = getAllCountries();
+  countries = getAllCountries.getAll;
 
   showPopup = false;
   popupTitle = '';
