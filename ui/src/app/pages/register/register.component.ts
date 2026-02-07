@@ -24,6 +24,7 @@ export class RegisterComponent {
   form = {
     email: '',
     username: '',
+    countryCode: '',
     phone: '',
     password: '',
     confirmPassword: '',
@@ -32,7 +33,7 @@ export class RegisterComponent {
   errors: ValidationErrors = {};
   isSubmitting = false;
   isRegistered = false;
-  countries = getAllCountries.getAll;
+  countries = getAllCountries.getAll();
 
   showPopup = false;
   popupTitle = '';
