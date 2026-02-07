@@ -16,6 +16,10 @@
 
     <p>{{ message }}</p>
 
+    <p class="security-line">
+      Your account security is our priority. Activation is required to keep access safe and verified.
+    </p>
+
     <div class="actions" *ngIf="state !== 'loading'">
       <button type="button" (click)="goToLogin()">Go to Login</button>
       <button type="button" class="secondary" *ngIf="state === 'error'" (click)="goToRegister()">

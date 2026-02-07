@@ -24,7 +24,7 @@ export class AuthService {
     );
   }
 
-  register(payload: { email: string; username: string; phone: string; password: string }) {
+  register(payload: { email: string; username: string; phone?: string; password: string }) {
     return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/register`, payload);
   }
 

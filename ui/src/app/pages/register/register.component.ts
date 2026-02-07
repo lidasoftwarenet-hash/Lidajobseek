@@ -9,6 +9,7 @@ type ValidationErrors = {
   username?: string;
   phone?: string;
   password?: string;
+  confirmPassword?: string;
 };
 
 @Component({
@@ -24,6 +25,7 @@ export class RegisterComponent {
     username: '',
     phone: '',
     password: '',
+    confirmPassword: '',
   };
 
   errors: ValidationErrors = {};
@@ -56,11 +58,18 @@ export class RegisterComponent {
     if (!username) nextErrors.username = 'User name is required.';
     else if (username.length < 2) nextErrors.username = 'User name must be at least 2 characters.';
 
-    if (!phone) nextErrors.phone = 'Phone is required.';
-    else if (!phoneRegex.test(phone)) nextErrors.phone = 'Please enter a valid phone number.';
+    if (phone && !phoneRegex.test(phone)) {
+      nextErrors.phone = 'Please enter a valid phone number.';
+    }
 
     if (!password) nextErrors.password = 'Password is required.';
     else if (password.length < 8) nextErrors.password = 'Password must be at least 8 characters.';
+
+    if (!this.form.confirmPassword) {
+      nextErrors.confirmPassword = 'Please confirm your password.';
+    } else if (this.form.confirmPassword !== password) {
+      nextErrors.confirmPassword = 'Passwords do not match.';
+    }
 
     this.errors = nextErrors;
     return Object.keys(nextErrors).length === 0;

@@ -5,7 +5,7 @@
     </div>
     <p class="eyebrow">Create Account</p>
     <h1>Join Lida Job Assistance</h1>
-    <p class="subtitle">Professional onboarding in less than a minute.</p>
+    <p class="subtitle">Professional onboarding in less than a minute. Built for secure, trusted job management.</p>
 
     <form (ngSubmit)="submit()" novalidate>
       <label>
@@ -22,6 +22,7 @@
 
       <label>
         <span>Phone</span>
+        <small class="field-hint">For future verification steps (optional at this stage).</small>
         <input type="text" [(ngModel)]="form.phone" name="phone" placeholder="+972..." />
         <small *ngIf="errors.phone">{{ errors.phone }}</small>
       </label>
@@ -32,12 +33,47 @@
         <small *ngIf="errors.password">{{ errors.password }}</small>
       </label>
 
+      <label>
+        <span>Confirm password</span>
+        <input
+          type="password"
+          [(ngModel)]="form.confirmPassword"
+          name="confirmPassword"
+          placeholder="Re-enter your password"
+        />
+        <small *ngIf="errors.confirmPassword">{{ errors.confirmPassword }}</small>
+      </label>
+
       <button type="submit" [disabled]="isSubmitting">
         {{ isSubmitting ? 'Creating Account...' : 'Create Account' }}
       </button>
 
       <button type="button" class="link" (click)="goToLogin()">Already have an account? Sign in</button>
     </form>
+
+    <section class="trust-panel" aria-label="Security and trust">
+      <div class="trust-item">
+        <span class="trust-icon">🔒</span>
+        <div>
+          <h3>Enterprise-grade security</h3>
+          <p>Your account and personal data are protected with modern security standards.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon">🛡️</span>
+        <div>
+          <h3>Safe verification process</h3>
+          <p>Email activation ensures only you can enable your account access.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon">✅</span>
+        <div>
+          <h3>Trusted platform</h3>
+          <p>Used by professionals to manage career opportunities with confidence.</p>
+        </div>
+      </div>
+    </section>
   </div>
 
   <ng-template #successState>
@@ -50,6 +86,7 @@
       <p>
         Your account is currently pending activation. Please check your email and click the activation link to continue.
       </p>
+      <p class="success-note">Security first: your account stays inactive until email verification is completed.</p>
       <button type="button" (click)="goToLogin()">Back to Login</button>
     </div>
   </ng-template>

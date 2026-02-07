@@ -63,7 +63,7 @@ export class AuthService {
     const phone = registerDto.phone?.trim();
     const password = registerDto.password;
 
-    if (!normalizedEmail || !username || !phone || !password) {
+    if (!normalizedEmail || !username || !password) {
       throw new BadRequestException('All fields are required.');
     }
 
@@ -77,7 +77,7 @@ export class AuthService {
     }
 
     const phoneRegex = /^[0-9+\-()\s]{7,20}$/;
-    if (!phoneRegex.test(phone)) {
+    if (phone && !phoneRegex.test(phone)) {
       throw new BadRequestException('Please provide a valid phone number.');
     }
 
@@ -98,7 +98,7 @@ export class AuthService {
       email: normalizedEmail,
       password: hashedPassword,
       name: username,
-      phone,
+      phone: phone || undefined,
       isActive: false,
       activationToken,
       activationTokenExpiresAt,
