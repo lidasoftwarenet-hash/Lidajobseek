@@ -18,11 +18,10 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "chart.js": "^4.5.1",
+    "country-list-with-dial-code-and-flag": "^5.1.1",
     "google-libphonenumber": "^3.2.44",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
-    "ngx-bootstrap": "^21.0.1",
-    "ngx-intl-tel-input": "^17.0.0",
     "rxjs": "^7.8.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

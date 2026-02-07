@@ -19,15 +19,20 @@
         <small *ngIf="errors.username">{{ errors.username }}</small>
       </label>
 
-      <ngx-intl-tel-input
-      [cssClass]="'custom-phone-input'"
-      [preferredCountries]="['il', 'us', 'gb']"
-      [enableAutoCountrySelect]="true"
-      [enablePlaceholder]="true"
-      [searchCountryFlag]="true"
-      name="phone"
-      [(ngModel)]="form.phone">
-      </ngx-intl-tel-input>
+      <div class="phone-input-group">
+        <select class="country-code" [(ngModel)]="form.countryCode" name="countryCode">
+          <option *ngFor="let c of countries" [value]="c.code">
+            {{ c.flag }} {{ c.code }}
+          </option>
+        </select>
+        
+        <input 
+          type="tel" 
+          [(ngModel)]="form.phone" 
+          name="phone" 
+          placeholder="Phone number"
+          class="phone-field" />
+      </div>
 
       <label>
         <span>Password</span>

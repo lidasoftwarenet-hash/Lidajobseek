@@ -3,8 +3,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
-import { NgxIntlTelInputModule } from 'ngx-intl-tel-input';
+import getAllCountries from 'country-list-with-dial-code-and-flag';
 
 type ValidationErrors = {
   email?: string;
@@ -17,7 +16,7 @@ type ValidationErrors = {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule,BsDropdownModule.forRoot() ,NgxIntlTelInputModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
 })
@@ -33,6 +32,7 @@ export class RegisterComponent {
   errors: ValidationErrors = {};
   isSubmitting = false;
   isRegistered = false;
+  countries = getAllCountries();
 
   showPopup = false;
   popupTitle = '';

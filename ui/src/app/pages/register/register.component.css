@@ -206,3 +206,22 @@ button.link {
 .modal-card button {
   margin-top: 12px;
 }
+
+.country-code {
+  background: #1e293b;
+  color: #f8fafc;
+  border: none;
+  border-right: 1px solid #334155;
+  padding: 0 10px;
+  font-size: 16px; /* Emojis look better at 16px+ */
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+  cursor: pointer;
+  outline: none;
+  min-width: 90px;
+}
+
+/* On hover, make the options readable */
+.country-code option {
+  background: #0f172a;
+  color: white;
+}
