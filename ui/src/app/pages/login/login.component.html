@@ -243,4 +243,24 @@
       </div>
     </div>
   </div>
+
+  <div class="maintenance-overlay" *ngIf="showMaintenanceModal" (click)="closeMaintenanceModal()">
+    <div class="maintenance-modal" (click)="$event.stopPropagation()">
+      <div class="maintenance-header">
+        <div class="maintenance-icon">🛠️</div>
+        <div>
+          <h3>{{ maintenanceTitle }}</h3>
+          <p>Thank you for your patience and understanding.</p>
+        </div>
+      </div>
+
+      <div class="maintenance-body">
+        <p>{{ maintenanceMessage }}</p>
+      </div>
+
+      <div class="maintenance-actions">
+        <button type="button" class="maintenance-btn" (click)="closeMaintenanceModal()">OK, Got it</button>
+      </div>
+    </div>
+  </div>
 </div>

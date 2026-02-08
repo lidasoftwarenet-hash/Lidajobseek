@@ -29,6 +29,10 @@ export class LoginComponent {
   password = '';
   isRegister = false;
   error = '';
+  showMaintenanceModal = false;
+  maintenanceTitle = 'Service Temporarily Unavailable';
+  maintenanceMessage =
+    'We are currently performing scheduled maintenance to improve your experience. Please try again in a few minutes.';
   showVerificationModal = false;
   verificationPrompt = '';
   socialProvider: 'facebook' | 'linkedin' | 'google' | 'register' | null = null;
@@ -60,6 +64,10 @@ export class LoginComponent {
     this.pendingRegisterToggle = false;
   }
 
+  closeMaintenanceModal() {
+    this.showMaintenanceModal = false;
+  }
+
   submitSocialVerification() {
     if (!this.socialVerificationCode.trim()) {
       this.verificationPrompt = 'Verification code is required to proceed.';
@@ -87,6 +95,7 @@ export class LoginComponent {
 
   submit() {
     this.error = '';
+    this.showMaintenanceModal = false;
     if (!this.email || !this.password) {
       this.error = 'Please enter email and password';
       return;
@@ -97,7 +106,23 @@ export class LoginComponent {
         this.router.navigate(['/']);
       },
       error: (err) => {
-        this.error = err.error?.message || 'Invalid credentials';
+        const status = err?.status;
+        const backendMessage = err?.error?.message;
+
+        const isServiceDown =
+          status === 0 ||
+          status === 503 ||
+          (typeof status === 'number' && status >= 500) ||
+          (typeof backendMessage === 'string' &&
+            backendMessage.toLowerCase().includes('maintenance'));
+
+        if (isServiceDown) {
+          this.showMaintenanceModal = true;
+          this.error = '';
+          return;
+        }
+
+        this.error = backendMessage || 'Invalid credentials';
       }
     });
   }

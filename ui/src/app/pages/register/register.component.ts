@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, SocialProvider } from '../../services/auth.service';
 import getAllCountries from 'country-list-with-dial-code-and-flag';
 
 type ValidationErrors = {
@@ -11,6 +11,13 @@ type ValidationErrors = {
   phone?: string;
   password?: string;
   confirmPassword?: string;
+};
+
+type CountryOption = {
+  name: string;
+  dialCode: string;
+  isoCode: string;
+  flagUrl: string;
 };
 
 @Component({
@@ -33,7 +40,16 @@ export class RegisterComponent {
   errors: ValidationErrors = {};
   isSubmitting = false;
   isRegistered = false;
-  countries = getAllCountries.getAll();
+  countries: CountryOption[] = getAllCountries
+    .getAll()
+    .map((country) => ({
+      name: country.name,
+      dialCode: country.dialCode,
+      isoCode: country.code,
+      flagUrl: this.buildFlagUrl(country.code),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  isCountryMenuOpen = false;
 
   showPopup = false;
   popupTitle = '';
@@ -42,7 +58,14 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-  ) {}
+    private elementRef: ElementRef,
+  ) {
+    this.form.countryCode = this.countries.find((country) => country.dialCode === '+1')?.dialCode ?? this.countries[0]?.dialCode ?? '+1';
+  }
+
+  get selectedCountry(): CountryOption | undefined {
+    return this.countries.find((country) => country.dialCode === this.form.countryCode) ?? this.countries[0];
+  }
 
   validate(): boolean {
     const nextErrors: ValidationErrors = {};
@@ -87,7 +110,7 @@ export class RegisterComponent {
       .register({
         email: this.form.email.trim(),
         username: this.form.username.trim(),
-        phone: this.form.phone.trim(),
+        phone: this.form.phone.trim() ? `${this.form.countryCode} ${this.form.phone.trim()}` : '',
         password: this.form.password,
       })
       .subscribe({
@@ -112,5 +135,37 @@ export class RegisterComponent {
 
   goToLogin() {
     this.router.navigate(['/login']);
+  }
+
+  continueWith(provider: SocialProvider) {
+    const result = this.authService.startSocialAuth(provider, 'register');
+    if (result.status === 'redirected') return;
+
+    const providerLabel = provider.charAt(0).toUpperCase() + provider.slice(1);
+    this.popupTitle = `${providerLabel} sign up in development mode`;
+    this.popupMessage = `${result.message}\n\nPrepared backend route:\n${result.redirectUrl}`;
+    this.showPopup = true;
+  }
+
+  toggleCountryMenu() {
+    this.isCountryMenuOpen = !this.isCountryMenuOpen;
+  }
+
+  selectCountry(country: CountryOption) {
+    this.form.countryCode = country.dialCode;
+    this.isCountryMenuOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const hostElement = this.elementRef.nativeElement as HTMLElement;
+    if (!hostElement.contains(event.target as Node)) {
+      this.isCountryMenuOpen = false;
+    }
+  }
+
+  private buildFlagUrl(isoCode: string): string {
+    const code = (isoCode || '').toLowerCase();
+    return /^[a-z]{2}$/.test(code) ? `https://flagcdn.com/24x18/${code}.png` : 'https://flagcdn.com/24x18/un.png';
   }
 }

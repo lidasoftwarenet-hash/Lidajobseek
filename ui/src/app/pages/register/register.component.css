@@ -26,7 +26,7 @@ input:-webkit-autofill:focus {
   width: 100%;
   max-width: 520px;
   background: rgba(15, 23, 42, 0.78);
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid rgba(5, 90, 210, 0.25);
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
@@ -68,6 +68,65 @@ h1 {
   line-height: 1.55;
 }
 
+.social-auth {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 11px 12px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #e2e8f0;
+  font-weight: 600;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.social-btn:hover {
+  transform: translateY(-1px);
+  border-color: #60a5fa;
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.social-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.linkedin {
+  color: #dbeafe;
+}
+
+.facebook {
+  color: #dbeafe;
+}
+
+.social-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 2px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.social-divider::before,
+.social-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(148, 163, 184, 0.28);
+}
+
 form {
   display: grid;
   gap: 14px;
@@ -81,6 +140,23 @@ label {
 label span {
   font-size: 13px;
   color: #cbd5e1;
+}
+
+.phone-section > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optional-badge {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(147, 197, 253, 0.35);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
 
 input { 
@@ -99,6 +175,7 @@ small {
 .field-hint {
   color: #93c5fd;
   font-size: 11px;
+  margin-top: -2px;
 }
 
 button {
@@ -143,6 +220,14 @@ button.link {
 .trust-icon {
   font-size: 16px;
   margin-top: 2px;
+}
+
+.title-lida {
+  font-size: 29px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .trust-item h3 {
@@ -208,20 +293,123 @@ button.link {
 }
 
 .country-code {
-  background: #1e293b;
+  background: #0b1225;
   color: #f8fafc;
-  border: none;
-  border-right: 1px solid #334155;
+  border: 1px solid #334155;
+  border-radius: 10px;
   padding: 0 10px;
-  font-size: 16px; /* Emojis look better at 16px+ */
-  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   cursor: pointer;
   outline: none;
-  min-width: 90px;
+  min-width: 210px;
+  max-width: 230px;
 }
 
-/* On hover, make the options readable */
-.country-code option {
-  background: #0f172a;
-  color: white;
+.country-dropdown {
+  position: relative;
+  min-width: 210px;
+  max-width: 230px;
+}
+
+.country-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.country-short {
+  flex: 1;
+  text-align: left;
+}
+
+.country-chevron {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.country-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 320px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: #0b1225;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.5);
+  z-index: 25;
+  padding: 6px;
+}
+
+.country-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.country-option:hover {
+  background: rgba(59, 130, 246, 0.14);
+}
+
+.country-name {
+  flex: 1;
+  font-size: 13px;
+}
+
+.country-dial {
+  color: #93c5fd;
+  font-size: 12px;
+}
+
+.flag-img {
+  width: 20px;
+  height: 15px;
+  border-radius: 2px;
+  object-fit: cover;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.phone-input-group {
+  display: grid;
+  grid-template-columns: minmax(210px, 230px) 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.phone-field {
+  width: 100%;
+}
+
+@media (max-width: 560px) {
+  .phone-input-group {
+    grid-template-columns: 1fr;
+  }
+
+  .country-code {
+    max-width: 100%;
+  }
+
+  .country-dropdown {
+    max-width: 100%;
+  }
+
+  .country-menu {
+    width: 100%;
+    position: static;
+    margin-top: 8px;
+  }
 }

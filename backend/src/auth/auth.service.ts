@@ -166,6 +166,35 @@ export class AuthService {
     return { success: true };
   }
 
+  getSocialAuthStartConfig(provider: string, query: { state?: string; redirectUri?: string; intent?: string; clientId?: string }) {
+    return {
+      success: false,
+      message: `OAuth start for '${provider}' is scaffolded but not enabled yet.`,
+      provider,
+      received: {
+        state: query.state || null,
+        redirectUri: query.redirectUri || null,
+        intent: query.intent || 'register',
+        clientId: query.clientId || null,
+      },
+      nextStep: 'Implement provider strategy and redirect to provider authorization URL.',
+    };
+  }
+
+  completeSocialAuth(provider: string, payload: { code?: string; state?: string; redirectUri?: string }) {
+    return {
+      success: false,
+      message: `OAuth callback for '${provider}' is scaffolded but not enabled yet.`,
+      provider,
+      received: {
+        code: payload.code || null,
+        state: payload.state || null,
+        redirectUri: payload.redirectUri || null,
+      },
+      nextStep: 'Exchange authorization code with provider, then create/login local user and return JWT.',
+    };
+  }
+
   // Deprecated helper to keep old code valid if called, but implementation changed
   async validatePassword(password: string): Promise<boolean> {
     // Logic moved to validateUser

@@ -4,6 +4,15 @@ import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
+export type SocialProvider = 'google' | 'linkedin' | 'facebook';
+
+type SocialAuthStartResult = {
+  provider: SocialProvider;
+  status: 'redirected' | 'pending-config';
+  redirectUrl: string;
+  message: string;
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,6 +21,47 @@ export class AuthService {
   private tokenKey = 'app_token';
 
   constructor(private http: HttpClient, private router: Router) { }
+
+  startSocialAuth(provider: SocialProvider, intent: 'register' | 'login' = 'register'): SocialAuthStartResult {
+    const state = this.generateOAuthState();
+    const callbackPath = environment.socialAuth?.callbackPath || '/auth/social/callback';
+    const redirectUri = `${window.location.origin}${callbackPath}`;
+    const providerConfig = environment.socialAuth?.providers?.[provider];
+
+    sessionStorage.setItem('oauth_state', state);
+    sessionStorage.setItem('oauth_provider', provider);
+    sessionStorage.setItem('oauth_intent', intent);
+
+    const params = new URLSearchParams({
+      state,
+      intent,
+      redirectUri,
+    });
+
+    if (providerConfig?.clientId) {
+      params.set('clientId', providerConfig.clientId);
+    }
+
+    const redirectUrl = `${this.apiUrl}/oauth/${provider}/start?${params.toString()}`;
+    const socialAuthEnabled = !!environment.socialAuth?.enabled && !!providerConfig?.enabled;
+
+    if (socialAuthEnabled) {
+      window.location.assign(redirectUrl);
+      return {
+        provider,
+        status: 'redirected',
+        redirectUrl,
+        message: `Redirecting to ${provider} for secure ${intent}...`,
+      };
+    }
+
+    return {
+      provider,
+      status: 'pending-config',
+      redirectUrl,
+      message: `${provider[0].toUpperCase() + provider.slice(1)} OAuth is scaffolded. Enable environment.socialAuth + provider keys to activate redirect.`,
+    };
+  }
 
   login(email: string, password: string) {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
@@ -65,5 +115,11 @@ export class AuthService {
   getPricingPlan(): string {
     const user = this.getUser();
     return user?.pricingPlan || 'free';
+  }
+
+  private generateOAuthState(): string {
+    const random = new Uint8Array(16);
+    crypto.getRandomValues(random);
+    return Array.from(random, (byte) => byte.toString(16).padStart(2, '0')).join('');
   }
 }
