@@ -1,244 +1,205 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { ReviewsService } from '../../services/reviews.service';
 import { ResourcesService } from '../../services/resources.service';
-import { ConfirmService } from '../../services/confirm.service';
-import { ToastService } from '../../services/toast.service';
-import { FilterPipe } from '../../pipes/filter.pipe';
+import { ProcessesService } from '../../services/processes.service';
+import { InteractionsService } from '../../services/interactions.service';
 
-interface Category {
-    id: string;
-    name: string;
-    icon: string;
-    color: string;
-    enabled: boolean;
-    isEditing?: boolean;
+interface Stats {
+  activeProcesses: number;
+  completedReviews: number;
+  totalResources: number;
+  upcomingInteractions: number;
+  resourcesRead: number;
+}
+
+interface Tip {
+  icon: string;
+  title: string;
+  text: string;
 }
 
 @Component({
-    selector: 'app-coach-hub',
-    standalone: true,
-    imports: [CommonModule, FormsModule, FilterPipe],
-    templateUrl: './coach-hub.component.html',
-    styleUrl: './coach-hub.component.css'
+  selector: 'app-coach-hub',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './coach-hub.component.html',
+  styleUrls: ['./coach-hub.component.css']
 })
 export class CoachHubComponent implements OnInit {
-    resources: any[] = [];
-    selectedCategory: string | null = null;
-    showForm: boolean = false;
-    showConfig: boolean = false;
-    selectedFileName: string = '';
-    selectedFile: File | null = null;
-    showAddCategory: boolean = false;
+  stats: Stats = {
+    activeProcesses: 0,
+    completedReviews: 0,
+    totalResources: 0,
+    upcomingInteractions: 0,
+    resourcesRead: 0
+  };
 
-    newResource: any = {
-        title: '',
-        type: 'CV',
-        content: '',
-        tags: ''
+  reviews: any[] = [];
+  resources: any[] = [];
+  currentTipIndex = 0;
+
+  tips: Tip[] = [
+    {
+      icon: '🎯',
+      title: 'Set Clear Goals',
+      text: 'Define what success looks like for you. Whether it\'s landing interviews, improving skills, or building networks - clarity drives action.'
+    },
+    {
+      icon: '📝',
+      title: 'Track Everything',
+      text: 'Document your applications, interviews, and learnings. Patterns emerge from data, helping you refine your approach and celebrate progress.'
+    },
+    {
+      icon: '🔄',
+      title: 'Iterate & Improve',
+      text: 'Every application is a learning opportunity. Use self-reviews to identify what works, adjust your strategy, and continuously grow.'
+    },
+    {
+      icon: '💪',
+      title: 'Stay Consistent',
+      text: 'Job searching is a marathon, not a sprint. Small, consistent actions compound over time. Show up daily, even when it\'s hard.'
+    },
+    {
+      icon: '🌟',
+      title: 'Celebrate Wins',
+      text: 'Acknowledge every milestone - a great interview, positive feedback, or skills learned. Progress deserves recognition!'
+    },
+    {
+      icon: '🤝',
+      title: 'Build Relationships',
+      text: 'Your network is your net worth. Connect authentically, offer value first, and nurture professional relationships.'
+    },
+    {
+      icon: '📚',
+      title: 'Never Stop Learning',
+      text: 'Invest in yourself. Take courses, read articles, practice skills. Continuous learning keeps you competitive and confident.'
+    },
+    {
+      icon: '🧘',
+      title: 'Practice Self-Care',
+      text: 'Job searching can be stressful. Maintain balance, take breaks, and prioritize your mental health. You perform best when you feel your best.'
+    }
+  ];
+
+  constructor(
+    private reviewsService: ReviewsService,
+    private resourcesService: ResourcesService,
+    private processesService: ProcessesService,
+    private interactionsService: InteractionsService
+  ) {}
+
+  ngOnInit() {
+    this.loadData();
+    this.startTipRotation();
+  }
+
+  async loadData() {
+    try {
+      // Load all data in parallel
+      const [processes, reviews, resources, interactions] = await Promise.all([
+        this.processesService.getAll().toPromise(),
+        this.reviewsService.getAll().toPromise(),
+        this.resourcesService.getAll().toPromise(),
+        this.interactionsService.getAll().toPromise()
+      ]);
+
+      // Calculate stats
+      this.stats.activeProcesses = processes?.filter((p: any) =>
+        p.status === 'Applied' || p.status === 'Interviewing' || p.status === 'In Progress'
+      ).length || 0;
+
+      this.stats.completedReviews = reviews?.length || 0;
+      this.stats.totalResources = resources?.length || 0;
+
+      // Count upcoming interactions (within next 7 days)
+      const now = new Date();
+      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      this.stats.upcomingInteractions = interactions?.filter((i: any) => {
+        const interactionDate = new Date(i.date);
+        return interactionDate >= now && interactionDate <= nextWeek;
+      }).length || 0;
+
+      // Simulate resources read (you can track this in localStorage or backend)
+      this.stats.resourcesRead = this.getResourcesReadCount();
+
+      // Store recent reviews
+      this.reviews = reviews?.slice(0, 3) || [];
+
+      // Store resources
+      this.resources = resources || [];
+
+    } catch (error) {
+      console.error('Error loading coach hub data:', error);
+    }
+  }
+
+  getResourcesReadCount(): number {
+    const readResources = localStorage.getItem('resourcesRead');
+    return readResources ? JSON.parse(readResources).length : 0;
+  }
+
+  formatDate(date: string | Date): string {
+    const d = new Date(date);
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     };
+    return d.toLocaleDateString('en-US', options);
+  }
 
-    newCategory: Category = {
-        id: '',
-        name: '',
-        icon: '📁',
-        color: '#6366f1',
-        enabled: true
+  getScoreClass(score: number): string {
+    if (score >= 8) return 'score-high';
+    if (score >= 5) return 'score-medium';
+    return 'score-low';
+  }
+
+  getResourceIcon(type: string): string {
+    const icons: { [key: string]: string } = {
+      'article': '📄',
+      'video': '🎥',
+      'tutorial': '🎓',
+      'premium': '⭐',
+      'book': '📚',
+      'podcast': '🎙️',
+      'course': '🎯'
     };
+    return icons[type.toLowerCase()] || '📌';
+  }
 
-    availableIcons = ['📄', '❓', '🎤', '📝', '📁', '💼', '🎯', '📊', '🔖', '⭐', '🚀', '💡'];
-    availableColors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#14b8a6'];
-
-    categories: Category[] = [
-        { id: 'CV', name: 'CV / Resume', icon: '📄', color: '#3b82f6', enabled: true },
-        { id: 'Questions', name: 'Interview Questions', icon: '❓', color: '#8b5cf6', enabled: true },
-        { id: 'Pitch', name: 'Elevator Pitch', icon: '🎤', color: '#ec4899', enabled: false },
-        { id: 'Note', name: 'Notes', icon: '📝', color: '#f59e0b', enabled: false },
-        { id: 'File', name: 'Documents', icon: '📁', color: '#10b981', enabled: false }
-    ];
-
-    constructor(
-        private resourcesService: ResourcesService,
-        private confirmService: ConfirmService,
-        private toastService: ToastService
-    ) { }
-
-    ngOnInit() {
-        this.loadCategories();
-        this.loadResources();
+  // Tip carousel functionality
+  nextTip() {
+    if (this.currentTipIndex < this.tips.length - 1) {
+      this.currentTipIndex++;
     }
+  }
 
-    loadCategories() {
-        const saved = localStorage.getItem('coach-hub-categories');
-        if (saved) {
-            this.categories = JSON.parse(saved);
-        }
+  previousTip() {
+    if (this.currentTipIndex > 0) {
+      this.currentTipIndex--;
     }
+  }
 
-    saveCategories() {
-        localStorage.setItem('coach-hub-categories', JSON.stringify(this.categories));
-        this.toastService.show('Categories updated', 'success');
-    }
+  goToTip(index: number) {
+    this.currentTipIndex = index;
+  }
 
-    get enabledCategories() {
-        return this.categories.filter(c => c.enabled);
-    }
+  startTipRotation() {
+    // Auto-rotate tips every 8 seconds
+    setInterval(() => {
+      this.currentTipIndex = (this.currentTipIndex + 1) % this.tips.length;
+    }, 8000);
+  }
 
-    get selectedCategoryData() {
-        return this.categories.find(c => c.id === this.selectedCategory);
-    }
+  openGuide() {
+    // You can link to documentation or open a modal with guides
+    window.open('https://docs.example.com/guide', '_blank');
+  }
 
-    get filteredResources() {
-        if (!this.selectedCategory) return [];
-        return this.resources.filter(r => r.type === this.selectedCategory);
-    }
-
-    loadResources() {
-        this.resourcesService.getAll().subscribe(data => {
-            this.resources = data;
-        });
-    }
-
-    selectCategory(categoryId: string) {
-        this.selectedCategory = categoryId;
-        this.showForm = false;
-    }
-
-    onFileSelected(event: any) {
-        const file = event.target.files[0];
-        if (file) {
-            this.selectedFile = file;
-            this.selectedFileName = file.name;
-            this.newResource.title = this.newResource.title || file.name;
-        }
-    }
-
-    addResource() {
-        if (!this.newResource.title || !this.selectedCategory) return;
-
-        this.newResource.type = this.selectedCategory;
-
-        let payload;
-        if (this.selectedFile) {
-            const formData = new FormData();
-            formData.append('file', this.selectedFile);
-            formData.append('title', this.newResource.title);
-            formData.append('type', this.newResource.type);
-            formData.append('tags', this.newResource.tags || '');
-            payload = formData;
-        } else {
-            payload = this.newResource;
-        }
-
-        this.resourcesService.create(payload).subscribe(() => {
-            this.loadResources();
-            this.showForm = false;
-            this.selectedFileName = '';
-            this.selectedFile = null;
-            this.newResource = { title: '', type: this.selectedCategory, content: '', tags: '' };
-            this.toastService.show('Resource added successfully', 'success');
-        });
-    }
-
-    async deleteResource(id: number) {
-        if (await this.confirmService.confirm('Delete this resource?', 'Delete Resource')) {
-            this.resourcesService.delete(id).subscribe(() => {
-                this.toastService.show('Resource deleted', 'success');
-                this.loadResources();
-            });
-        }
-    }
-
-    isFilePath(content: string): boolean {
-        return !!(content && content.startsWith('/uploads/'));
-    }
-
-    toggleCategory(category: Category) {
-        category.enabled = !category.enabled;
-        this.saveCategories();
-    }
-
-    backToFolders() {
-        this.selectedCategory = null;
-        this.showForm = false;
-    }
-
-    // Category Management Methods
-    startEditCategory(category: Category) {
-        // Cancel any other editing
-        this.categories.forEach(c => c.isEditing = false);
-        category.isEditing = true;
-    }
-
-    saveRename(category: Category) {
-        if (!category.name.trim()) {
-            this.toastService.show('Category name cannot be empty', 'error');
-            return;
-        }
-        category.isEditing = false;
-        this.saveCategories();
-    }
-
-    cancelEdit(category: Category) {
-        category.isEditing = false;
-        this.loadCategories(); // Reload to reset changes
-    }
-
-    addNewCategory() {
-        if (!this.newCategory.name.trim()) {
-            this.toastService.show('Please enter a category name', 'error');
-            return;
-        }
-
-        // Generate unique ID from name
-        const id = this.newCategory.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-
-        // Check if ID already exists
-        if (this.categories.find(c => c.id === id)) {
-            this.toastService.show('A category with this name already exists', 'error');
-            return;
-        }
-
-        this.categories.push({
-            id: id,
-            name: this.newCategory.name,
-            icon: this.newCategory.icon,
-            color: this.newCategory.color,
-            enabled: true
-        });
-
-        this.saveCategories();
-        this.showAddCategory = false;
-        this.resetNewCategory();
-        this.toastService.show('Category created successfully', 'success');
-    }
-
-    resetNewCategory() {
-        this.newCategory = {
-            id: '',
-            name: '',
-            icon: '📁',
-            color: '#6366f1',
-            enabled: true
-        };
-    }
-
-    async deleteCategory(category: Category) {
-        const resourceCount = this.resources.filter(r => r.type === category.id).length;
-
-        if (resourceCount > 0) {
-            const confirmed = await this.confirmService.confirm(
-                `This category contains ${resourceCount} item(s). Deleting it will also delete all items. Continue?`,
-                'Delete Category'
-            );
-            if (!confirmed) return;
-        }
-
-        this.categories = this.categories.filter(c => c.id !== category.id);
-        this.saveCategories();
-        this.toastService.show('Category deleted', 'success');
-
-        // Reload resources to update the view
-        this.loadResources();
-    }
+  contactSupport() {
+    // Open support modal or email
+    window.location.href = 'mailto:support@example.com?subject=Coach Hub Support';
+  }
 }

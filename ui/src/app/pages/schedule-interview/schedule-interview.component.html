@@ -1,64 +1,294 @@
 <div class="form-view">
     <div class="form-card">
         <header class="form-hero">
-            <span class="form-badge">New Interview</span>
+            <div class="hero-top">
+                <span class="form-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    New Interview
+                </span>
+                <button type="button" class="btn-icon-subtle" (click)="showTemplates = !showTemplates" title="Use template">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
             <h1>Schedule Interview</h1>
-            <p class="subtitle">Keep your calendar aligned with every hiring step.</p>
+            <p class="subtitle">Keep your calendar aligned with every hiring step</p>
             <div class="form-meta">Required fields are marked with <span class="required">*</span></div>
         </header>
 
+        <!-- Templates Quick Select -->
+        <div class="templates-panel" *ngIf="showTemplates">
+            <h3>Quick Templates</h3>
+            <div class="templates-grid">
+                <button type="button" class="template-card" *ngFor="let template of interviewTemplates" (click)="applyTemplate(template)">
+                    <div class="template-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <div class="template-info">
+                        <h4>{{template.name}}</h4>
+                        <p>{{template.duration}} min • {{template.type}}</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
         <form #interviewForm="ngForm" (ngSubmit)="onSubmit()" class="data-form">
+            <!-- Process Selection -->
             <section class="form-section">
                 <div class="section-title">
-                    <h2>Interview basics</h2>
-                    <p>Choose the process and set the date, type, and focus.</p>
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        </svg>
+                        Process & Basics
+                    </h2>
+                    <p>Choose the process and set the interview fundamentals</p>
                 </div>
 
                 <div class="form-group required-section">
                     <label>Select Process <span class="required">*</span></label>
-                    <p class="field-description">You must select an existing ongoing process to schedule an interview.</p>
-                    <select name="processId" [(ngModel)]="interaction.processId" required class="input-field"
-                        [class.error]="!interaction.processId && interviewForm.submitted">
-                        <option value="">Choose a process...</option>
-                        <option *ngFor="let process of processes" [value]="process.id">
-                            {{process.companyName}} - {{process.roleTitle}} ({{process.currentStage}})
-                        </option>
-                    </select>
-                    <p *ngIf="!interaction.processId && interviewForm.submitted" class="error-message">Please select a process</p>
+                    <p class="field-description">Link this interview to an active job application process</p>
+
+                    <div class="search-wrapper">
+                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input
+                            type="text"
+                            [(ngModel)]="processSearch"
+                            (ngModelChange)="onProcessSearchChange()"
+                            [name]="'processSearch'"
+                            placeholder="Search for a process..."
+                            class="input-field search-input"
+                            [class.has-selection]="interaction.processId"
+                        />
+                        <button
+                            type="button"
+                            *ngIf="interaction.processId"
+                            (click)="clearProcessSelection()"
+                            class="clear-btn"
+                            title="Clear selection">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+
+                        <div *ngIf="filteredProcesses.length > 0 && !interaction.processId" class="search-dropdown">
+                            <button
+                                type="button"
+                                *ngFor="let process of filteredProcesses"
+                                class="search-option"
+                                (click)="selectProcess(process)">
+                                <div class="option-content">
+                                    <span class="company">{{process.companyName}}</span>
+                                    <span class="role">{{process.roleTitle}}</span>
+                                    <span class="stage">{{process.currentStage}}</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    <p *ngIf="!interaction.processId && interviewForm.submitted" class="error-message">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        Please select a process
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label>Interview Type <span class="required">*</span></label>
+                    <div class="type-grid">
+                        <button
+                            type="button"
+                            *ngFor="let type of interviewTypes"
+                            class="type-btn"
+                            [class.active]="interaction.interviewType === type"
+                            (click)="interaction.interviewType = type">
+                            {{type}}
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Date & Time -->
+            <section class="form-section">
+                <div class="section-title">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Date & Time
+                    </h2>
+                    <p>Set when this interview will take place</p>
+                </div>
+
+                <div class="time-presets">
+                    <span class="presets-label">Quick Select:</span>
+                    <button
+                        type="button"
+                        *ngFor="let preset of timePresets"
+                        class="preset-btn"
+                        (click)="applyTimePreset(preset)">
+                        {{preset.label}}
+                    </button>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Date & Time <span class="required">*</span></label>
-                        <input type="datetime-local" name="date" [(ngModel)]="interaction.date" required class="input-field">
+                        <input
+                            type="datetime-local"
+                            name="date"
+                            [(ngModel)]="interaction.date"
+                            required
+                            class="input-field">
+                        <p class="muted-hint" *ngIf="getEndTime()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 11 12 14 22 4"></polyline>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                            Ends at {{getEndTime()}}
+                        </p>
                     </div>
 
                     <div class="form-group">
-                        <label>Interview Type <span class="required">*</span></label>
-                        <select name="interviewType" [(ngModel)]="interaction.interviewType" class="input-field" required>
-                            <option *ngFor="let type of interviewTypes" [value]="type">{{type}}</option>
+                        <label>Duration</label>
+                        <select name="duration" [(ngModel)]="interaction.duration" class="input-field">
+                            <option *ngFor="let dur of durationOptions" [value]="dur">
+                                {{getDurationLabel(dur)}}
+                            </option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Summary <span class="required">*</span></label>
-                    <textarea name="summary" [(ngModel)]="interaction.summary" rows="3" required
-                        placeholder="What is this interview about? Main topics, agenda, etc." class="input-field"></textarea>
-                    <p class="muted-hint">Capture the main focus so you know how to prep for this step.</p>
+                    <label>Reminder</label>
+                    <select name="reminder" [(ngModel)]="interaction.reminder" class="input-field">
+                        <option *ngFor="let rem of reminderOptions" [value]="rem.value">
+                            {{rem.label}}
+                        </option>
+                    </select>
                 </div>
             </section>
 
+            <!-- Location & Meeting Details -->
             <section class="form-section">
                 <div class="section-title">
-                    <h2>Interviewers & attendees</h2>
-                    <p>Track the people you will meet with and their roles.</p>
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        Location & Meeting Details
+                    </h2>
+                    <p>Where will this interview take place?</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Location</label>
+                    <input
+                        type="text"
+                        name="location"
+                        [(ngModel)]="interaction.location"
+                        placeholder="Office address, remote, etc."
+                        class="input-field">
+                </div>
+
+                <div class="form-group">
+                    <label>Meeting Link</label>
+                    <div class="input-with-actions">
+                        <input
+                            type="url"
+                            name="meetingLink"
+                            [(ngModel)]="interaction.meetingLink"
+                            placeholder="https://zoom.us/j/..."
+                            class="input-field">
+                        <button
+                            type="button"
+                            class="btn-inline"
+                            (click)="generateMeetingLink()"
+                            title="Generate template link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                        </button>
+                        <button
+                            type="button"
+                            *ngIf="interaction.meetingLink"
+                            class="btn-inline"
+                            (click)="copyMeetingLink()"
+                            title="Copy link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Summary <span class="required">*</span></label>
+                    <textarea
+                        name="summary"
+                        [(ngModel)]="interaction.summary"
+                        rows="3"
+                        required
+                        placeholder="What is this interview about? Main topics, agenda, expectations..."
+                        class="input-field"></textarea>
+                    <p class="muted-hint">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                        Capture the main focus so you know how to prep for this interview
+                    </p>
+                </div>
+            </section>
+
+            <!-- Interviewers & Participants -->
+            <section class="form-section">
+                <div class="section-title">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Interviewers & Attendees
+                    </h2>
+                    <p>Who will be in this interview?</p>
                 </div>
 
                 <div class="interviewers-block">
                     <div class="section-label-row">
-                        <label>Interviewers (Participants)</label>
-                        <button type="button" class="btn-text" (click)="addParticipant()">+ Add Person</button>
+                        <label>Participants</label>
+                        <button type="button" class="btn-text" (click)="addParticipant()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Person
+                        </button>
                     </div>
 
                     <div class="participants-list">
@@ -66,50 +296,151 @@
                             <select [name]="'role' + i" [(ngModel)]="p.role" class="input-field small-select">
                                 <option *ngFor="let role of availableRoles" [value]="role">{{role}}</option>
                             </select>
-                            <input type="text" [name]="'name' + i" [(ngModel)]="p.name" placeholder="Name" class="input-field">
-                            <button type="button" class="btn-remove" (click)="removeParticipant(i)" aria-label="Remove interviewer">&times;</button>
+                            <input
+                                type="text"
+                                [name]="'name' + i"
+                                [(ngModel)]="p.name"
+                                placeholder="Full name"
+                                class="input-field">
+                            <input
+                                type="email"
+                                [name]="'email' + i"
+                                [(ngModel)]="p.email"
+                                placeholder="Email (optional)"
+                                class="input-field">
+                            <button
+                                type="button"
+                                class="btn-remove"
+                                (click)="removeParticipant(i)"
+                                aria-label="Remove interviewer">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
                         </div>
-                        <p class="muted-hint" *ngIf="interaction.participants.length === 0">No interviewers added yet.</p>
+                        <p class="muted-hint" *ngIf="interaction.participants.length === 0">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            No participants added yet. Add people you'll be meeting with.
+                        </p>
                     </div>
                 </div>
             </section>
 
-            <section class="form-section">
-                <div class="section-title">
-                    <h2>Notes & preparation</h2>
-                    <p>Add any helpful context so you show up prepared.</p>
+            <!-- Advanced Options -->
+            <section class="form-section collapsible">
+                <div class="section-title clickable" (click)="showAdvancedOptions = !showAdvancedOptions">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m5.196-15.196l-4.242 4.242m0 5.908l-4.242 4.242m15.196-5.196l-6 0m-6 0l-6 0m15.196 5.196l-4.242-4.242m0-5.908l-4.242-4.242"></path>
+                        </svg>
+                        Preparation & Notes
+                        <svg
+                            class="chevron"
+                            [class.rotated]="showAdvancedOptions"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </h2>
+                    <p>Add preparation items and additional context</p>
                 </div>
 
-                <div class="form-group">
-                    <label>Heads-up (Optional)</label>
-                    <textarea name="headsup" [(ngModel)]="interaction.headsup" rows="2"
-                        placeholder="Any important heads-up information for this interview..." class="input-field"></textarea>
-                    <p class="muted-hint">Important information to remember before the interview (e.g., topics to avoid, prep needed).</p>
-                </div>
+                <div class="collapsible-content" *ngIf="showAdvancedOptions">
+                    <div class="form-group">
+                        <label>Heads-up / Important Notes</label>
+                        <textarea
+                            name="headsup"
+                            [(ngModel)]="interaction.headsup"
+                            rows="2"
+                            placeholder="Critical information to remember (e.g., topics to avoid, specific prep needed)..."
+                            class="input-field"></textarea>
+                        <p class="muted-hint">High-priority information that requires your attention</p>
+                    </div>
 
-                <div class="form-group">
-                    <label>Comments / Notes (Optional)</label>
-                    <textarea name="notes" [(ngModel)]="interaction.notes" rows="2"
-                        placeholder="Additional notes or comments..." class="input-field"></textarea>
-                </div>
+                    <div class="form-group">
+                        <label>Preparation Checklist</label>
+                        <div class="checklist-items">
+                            <div *ngFor="let item of interaction.preparationChecklist; let i = index" class="checklist-row">
+                                <input
+                                    type="text"
+                                    [name]="'checklistItem' + i"
+                                    [(ngModel)]="item.text"
+                                    placeholder="Preparation task..."
+                                    class="input-field">
+                                <button
+                                    type="button"
+                                    class="btn-remove-small"
+                                    (click)="removeChecklistItem(i)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-text" (click)="addChecklistItem()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Checklist Item
+                        </button>
+                    </div>
 
-                <div class="form-group">
-                    <label>Tests / Technical Assessment (Optional)</label>
-                    <textarea name="testsAssessment" [(ngModel)]="interaction.testsAssessment" rows="2"
-                        placeholder="What tests or technical assessments are expected?" class="input-field"></textarea>
-                </div>
+                    <div class="form-group">
+                        <label>General Notes</label>
+                        <textarea
+                            name="notes"
+                            [(ngModel)]="interaction.notes"
+                            rows="3"
+                            placeholder="Additional notes, observations, or context..."
+                            class="input-field"></textarea>
+                    </div>
 
-                <div class="form-group">
-                    <label>Role Insights (Optional)</label>
-                    <textarea name="roleInsights" [(ngModel)]="interaction.roleInsights" rows="2"
-                        placeholder="What do you know about this role that might be relevant?" class="input-field"></textarea>
+                    <div class="form-group">
+                        <label>Tests / Technical Assessment</label>
+                        <textarea
+                            name="testsAssessment"
+                            [(ngModel)]="interaction.testsAssessment"
+                            rows="3"
+                            placeholder="Expected tests, coding challenges, technical assessments..."
+                            class="input-field"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role Insights</label>
+                        <textarea
+                            name="roleInsights"
+                            [(ngModel)]="interaction.roleInsights"
+                            rows="3"
+                            placeholder="What you know about this role, team structure, technologies..."
+                            class="input-field"></textarea>
+                    </div>
                 </div>
             </section>
 
+            <!-- Form Actions -->
             <div class="form-actions">
-                <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn-secondary" (click)="onCancel()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                    Cancel
+                </button>
                 <button type="submit" class="btn-primary" [disabled]="loading || !interviewForm.form.valid">
                     <span *ngIf="loading" class="spinner-small"></span>
+                    <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
                     {{loading ? 'Scheduling...' : 'Schedule Interview'}}
                 </button>
             </div>

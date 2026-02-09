@@ -1,222 +1,324 @@
-<div class="hub-container">
-    <header class="hub-header">
-        <div class="header-left">
-            <h1>🧠 Interview Coach Hub</h1>
-            <p class="subtitle">Your professional career assets library</p>
-        </div>
-        <div class="header-actions">
-            <button class="btn-secondary btn-icon-text" (click)="showConfig = !showConfig">
-                <span class="icon">⚙️</span>
-                {{ showConfig ? 'Close' : 'Configure' }}
-            </button>
-        </div>
-    </header>
+<div class="coach-hub">
+  <!-- Hero Welcome Section -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          <span class="wave">👋</span> Welcome Back!
+        </h1>
+        <p class="hero-subtitle">Your personal career growth companion</p>
+        <p class="hero-description">
+          Track your progress, access resources, and get insights to accelerate your job search journey
+        </p>
+      </div>
+      <div class="hero-illustration">
+        <div class="floating-emoji">🚀</div>
+        <div class="floating-emoji delay-1">⭐</div>
+        <div class="floating-emoji delay-2">💼</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Configuration Panel -->
-    <div *ngIf="showConfig" class="config-panel">
-        <div class="config-header">
-            <div>
-                <h3>📂 Manage Categories</h3>
-                <p class="config-hint">Customize your workspace by managing resource categories</p>
-            </div>
-            <button class="btn-primary btn-sm" (click)="showAddCategory = !showAddCategory">
-                <span class="btn-icon">{{ showAddCategory ? '×' : '+' }}</span>
-                {{ showAddCategory ? 'Cancel' : 'Add Category' }}
-            </button>
-        </div>
+  <!-- Quick Stats Dashboard -->
+  <div class="stats-section">
+    <h2 class="section-title">
+      <span class="title-icon">📊</span>
+      Your Journey at a Glance
+    </h2>
 
-        <!-- Add New Category Form -->
-        <div *ngIf="showAddCategory" class="add-category-form">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Category Name</label>
-                    <input type="text" [(ngModel)]="newCategory.name" placeholder="e.g. Cover Letters"
-                        class="input-field">
-                </div>
-                <div class="form-group">
-                    <label>Icon</label>
-                    <div class="icon-picker">
-                        <button *ngFor="let icon of availableIcons" type="button" class="icon-option"
-                            [class.selected]="newCategory.icon === icon" (click)="newCategory.icon = icon">
-                            {{ icon }}
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Color</label>
-                    <div class="color-picker">
-                        <button *ngFor="let color of availableColors" type="button" class="color-option"
-                            [class.selected]="newCategory.color === color" [style.background]="color"
-                            (click)="newCategory.color = color">
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="form-actions-inline">
-                <button class="btn-primary" (click)="addNewCategory()">Create Category</button>
-                <button class="btn-secondary" (click)="showAddCategory = false; resetNewCategory()">Cancel</button>
-            </div>
+    <div class="stats-grid">
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.activeProcesses }}</div>
+          <div class="stat-label">Active Applications</div>
         </div>
+        <div class="stat-trend positive" *ngIf="stats.activeProcesses > 0">
+          <span class="trend-icon">↗</span>
+          Keep going!
+        </div>
+      </div>
 
-        <!-- Existing Categories -->
-        <div class="category-config-grid">
-            <div *ngFor="let cat of categories" class="config-item">
-                <div class="config-item-content">
-                    <div class="config-item-header">
-                        <span class="config-icon" [style.color]="cat.color">{{ cat.icon }}</span>
-                        <input *ngIf="cat.isEditing" type="text" [(ngModel)]="cat.name" class="edit-input"
-                            (keyup.enter)="saveRename(cat)" (keyup.escape)="cancelEdit(cat)">
-                        <span *ngIf="!cat.isEditing" class="config-name">{{ cat.name }}</span>
-                    </div>
-                    <div class="config-actions">
-                        <button *ngIf="!cat.isEditing" class="btn-icon-sm" (click)="startEditCategory(cat)"
-                            title="Rename">
-                            ✏️
-                        </button>
-                        <button *ngIf="cat.isEditing" class="btn-icon-sm success" (click)="saveRename(cat)"
-                            title="Save">
-                            ✓
-                        </button>
-                        <button *ngIf="cat.isEditing" class="btn-icon-sm danger" (click)="cancelEdit(cat)"
-                            title="Cancel">
-                            ×
-                        </button>
-                        <button *ngIf="!cat.isEditing" class="btn-icon-sm danger" (click)="deleteCategory(cat)"
-                            title="Delete">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" [(ngModel)]="cat.enabled" (change)="saveCategories()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
+      <div class="stat-card stat-card-success">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.completedReviews }}</div>
+          <div class="stat-label">Self-Reviews Done</div>
         </div>
+        <div class="stat-trend positive" *ngIf="stats.completedReviews > 0">
+          <span class="trend-icon">📈</span>
+          Great progress!
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-info">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.totalResources }}</div>
+          <div class="stat-label">Resources Available</div>
+        </div>
+        <div class="stat-trend">
+          <span class="trend-icon">💡</span>
+          Learn & grow
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">🗓️</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats.upcomingInteractions }}</div>
+          <div class="stat-label">Upcoming Events</div>
+        </div>
+        <div class="stat-trend" *ngIf="stats.upcomingInteractions > 0">
+          <span class="trend-icon">⏰</span>
+          Stay prepared!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="actions-section">
+    <h2 class="section-title">
+      <span class="title-icon">⚡</span>
+      Quick Actions
+    </h2>
+
+    <div class="actions-grid">
+      <a routerLink="/process-create" class="action-card action-card-1">
+        <div class="action-icon">➕</div>
+        <div class="action-content">
+          <h3 class="action-title">New Application</h3>
+          <p class="action-description">Start tracking a new job opportunity</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+
+      <a routerLink="/review-create" class="action-card action-card-2">
+        <div class="action-icon">🔍</div>
+        <div class="action-content">
+          <h3 class="action-title">Self-Review</h3>
+          <p class="action-description">Reflect on your recent experiences</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+
+      <a routerLink="/calendar" class="action-card action-card-3">
+        <div class="action-icon">📅</div>
+        <div class="action-content">
+          <h3 class="action-title">View Calendar</h3>
+          <p class="action-description">Check your upcoming interviews</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+
+      <a routerLink="/analytics" class="action-card action-card-4">
+        <div class="action-icon">📈</div>
+        <div class="action-content">
+          <h3 class="action-title">Analytics</h3>
+          <p class="action-description">Track your search performance</p>
+        </div>
+        <div class="action-arrow">→</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Resources Section -->
+  <div class="resources-section" *ngIf="resources.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="title-icon">🎓</span>
+        Learning Resources
+      </h2>
+      <a routerLink="/process-list" class="view-all-link">
+        View All Resources →
+      </a>
     </div>
 
-    <!-- Breadcrumb Navigation -->
-    <div class="breadcrumb" *ngIf="selectedCategory">
-        <button class="breadcrumb-link" (click)="backToFolders()">
-            <span class="icon">🏠</span> Home
-        </button>
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">{{ selectedCategoryData?.name }}</span>
+    <div class="resources-grid">
+      <div *ngFor="let resource of resources.slice(0, 6)" class="resource-card" [class.resource-premium]="resource.type === 'premium'">
+        <div class="resource-header">
+          <div class="resource-type-badge" [class]="'badge-' + resource.type">
+            {{ resource.type }}
+          </div>
+          <div class="resource-icon">
+            {{ getResourceIcon(resource.type) }}
+          </div>
+        </div>
+        <div class="resource-content">
+          <h3 class="resource-title">{{ resource.title }}</h3>
+          <p class="resource-description">{{ resource.description }}</p>
+        </div>
+        <div class="resource-footer">
+          <a [href]="resource.url" target="_blank" class="resource-link">
+            <span>Access Resource</span>
+            <span class="link-icon">🔗</span>
+          </a>
+        </div>
+      </div>
     </div>
 
-    <!-- Folder View (Main Categories) -->
-    <div *ngIf="!selectedCategory" class="folder-view">
-        <div class="folder-grid">
-            <div *ngFor="let category of enabledCategories" class="folder-card" (click)="selectCategory(category.id)"
-                [style.--folder-color]="category.color">
-                <div class="folder-icon-wrapper">
-                    <div class="folder-icon">{{ category.icon }}</div>
-                </div>
-                <div class="folder-info">
-                    <h3 class="folder-name">{{ category.name }}</h3>
-                    <p class="folder-count">
-                        {{ (resources | filter: category.id).length }} item{{ (resources | filter: category.id).length
-                        !== 1 ? 's' : '' }}
-                    </p>
-                </div>
-            </div>
-        </div>
+    <div *ngIf="resources.length === 0" class="empty-state">
+      <div class="empty-icon">📚</div>
+      <p class="empty-text">No resources available yet</p>
+      <p class="empty-subtext">Resources will appear here as you add them</p>
+    </div>
+  </div>
 
-        <div *ngIf="enabledCategories.length === 0" class="empty-state">
-            <div class="empty-icon">📂</div>
-            <h3>No categories enabled</h3>
-            <p>Enable at least one category in the configuration to get started</p>
-            <button class="btn-primary" (click)="showConfig = true">Configure Categories</button>
-        </div>
+  <!-- Recent Reviews Section -->
+  <div class="reviews-section" *ngIf="reviews.length > 0">
+    <div class="section-header">
+      <h2 class="section-title">
+        <span class="title-icon">💭</span>
+        Recent Self-Reviews
+      </h2>
+      <a routerLink="/process-list" class="view-all-link">
+        View All Reviews →
+      </a>
     </div>
 
-    <!-- File List View (Inside a Category) -->
-    <div *ngIf="selectedCategory" class="file-view">
-        <div class="file-view-header">
-            <h2>
-                <span class="category-icon" [style.color]="selectedCategoryData?.color">
-                    {{ selectedCategoryData?.icon }}
-                </span>
-                {{ selectedCategoryData?.name }}
-            </h2>
-            <button class="btn-primary" (click)="showForm = !showForm">
-                <span class="btn-icon">{{ showForm ? '×' : '+' }}</span>
-                {{ showForm ? 'Cancel' : 'Add Item' }}
-            </button>
+    <div class="reviews-list">
+      <div *ngFor="let review of reviews.slice(0, 3)" class="review-card">
+        <div class="review-header">
+          <div class="review-date">
+            <span class="date-icon">📅</span>
+            {{ formatDate(review.date) }}
+          </div>
+          <div class="review-score" [class]="getScoreClass(review.overallScore)">
+            <span class="score-label">Score:</span>
+            <span class="score-value">{{ review.overallScore }}/10</span>
+          </div>
         </div>
-
-        <!-- Add Resource Form -->
-        <div *ngIf="showForm" class="add-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" [(ngModel)]="newResource.title" placeholder="e.g. Senior Developer Resume 2024"
-                        class="input-field">
-                </div>
+        <div class="review-content">
+          <h4 class="review-title">{{ review.processName || 'General Review' }}</h4>
+          <div class="review-insights">
+            <div class="insight-item" *ngIf="review.mainWin">
+              <span class="insight-icon">🏆</span>
+              <span class="insight-label">Win:</span>
+              <span class="insight-text">{{ review.mainWin }}</span>
             </div>
-
-            <div class="form-group">
-                <label>Content</label>
-                <div class="content-input-group">
-                    <textarea [(ngModel)]="newResource.content" rows="6"
-                        placeholder="Paste your content here or upload a file..." class="input-field"></textarea>
-                    <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none">
-                    <button type="button" class="btn-secondary btn-upload" (click)="fileInput.click()">
-                        📎 Attach File
-                    </button>
-                </div>
-                <p *ngIf="selectedFileName" class="file-selected">📄 {{ selectedFileName }}</p>
+            <div class="insight-item" *ngIf="review.mainChallenge">
+              <span class="insight-icon">⚡</span>
+              <span class="insight-label">Challenge:</span>
+              <span class="insight-text">{{ review.mainChallenge }}</span>
             </div>
-
-            <div class="form-group">
-                <label>Tags (comma separated)</label>
-                <input type="text" [(ngModel)]="newResource.tags" placeholder="e.g. senior, backend, 2024"
-                    class="input-field">
-            </div>
-
-            <div class="form-actions">
-                <button class="btn-primary" (click)="addResource()">Save Resource</button>
-            </div>
+          </div>
         </div>
-
-        <!-- File List -->
-        <div class="file-list">
-            <div *ngFor="let res of filteredResources" class="file-item">
-                <div class="file-item-icon">
-                    <span *ngIf="isFilePath(res.content)">📄</span>
-                    <span *ngIf="!isFilePath(res.content)">📝</span>
-                </div>
-                <div class="file-item-content">
-                    <h4 class="file-title">{{ res.title }}</h4>
-                    <div class="file-meta">
-                        <span class="file-date">{{ res.updatedAt | date:'dd/MM/yyyy' }}</span>
-                        <span *ngIf="res.tags" class="file-tags">
-                            <span *ngFor="let tag of res.tags.split(',').slice(0, 3)" class="tag-badge">
-                                {{ tag.trim() }}
-                            </span>
-                        </span>
-                    </div>
-                    <p *ngIf="!isFilePath(res.content) && res.content" class="file-preview">
-                        {{ res.content | slice:0:120 }}{{ res.content.length > 120 ? '...' : '' }}
-                    </p>
-                </div>
-                <div class="file-item-actions">
-                    <a *ngIf="isFilePath(res.content)" [href]="res.content" target="_blank" class="btn-action"
-                        title="Open file">
-                        👁️
-                    </a>
-                    <button class="btn-action btn-delete" (click)="deleteResource(res.id)" title="Delete">
-                        🗑️
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div *ngIf="filteredResources.length === 0 && !showForm" class="empty-folder">
-            <div class="empty-icon">📭</div>
-            <h3>No items yet</h3>
-            <p>Add your first item to get started</p>
-            <button class="btn-primary" (click)="showForm = true">+ Add Item</button>
-        </div>
+        <a [routerLink]="['/review-edit', review.id]" class="review-edit-btn">
+          <span>View Details</span>
+          <span>→</span>
+        </a>
+      </div>
     </div>
+  </div>
+
+  <!-- Motivational Tips Section -->
+  <div class="tips-section">
+    <h2 class="section-title">
+      <span class="title-icon">💡</span>
+      Daily Inspiration
+    </h2>
+
+    <div class="tips-carousel">
+      <div class="tip-card" [class.active]="currentTipIndex === i" *ngFor="let tip of tips; let i = index">
+        <div class="tip-icon">{{ tip.icon }}</div>
+        <div class="tip-content">
+          <h3 class="tip-title">{{ tip.title }}</h3>
+          <p class="tip-text">{{ tip.text }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="carousel-controls">
+      <button class="carousel-btn" (click)="previousTip()" [disabled]="currentTipIndex === 0">
+        ← Previous
+      </button>
+      <div class="carousel-dots">
+        <span
+          *ngFor="let tip of tips; let i = index"
+          class="dot"
+          [class.active]="currentTipIndex === i"
+          (click)="goToTip(i)">
+        </span>
+      </div>
+      <button class="carousel-btn" (click)="nextTip()" [disabled]="currentTipIndex === tips.length - 1">
+        Next →
+      </button>
+    </div>
+  </div>
+
+  <!-- Achievement Progress -->
+  <div class="achievements-section">
+    <h2 class="section-title">
+      <span class="title-icon">🏅</span>
+      Your Achievements
+    </h2>
+
+    <div class="achievements-grid">
+      <div class="achievement-card" [class.unlocked]="stats.activeProcesses >= 5">
+        <div class="achievement-icon">🎯</div>
+        <div class="achievement-content">
+          <h3 class="achievement-title">Job Hunter</h3>
+          <p class="achievement-description">Track 5+ applications</p>
+          <div class="achievement-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="(stats.activeProcesses / 5) * 100"></div>
+            </div>
+            <span class="progress-text">{{ stats.activeProcesses }}/5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="achievement-card" [class.unlocked]="stats.completedReviews >= 10">
+        <div class="achievement-icon">🧠</div>
+        <div class="achievement-content">
+          <h3 class="achievement-title">Self-Aware</h3>
+          <p class="achievement-description">Complete 10 self-reviews</p>
+          <div class="achievement-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="(stats.completedReviews / 10) * 100"></div>
+            </div>
+            <span class="progress-text">{{ stats.completedReviews }}/10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="achievement-card" [class.unlocked]="stats.resourcesRead >= 5">
+        <div class="achievement-icon">📚</div>
+        <div class="achievement-content">
+          <h3 class="achievement-title">Eager Learner</h3>
+          <p class="achievement-description">Read 5+ resources</p>
+          <div class="achievement-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="(stats.resourcesRead / 5) * 100"></div>
+            </div>
+            <span class="progress-text">{{ stats.resourcesRead }}/5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help & Support -->
+  <div class="help-section">
+    <div class="help-card">
+      <div class="help-icon">❓</div>
+      <div class="help-content">
+        <h3 class="help-title">Need Help?</h3>
+        <p class="help-text">
+          We're here to support your journey. Check out our guides or reach out to our community.
+        </p>
+        <div class="help-actions">
+          <button class="help-btn help-btn-primary" (click)="openGuide()">
+            <span>📖</span>
+            View Guide
+          </button>
+          <button class="help-btn help-btn-secondary" (click)="contactSupport()">
+            <span>💬</span>
+            Contact Support
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

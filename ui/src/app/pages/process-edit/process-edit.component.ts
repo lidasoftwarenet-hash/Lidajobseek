@@ -153,7 +153,20 @@ export class ProcessEditComponent implements OnInit {
             return;
         }
 
+        // Validate required fields have non-empty values
+        if (!this.process.location || this.process.location.trim() === '') {
+            this.toastService.show('Location is required.', 'warning');
+            return;
+        }
+
         const payload = { ...this.process };
+
+        // Clean up empty strings to null for optional fields
+        Object.keys(payload).forEach(key => {
+            if (payload[key] === '' && key !== 'location' && key !== 'companyName' && key !== 'roleTitle' && key !== 'techStack' && key !== 'workMode' && key !== 'currentStage') {
+                payload[key] = null;
+            }
+        });
 
         // Ensure dates are ISO or null
         if (payload.nextFollowUp) {

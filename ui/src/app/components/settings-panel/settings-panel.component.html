@@ -1,6 +1,6 @@
-<div class="settings-overlay" [class.active]="isOpen" (click)="closePanel()"></div>
+<div class="settings-overlay" [class.active]="isOpen" (click)="closePanel()" *ngIf="isOpen"></div>
 
-<div class="settings-panel" [class.active]="isOpen">
+<div class="settings-panel" [class.active]="isOpen" *ngIf="isOpen">
   <!-- Header -->
   <div class="settings-header">
     <div class="header-content">

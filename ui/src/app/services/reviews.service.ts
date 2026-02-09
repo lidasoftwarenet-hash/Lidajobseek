@@ -8,6 +8,10 @@ export class ReviewsService {
 
     constructor(private http: HttpClient) { }
 
+    getAll() {
+        return this.http.get<any[]>(this.apiUrl);
+    }
+
     create(data: any) {
         return this.http.post(this.apiUrl, data);
     }
