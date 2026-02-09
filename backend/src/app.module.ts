@@ -71,7 +71,7 @@ import { ProfilesModule } from './profiles/profiles.module';
       },
       {
         rootPath: join(__dirname, 'ui', 'browser'),
-        exclude: ['/api/(.*)'],
+        exclude: ['/api{/*path}'],
       },
     ),
     ProcessesModule,
