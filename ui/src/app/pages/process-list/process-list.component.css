@@ -713,9 +713,12 @@
 .processes-table th.sortable {
     cursor: pointer;
     user-select: none;
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
+}
+
+.processes-table th.sortable svg {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0.35rem;
 }
 
 .processes-table th.sortable:hover {

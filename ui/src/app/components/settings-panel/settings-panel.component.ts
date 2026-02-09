@@ -14,18 +14,6 @@ export class SettingsPanelComponent implements OnInit {
   isOpen = false;
   settings: any = {};
 
-  // Filter presets
-  filterPresets = [
-    { name: 'Active', icon: '⚡', description: 'Show active processes only' },
-    { name: 'All Processes', icon: '📋', description: 'Show all processes' },
-    { name: 'In Progress', icon: '🔄', description: 'Show in-progress processes' },
-    { name: 'Remote', icon: '🏠', description: 'Remote positions only' },
-    { name: 'Older than 1 week', icon: '📅', description: 'Processes older than a week' },
-    { name: 'Last 48 hours', icon: '🕒', description: 'Recently updated' }
-  ];
-
-  activeFilterPreset: string | null = null;
-
   constructor(
     private settingsService: SettingsService,
     private toastService: ToastService
@@ -38,14 +26,6 @@ export class SettingsPanelComponent implements OnInit {
     this.settingsService.isSettingsPanelOpen$.subscribe(isOpen => {
       this.isOpen = isOpen;
     });
-
-    // Subscribe to active filter preset
-    this.settingsService.activeFilterPreset$.subscribe(preset => {
-      this.activeFilterPreset = preset;
-    });
-
-    // Load initial active filter preset
-    this.activeFilterPreset = this.settingsService.getActiveFilterPreset();
   }
 
   loadSettings() {
@@ -175,6 +155,30 @@ export class SettingsPanelComponent implements OnInit {
     }
   }
 
+  saveSettings() {
+    try {
+      // Ensure all current settings are persisted
+      this.settingsService.updateSettings(this.settings);
+
+      // Apply all settings to the UI
+      Object.keys(this.settings).forEach(key => {
+        if (key === 'notifications') {
+          // Handle nested notification settings
+          Object.keys(this.settings.notifications || {}).forEach(notifKey => {
+            this.applySettings(`notifications.${notifKey}`, this.settings.notifications[notifKey]);
+          });
+        } else {
+          this.applySettings(key, this.settings[key]);
+        }
+      });
+
+      this.toastService.showSuccess('Settings saved successfully');
+    } catch (error) {
+      this.toastService.showError('Failed to save settings');
+      console.error('Save settings error:', error);
+    }
+  }
+
   resetToDefaults() {
     if (confirm('Are you sure you want to reset all settings to their default values?')) {
       try {
@@ -192,24 +196,5 @@ export class SettingsPanelComponent implements OnInit {
         console.error('Reset error:', error);
       }
     }
-  }
-
-  // Filter preset methods
-  toggleFilterPreset(presetName: string) {
-    if (this.activeFilterPreset === presetName) {
-      // Turn off the filter
-      this.activeFilterPreset = null;
-      this.settingsService.setActiveFilterPreset(null);
-      this.toastService.showInfo('Filter cleared');
-    } else {
-      // Turn on the selected filter
-      this.activeFilterPreset = presetName;
-      this.settingsService.setActiveFilterPreset(presetName);
-      this.toastService.showSuccess(`"${presetName}" filter applied`);
-    }
-  }
-
-  isFilterActive(presetName: string): boolean {
-    return this.activeFilterPreset === presetName;
   }
 }
