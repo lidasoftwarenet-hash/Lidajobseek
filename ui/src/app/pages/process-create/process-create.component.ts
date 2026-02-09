@@ -38,6 +38,23 @@ export class ProcessCreateComponent {
     locationSearch = '';
     showLocationDropdown = false;
 
+    // Character limits
+    dataFromCallMaxLength = 500;
+    initialInviteContentMaxLength = 1000;
+
+    // Form progress
+    get formProgress(): number {
+        const requiredFields = ['companyName', 'roleTitle', 'techStack', 'location', 'currentStage'];
+        const filledFields = requiredFields.filter(field => this.process[field]?.toString().trim()).length;
+        return Math.round((filledFields / requiredFields.length) * 100);
+    }
+
+    get progressColor(): string {
+        if (this.formProgress < 40) return '#e74c3c';
+        if (this.formProgress < 70) return '#f39c12';
+        return '#2ecc71';
+    }
+
     stages = [
         'Initial Call Scheduled',
         'Awaiting Next Interview (after Initial Call)',

@@ -7,6 +7,21 @@ import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
 import { AuthService } from '../../services/auth.service';
 
+interface FilterPreset {
+    name: string;
+    icon: string;
+    filters: {
+        searchText?: string;
+        selectedStage?: string;
+        selectedWorkMode?: string;
+        selectedLocation?: string;
+        selectedSource?: string;
+        salaryMin?: number;
+        salaryMax?: number;
+        showAllProcesses?: boolean;
+    };
+}
+
 @Component({
     selector: 'app-process-list',
     standalone: true,
@@ -30,9 +45,21 @@ export class ProcessListComponent implements OnInit {
     searchText: string = '';
     selectedStage: string = '';
     selectedWorkMode: string = '';
+    selectedLocation: string = '';
+    selectedSource: string = '';
+    salaryMin: number | null = null;
+    salaryMax: number | null = null;
     showAllProcesses: boolean = false;
 
-    // Available options for filters
+    // Date range filters
+    dateFilterType: string = ''; // 'created' or 'updated'
+    dateFrom: string = '';
+    dateTo: string = '';
+
+    // View mode
+    viewMode: 'grid' | 'table' = 'grid';
+
+    // Available options for filters (dynamically populated)
     availableStages: string[] = [
         'Initial Call Scheduled',
         'Awaiting Next Interview (after Initial Call)',
@@ -48,6 +75,51 @@ export class ProcessListComponent implements OnInit {
     ];
 
     availableWorkModes: string[] = ['remote', 'hybrid', 'onsite'];
+    availableLocations: string[] = [];
+    availableSources: string[] = [];
+
+    // Filter presets
+    filterPresets: FilterPreset[] = [
+        {
+            name: 'Active',
+            icon: '⚡',
+            filters: {
+                showAllProcesses: false,
+                selectedStage: ''
+            }
+        },
+        {
+            name: 'Interviews',
+            icon: '📅',
+            filters: {
+                selectedStage: 'Interview Scheduled'
+            }
+        },
+        {
+            name: 'Offers',
+            icon: '🎯',
+            filters: {
+                selectedStage: 'Offer Received'
+            }
+        },
+        {
+            name: 'Remote',
+            icon: '🏠',
+            filters: {
+                selectedWorkMode: 'remote'
+            }
+        },
+        {
+            name: 'High Priority',
+            icon: '⭐',
+            filters: {
+                showAllProcesses: false
+            }
+        }
+    ];
+
+    // Show/hide filters panel on mobile
+    showFiltersPanel: boolean = true;
 
     constructor(
         private processesService: ProcessesService,
@@ -68,7 +140,11 @@ export class ProcessListComponent implements OnInit {
             next: (data) => {
                 this.processes = data;
                 this.processesOnActioin = data.filter((p: any) => p.currentStage !== 'Rejected' && p.currentStage !== 'Withdrawn');
-                this.applyFilters(); // Apply filters on initial load
+
+                // Extract unique locations and sources
+                this.extractFilterOptions();
+
+                this.applyFilters();
                 this.findTasks();
                 this.isLoading = false;
             },
@@ -80,6 +156,26 @@ export class ProcessListComponent implements OnInit {
                 this.isLoading = false;
             }
         });
+
+        // Load saved view mode
+        const savedViewMode = localStorage.getItem('processViewMode');
+        if (savedViewMode === 'grid' || savedViewMode === 'table') {
+            this.viewMode = savedViewMode;
+        }
+    }
+
+    // Extract unique filter options from data
+    extractFilterOptions() {
+        const locations = new Set<string>();
+        const sources = new Set<string>();
+
+        this.processes.forEach(p => {
+            if (p.location) locations.add(p.location);
+            if (p.source) sources.add(p.source);
+        });
+
+        this.availableLocations = Array.from(locations).sort();
+        this.availableSources = Array.from(sources).sort();
     }
 
     findTasks() {
@@ -137,7 +233,7 @@ export class ProcessListComponent implements OnInit {
                 this.processesService.importData(processes, mode).subscribe({
                     next: () => {
                         this.toastService.show('Import successful', 'success');
-                        this.ngOnInit(); // Reload data
+                        this.ngOnInit();
                     },
                     error: (err) => {
                         console.error('Import failed', err);
@@ -148,7 +244,6 @@ export class ProcessListComponent implements OnInit {
                 console.error('Invalid file', err);
                 this.toastService.show('Invalid JSON file', 'error');
             }
-            // Reset input
             event.target.value = '';
         };
         reader.readAsText(file);
@@ -164,7 +259,8 @@ export class ProcessListComponent implements OnInit {
                     process.companyName?.toLowerCase().includes(searchLower) ||
                     process.roleTitle?.toLowerCase().includes(searchLower) ||
                     process.techStack?.toLowerCase().includes(searchLower) ||
-                    process.location?.toLowerCase().includes(searchLower);
+                    process.location?.toLowerCase().includes(searchLower) ||
+                    process.source?.toLowerCase().includes(searchLower);
                 if (!matchesSearch) return false;
             }
 
@@ -176,6 +272,40 @@ export class ProcessListComponent implements OnInit {
             // Work mode filter
             if (this.selectedWorkMode && process.workMode !== this.selectedWorkMode) {
                 return false;
+            }
+
+            // Location filter
+            if (this.selectedLocation && process.location !== this.selectedLocation) {
+                return false;
+            }
+
+            // Source filter
+            if (this.selectedSource && process.source !== this.selectedSource) {
+                return false;
+            }
+
+            // Salary range filter
+            if (this.salaryMin !== null || this.salaryMax !== null) {
+                const salary = process.salaryExpectation;
+                if (salary) {
+                    if (this.salaryMin !== null && salary < this.salaryMin) return false;
+                    if (this.salaryMax !== null && salary > this.salaryMax) return false;
+                } else if (this.salaryMin !== null || this.salaryMax !== null) {
+                    return false;
+                }
+            }
+
+            // Date range filter
+            if (this.dateFilterType && (this.dateFrom || this.dateTo)) {
+                const dateField = this.dateFilterType === 'created' ? process.createdAt : process.updatedAt;
+                const processDate = new Date(dateField);
+
+                if (this.dateFrom && processDate < new Date(this.dateFrom)) return false;
+                if (this.dateTo) {
+                    const toDate = new Date(this.dateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (processDate > toDate) return false;
+                }
             }
 
             // Show all processes filter
@@ -198,8 +328,34 @@ export class ProcessListComponent implements OnInit {
         this.searchText = '';
         this.selectedStage = '';
         this.selectedWorkMode = '';
+        this.selectedLocation = '';
+        this.selectedSource = '';
+        this.salaryMin = null;
+        this.salaryMax = null;
+        this.dateFilterType = '';
+        this.dateFrom = '';
+        this.dateTo = '';
         this.showAllProcesses = false;
         this.applyFilters();
+    }
+
+    // Apply filter preset
+    applyPreset(preset: FilterPreset) {
+        this.clearFilters();
+        Object.assign(this, preset.filters);
+        this.applyFilters();
+        this.toastService.show(`Applied "${preset.name}" filter`, 'info');
+    }
+
+    // Toggle view mode
+    toggleViewMode() {
+        this.viewMode = this.viewMode === 'grid' ? 'table' : 'grid';
+        localStorage.setItem('processViewMode', this.viewMode);
+    }
+
+    // Toggle filters panel
+    toggleFiltersPanel() {
+        this.showFiltersPanel = !this.showFiltersPanel;
     }
 
     onStageChange(event: any) {
@@ -212,18 +368,26 @@ export class ProcessListComponent implements OnInit {
         this.applyFilters();
     }
 
+    onLocationChange(event: any) {
+        this.selectedLocation = event.target.value;
+        this.applyFilters();
+    }
+
+    onSourceChange(event: any) {
+        this.selectedSource = event.target.value;
+        this.applyFilters();
+    }
+
     getStatusClass(stage: string): string {
         if (!stage) return '';
-        return 'status-' + stage.toLowerCase().replace(' ', '-');
+        return 'status-' + stage.toLowerCase().replace(/\s+/g, '-');
     }
 
     // Sorting method
     sort(column: string, skipFilteredUpdate: boolean = false) {
         if (this.sortColumn === column) {
-            // Toggle direction if same column
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            // New column, default to ascending
             this.sortColumn = column;
             this.sortDirection = 'asc';
         }
@@ -234,17 +398,14 @@ export class ProcessListComponent implements OnInit {
             let aValue = this.getSortValue(a, column);
             let bValue = this.getSortValue(b, column);
 
-            // Handle null/undefined values
             if (aValue == null) return this.sortDirection === 'asc' ? 1 : -1;
             if (bValue == null) return this.sortDirection === 'asc' ? -1 : 1;
 
-            // Compare based on type
             if (typeof aValue === 'string' && typeof bValue === 'string') {
                 return this.sortDirection === 'asc'
                     ? aValue.localeCompare(bValue)
                     : bValue.localeCompare(aValue);
             } else {
-                // Numeric or date comparison
                 return this.sortDirection === 'asc'
                     ? (aValue > bValue ? 1 : -1)
                     : (aValue < bValue ? 1 : -1);
@@ -256,7 +417,6 @@ export class ProcessListComponent implements OnInit {
         }
     }
 
-    // Helper to get sort value based on column
     private getSortValue(process: any, column: string): any {
         switch (column) {
             case 'company':
@@ -267,42 +427,50 @@ export class ProcessListComponent implements OnInit {
                 return process._count?.interactions || 0;
             case 'location':
                 return process.location?.toLowerCase();
+            case 'salary':
+                return process.salaryExpectation || 0;
             case 'updated':
                 return new Date(process.updatedAt);
+            case 'created':
+                return new Date(process.createdAt);
             default:
                 return null;
         }
     }
 
-    // Check if column is currently sorted
     isSorted(column: string): boolean {
         return this.sortColumn === column;
     }
 
-    // Get sort direction for a column
     getSortDirection(column: string): 'asc' | 'desc' | null {
         return this.isSorted(column) ? this.sortDirection : null;
     }
 
-    // Helper to check if any filter is active
     get isFilterActive(): boolean {
         return !!this.searchText ||
             !!this.selectedStage ||
             !!this.selectedWorkMode ||
+            !!this.selectedLocation ||
+            !!this.selectedSource ||
+            this.salaryMin !== null ||
+            this.salaryMax !== null ||
+            !!this.dateFilterType ||
             this.showAllProcesses;
     }
 
-    // Get count of active filters
     get activeFilterCount(): number {
         let count = 0;
         if (this.searchText) count++;
         if (this.selectedStage) count++;
         if (this.selectedWorkMode) count++;
+        if (this.selectedLocation) count++;
+        if (this.selectedSource) count++;
+        if (this.salaryMin !== null || this.salaryMax !== null) count++;
+        if (this.dateFilterType) count++;
         if (this.showAllProcesses) count++;
         return count;
     }
 
-    // Stats helper methods
     getActiveCount(): number {
         return this.filteredProcesses.filter(p =>
             !['Rejected', 'Withdrawn', 'Offer', 'Signed'].includes(p.currentStage)
@@ -317,7 +485,7 @@ export class ProcessListComponent implements OnInit {
 
     getOfferCount(): number {
         return this.filteredProcesses.filter(p =>
-            ['Offer', 'Signed'].includes(p.currentStage)
+            ['Offer Received', 'Signed'].includes(p.currentStage)
         ).length;
     }
 

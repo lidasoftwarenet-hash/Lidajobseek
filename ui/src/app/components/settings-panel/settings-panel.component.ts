@@ -1,153 +1,166 @@
-import { Component, OnInit, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { SettingsService, UserSettings } from '../../services/settings.service';
-import { AuthService } from '../../services/auth.service';
-import { ConfirmService } from '../../services/confirm.service';
-import countriesData from '../../../assets/countries.json';
+import { SettingsService } from '../../services/settings.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-settings-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './settings-panel.component.html',
-  styleUrls: ['./settings-panel.component.css']
+  styleUrl: './settings-panel.component.css'
 })
 export class SettingsPanelComponent implements OnInit {
-  @Output() close = new EventEmitter<void>();
-
-  settings!: UserSettings;
-  currentUser: any = null;
-  countryOptions: string[] = [];
-  countrySearch = '';
-  showCountryDropdown = false;
+  isOpen = false;
+  settings: any = {};
 
   constructor(
     private settingsService: SettingsService,
-    private authService: AuthService,
-    private confirmService: ConfirmService,
-    private router: Router
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
+    this.loadSettings();
+
+    // Subscribe to settings panel state
+    this.settingsService.isSettingsPanelOpen$.subscribe(isOpen => {
+      this.isOpen = isOpen;
+    });
+  }
+
+  loadSettings() {
     this.settings = this.settingsService.getSettings();
-    this.settingsService.settings$.subscribe(settings => {
-      this.settings = settings;
-      if (settings.country !== this.countrySearch) {
-        this.countrySearch = settings.country;
-      }
-    });
+  }
 
-    this.countryOptions = Object.keys(countriesData).sort();
-    this.countrySearch = this.settings.country;
+  updateSetting(key: string, value: any) {
+    // Convert string values to appropriate types
+    if (key === 'fontSize') {
+      value = parseInt(value, 10);
+    }
 
-    // Get current user info from localStorage
-    const userStr = localStorage.getItem('app_user');
-    if (userStr) {
-      try {
-        this.currentUser = JSON.parse(userStr);
-      } catch (e) {
-        console.error('Failed to parse user', e);
-      }
+    this.settingsService.updateSetting(key, value);
+    this.loadSettings();
+
+    // Apply settings immediately
+    this.applySettings(key, value);
+  }
+
+  applySettings(key: string, value: any) {
+    switch(key) {
+      case 'theme':
+        this.applyTheme(value);
+        break;
+      case 'fontSize':
+        this.applyFontSize(value);
+        break;
+      case 'highContrast':
+        this.applyHighContrast(value);
+        break;
+      case 'reduceMotion':
+        this.applyReduceMotion(value);
+        break;
+      case 'compactMode':
+        this.applyCompactMode(value);
+        break;
     }
   }
 
-  onThemeChange(theme: 'light' | 'dark' | 'auto') {
-    this.settingsService.setTheme(theme);
-  }
+  applyTheme(theme: string) {
+    const body = document.body;
+    body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
 
-  onClockFormatChange(format: '12' | '24') {
-    this.settingsService.setClockFormat(format);
-  }
-
-  onDateFormatChange(format: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD') {
-    this.settingsService.setDateFormat(format);
-  }
-
-  onCountryChange(country: string) {
-    this.settingsService.updateSettings({ country });
-  }
-
-  get filteredCountryOptions(): string[] {
-    const term = this.countrySearch.trim().toLowerCase();
-    if (!term) {
-      return this.countryOptions;
-    }
-
-    return this.countryOptions.filter(country =>
-      country.toLowerCase().includes(term)
-    );
-  }
-
-  onCountrySearchChange() {
-    this.showCountryDropdown = true;
-  }
-
-  toggleCountryDropdown() {
-    this.showCountryDropdown = !this.showCountryDropdown;
-  }
-
-  selectCountry(country: string) {
-    this.countrySearch = country;
-    this.onCountryChange(country);
-    this.showCountryDropdown = false;
-  }
-
-  @HostListener('document:keydown', ['$event'])
-  onDocumentKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' && this.showCountryDropdown && this.countrySearch.trim()) {
-      const match = this.countryOptions.find(country =>
-        country.toLowerCase() === this.countrySearch.trim().toLowerCase()
-      );
-      this.selectCountry(match ?? this.countrySearch.trim());
+    if (theme === 'auto') {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+    } else {
+      body.classList.add(`theme-${theme}`);
     }
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest('.country-combobox')) {
-      this.showCountryDropdown = false;
-    }
+  applyFontSize(size: number) {
+    document.documentElement.style.setProperty('--base-font-size', `${size}px`);
   }
 
-  onNotificationChange(key: keyof UserSettings['notifications'], value: boolean) {
-    this.settingsService.updateNotificationSetting(key, value);
+  applyHighContrast(enabled: boolean) {
+    document.body.classList.toggle('high-contrast', enabled);
   }
 
-  onDashboardChange(key: keyof UserSettings['dashboard'], value: any) {
-    this.settingsService.updateDashboardSetting(key, value);
+  applyReduceMotion(enabled: boolean) {
+    document.body.classList.toggle('reduce-motion', enabled);
   }
 
-  async resetSettings() {
-    const confirmed = await this.confirmService.confirm(
-      'Are you sure you want to reset all settings to default?',
-      'Reset settings'
-    );
-
-    if (confirmed) {
-      this.settingsService.resetSettings();
-    }
-  }
-
-  logout() {
-    this.confirmService.confirm('Are you sure you want to logout?', 'Logout').then((confirmed) => {
-      if (!confirmed) {
-        return;
-      }
-      this.authService.logout();
-      this.router.navigate(['/login']);
-      this.close.emit();
-    });
+  applyCompactMode(enabled: boolean) {
+    document.body.classList.toggle('compact-mode', enabled);
   }
 
   closePanel() {
-    this.close.emit();
+    this.settingsService.closeSettingsPanel();
   }
 
-  @HostListener('document:keydown.escape', ['$event'])
-  onEscapeKey(_event: KeyboardEvent) {
-    this.closePanel();
+  exportData() {
+    try {
+      const data = {
+        settings: this.settingsService.getSettings(),
+        exportDate: new Date().toISOString(),
+        version: '2.0.0'
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `settings-export-${Date.now()}.json`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      this.toastService.showSuccess('Settings exported successfully');
+    } catch (error) {
+      this.toastService.showError('Failed to export settings');
+      console.error('Export error:', error);
+    }
+  }
+
+  clearData() {
+    if (confirm('Are you sure you want to clear the cache? This will not delete your settings.')) {
+      try {
+        // Clear any cached data (localStorage items that are not settings)
+        const keysToKeep = ['settings', 'auth_token'];
+        const allKeys = Object.keys(localStorage);
+
+        allKeys.forEach(key => {
+          if (!keysToKeep.includes(key)) {
+            localStorage.removeItem(key);
+          }
+        });
+
+        // Clear session storage
+        sessionStorage.clear();
+
+        this.toastService.showSuccess('Cache cleared successfully');
+      } catch (error) {
+        this.toastService.showError('Failed to clear cache');
+        console.error('Clear cache error:', error);
+      }
+    }
+  }
+
+  resetToDefaults() {
+    if (confirm('Are you sure you want to reset all settings to their default values?')) {
+      try {
+        this.settingsService.resetSettings();
+        this.loadSettings();
+
+        // Apply all default settings
+        Object.keys(this.settings).forEach(key => {
+          this.applySettings(key, this.settings[key]);
+        });
+
+        this.toastService.showSuccess('Settings reset to defaults');
+      } catch (error) {
+        this.toastService.showError('Failed to reset settings');
+        console.error('Reset error:', error);
+      }
+    }
   }
 }

@@ -5,6 +5,17 @@
             <h1>Edit Process</h1>
             <p class="subtitle">Modify details for {{ process.companyName }}.</p>
             <div class="form-meta">Required fields are marked with <span class="required">*</span></div>
+
+            <!-- Form Progress Indicator -->
+            <div class="form-progress-container">
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" [style.width.%]="formProgress" [style.background]="progressColor"></div>
+                </div>
+                <div class="progress-label">
+                    <span>Form Completion: <strong>{{ formProgress }}%</strong></span>
+                    <span class="progress-hint">{{ formProgress < 100 ? 'Fill required fields' : 'All required fields completed' }}</span>
+                </div>
+            </div>
         </header>
 
         <form #processForm="ngForm" (ngSubmit)="onSubmit()" class="data-form">
@@ -162,10 +173,16 @@
 
                 <div class="form-group">
                     <label>Data From the Phone Call</label>
-                    <textarea name="dataFromThePhoneCall" [(ngModel)]="process.dataFromThePhoneCall" rows="4"
+                    <textarea name="dataFromThePhoneCall" [(ngModel)]="process.dataFromThePhoneCall"
+                        [maxlength]="dataFromCallMaxLength" rows="4"
                         placeholder="What did you learn in the initial call that makes you interested in this role?..."
                         class="input-field"></textarea>
-                    <p class="muted-hint">Capture key insights from your initial conversation with HR/recruiter.</p>
+                    <div class="field-footer">
+                        <p class="muted-hint">Capture key insights from your initial conversation with HR/recruiter.</p>
+                        <span class="char-counter" [class.warning]="process.dataFromThePhoneCall?.length > dataFromCallMaxLength * 0.9">
+                            {{ process.dataFromThePhoneCall?.length || 0 }} / {{ dataFromCallMaxLength }}
+                        </span>
+                    </div>
                 </div>
             </section>
 
@@ -208,9 +225,15 @@
 
                 <div class="form-group">
                     <label>Invitation Content</label>
-                    <textarea name="initialInviteContent" [(ngModel)]="process.initialInviteContent" rows="4"
+                    <textarea name="initialInviteContent" [(ngModel)]="process.initialInviteContent"
+                        [maxlength]="initialInviteContentMaxLength" rows="4"
                         placeholder="Paste or write the invitation content here..." class="input-field"></textarea>
-                    <p class="muted-hint">What did the invitation say? Copy-paste or summarize the message.</p>
+                    <div class="field-footer">
+                        <p class="muted-hint">What did the invitation say? Copy-paste or summarize the message.</p>
+                        <span class="char-counter" [class.warning]="process.initialInviteContent?.length > initialInviteContentMaxLength * 0.9">
+                            {{ process.initialInviteContent?.length || 0 }} / {{ initialInviteContentMaxLength }}
+                        </span>
+                    </div>
                 </div>
             </section>
 

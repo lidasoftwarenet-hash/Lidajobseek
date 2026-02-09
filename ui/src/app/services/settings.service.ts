@@ -1,166 +1,149 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-export interface UserSettings {
+export interface Settings {
   theme: 'light' | 'dark' | 'auto';
-  clockFormat: '12' | '24';
-  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
-  country: string;
-  notifications: {
-    email: boolean;
-    desktop: boolean;
-    followUps: boolean;
-    interviews: boolean;
-  };
-  dashboard: {
-    showStats: boolean;
-    showTasks: boolean;
-    defaultView: 'grid' | 'list';
-  };
+  fontSize: number;
+  highContrast: boolean;
+  reduceMotion: boolean;
+  keyboardNavigation: boolean;
+  notifications: boolean;
+  soundNotifications: boolean;
+  emailNotifications: boolean;
+  compactMode: boolean;
+  showTooltips: boolean;
+  autoSave: boolean;
+  analytics: boolean;
 }
-
-const DEFAULT_SETTINGS: UserSettings = {
-  theme: 'light',
-  clockFormat: '24',
-  dateFormat: 'DD/MM/YYYY',
-  country: '',
-  notifications: {
-    email: true,
-    desktop: true,
-    followUps: true,
-    interviews: true
-  },
-  dashboard: {
-    showStats: true,
-    showTasks: true,
-    defaultView: 'grid'
-  }
-};
 
 @Injectable({
   providedIn: 'root'
 })
 export class SettingsService {
-  private readonly STORAGE_KEY = 'jobseek_user_settings';
-  private settingsSubject = new BehaviorSubject<UserSettings>(this.loadSettings());
+  private readonly STORAGE_KEY = 'settings';
 
-  settings$ = this.settingsSubject.asObservable();
+  private defaultSettings: Settings = {
+    theme: 'auto',
+    fontSize: 14,
+    highContrast: false,
+    reduceMotion: false,
+    keyboardNavigation: true,
+    notifications: true,
+    soundNotifications: true,
+    emailNotifications: true,
+    compactMode: false,
+    showTooltips: true,
+    autoSave: true,
+    analytics: true
+  };
+
+  private settingsSubject = new BehaviorSubject<Settings>(this.loadSettings());
+  public settings$ = this.settingsSubject.asObservable();
+
+  private settingsPanelOpenSubject = new BehaviorSubject<boolean>(false);
+  public isSettingsPanelOpen$ = this.settingsPanelOpenSubject.asObservable();
 
   constructor() {
-    // Apply theme on initialization
-    this.applyTheme(this.settingsSubject.value.theme);
+    this.initializeSettings();
   }
 
-  getSettings(): UserSettings {
-    return this.settingsSubject.value;
+  private initializeSettings() {
+    const settings = this.loadSettings();
+    this.applySettings(settings);
   }
 
-  updateSettings(settings: Partial<UserSettings>) {
-    const currentSettings = this.settingsSubject.value;
-    const newSettings = { ...currentSettings, ...settings };
-
-    // If theme changed, apply it
-    if (settings.theme && settings.theme !== currentSettings.theme) {
-      this.applyTheme(settings.theme);
+  private loadSettings(): Settings {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Merge with defaults to handle new settings
+        return { ...this.defaultSettings, ...parsed };
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
     }
-
-    this.settingsSubject.next(newSettings);
-    this.saveSettings(newSettings);
+    return { ...this.defaultSettings };
   }
 
-  updateNotificationSetting(key: keyof UserSettings['notifications'], value: boolean) {
-    const currentSettings = this.getSettings();
-    this.updateSettings({
-      notifications: {
-        ...currentSettings.notifications,
-        [key]: value
-      }
-    });
-  }
-
-  updateDashboardSetting(key: keyof UserSettings['dashboard'], value: any) {
-    const currentSettings = this.getSettings();
-    this.updateSettings({
-      dashboard: {
-        ...currentSettings.dashboard,
-        [key]: value
-      }
-    });
-  }
-
-  setTheme(theme: 'light' | 'dark' | 'auto') {
-    this.updateSettings({ theme });
-  }
-
-  setClockFormat(format: '12' | '24') {
-    this.updateSettings({ clockFormat: format });
-  }
-
-  setDateFormat(format: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD') {
-    this.updateSettings({ dateFormat: format });
-  }
-
-  resetSettings() {
-    this.settingsSubject.next(DEFAULT_SETTINGS);
-    this.saveSettings(DEFAULT_SETTINGS);
-    this.applyTheme(DEFAULT_SETTINGS.theme);
-  }
-
-  private loadSettings(): UserSettings {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (stored) {
-      try {
-        return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
-      } catch (e) {
-        console.error('Failed to parse settings', e);
-        return DEFAULT_SETTINGS;
-      }
+  private saveSettings(settings: Settings) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
+      this.settingsSubject.next(settings);
+    } catch (error) {
+      console.error('Error saving settings:', error);
     }
-    return DEFAULT_SETTINGS;
   }
 
-  private saveSettings(settings: UserSettings) {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
+  private applySettings(settings: Settings) {
+    // Apply theme
+    this.applyTheme(settings.theme);
+
+    // Apply font size
+    document.documentElement.style.setProperty('--base-font-size', `${settings.fontSize}px`);
+
+    // Apply high contrast
+    document.body.classList.toggle('high-contrast', settings.highContrast);
+
+    // Apply reduce motion
+    document.body.classList.toggle('reduce-motion', settings.reduceMotion);
+
+    // Apply compact mode
+    document.body.classList.toggle('compact-mode', settings.compactMode);
   }
 
   private applyTheme(theme: 'light' | 'dark' | 'auto') {
     const body = document.body;
+    body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
 
     if (theme === 'auto') {
-      // Check system preference
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      body.classList.toggle('dark-theme', prefersDark);
+      body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (this.getSettings().theme === 'auto') {
+          body.classList.remove('theme-light', 'theme-dark');
+          body.classList.add(e.matches ? 'theme-dark' : 'theme-light');
+        }
+      });
     } else {
-      body.classList.toggle('dark-theme', theme === 'dark');
+      body.classList.add(`theme-${theme}`);
     }
   }
 
-  // Format time based on user preference
-  formatTime(date: Date): string {
-    const settings = this.getSettings();
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: settings.clockFormat === '12'
-    });
+  getSettings(): Settings {
+    return this.settingsSubject.value;
   }
 
-  // Format date based on user preference
-  formatDate(date: Date): string {
-    const settings = this.getSettings();
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
+  updateSetting<K extends keyof Settings>(key: K, value: Settings[K]) {
+    const current = this.getSettings();
+    const updated = { ...current, [key]: value };
+    this.saveSettings(updated);
+    this.applySettings(updated);
+  }
 
-    switch (settings.dateFormat) {
-      case 'MM/DD/YYYY':
-        return `${month}/${day}/${year}`;
-      case 'DD/MM/YYYY':
-        return `${day}/${month}/${year}`;
-      case 'YYYY-MM-DD':
-        return `${year}-${month}-${day}`;
-      default:
-        return `${day}/${month}/${year}`;
-    }
+  updateSettings(partial: Partial<Settings>) {
+    const current = this.getSettings();
+    const updated = { ...current, ...partial };
+    this.saveSettings(updated);
+    this.applySettings(updated);
+  }
+
+  resetSettings() {
+    this.saveSettings({ ...this.defaultSettings });
+    this.applySettings(this.defaultSettings);
+  }
+
+  openSettingsPanel() {
+    this.settingsPanelOpenSubject.next(true);
+  }
+
+  closeSettingsPanel() {
+    this.settingsPanelOpenSubject.next(false);
+  }
+
+  toggleSettingsPanel() {
+    this.settingsPanelOpenSubject.next(!this.settingsPanelOpenSubject.value);
   }
 }
