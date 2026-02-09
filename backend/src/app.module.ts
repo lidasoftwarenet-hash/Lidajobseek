@@ -70,20 +70,8 @@ import { ProfilesModule } from './profiles/profiles.module';
         },
       },
       {
-        rootPath: (() => {
-          const distPublicRoot = join(process.cwd(), 'dist', 'public');
-          const distPublicParent = join(process.cwd(), '..', 'dist', 'public');
-          const uiBrowserRoot = join(process.cwd(), 'ui', 'dist', 'ui', 'browser');
-          const uiBrowserParent = join(process.cwd(), '..', 'ui', 'dist', 'ui', 'browser');
-          if (existsSync(distPublicRoot)) {
-            return distPublicRoot;
-          }
-          if (existsSync(distPublicParent)) {
-            return distPublicParent;
-          }
-          return existsSync(uiBrowserRoot) ? uiBrowserRoot : uiBrowserParent;
-        })(),
-        exclude: ['/api'],
+        rootPath: join(__dirname, 'ui', 'browser'),
+        exclude: ['/api/(.*)'],
       },
     ),
     ProcessesModule,
