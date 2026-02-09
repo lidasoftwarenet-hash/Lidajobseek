@@ -1,0 +1,18 @@
+# Robots.txt for Lida Job Seek
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /login
+Disallow: /register
+Disallow: /activate-account
+
+# Sitemap location
+Sitemap: https://lidajobseek.com/sitemap.xml
+
+# Crawl delay (optional - be nice to servers)
+Crawl-delay: 1

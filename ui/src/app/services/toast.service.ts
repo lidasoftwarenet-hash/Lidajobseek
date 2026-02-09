@@ -27,6 +27,22 @@ export class ToastService {
     }, 3000);
   }
 
+  showSuccess(message: string) {
+    this.show(message, 'success');
+  }
+
+  showError(message: string) {
+    this.show(message, 'error');
+  }
+
+  showInfo(message: string) {
+    this.show(message, 'info');
+  }
+
+  showWarning(message: string) {
+    this.show(message, 'warning');
+  }
+
   remove(id: number) {
     const currentToasts = this.toastsSubject.value;
     this.toastsSubject.next(currentToasts.filter(t => t.id !== id));

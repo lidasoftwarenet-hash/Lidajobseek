@@ -3,13 +3,26 @@ import { BehaviorSubject } from 'rxjs';
 
 export interface Settings {
   theme: 'light' | 'dark' | 'auto';
+  clockFormat: '12' | '24';
+  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  country: string;
   fontSize: number;
   highContrast: boolean;
   reduceMotion: boolean;
   keyboardNavigation: boolean;
-  notifications: boolean;
+  notifications: {
+    email: boolean;
+    desktop: boolean;
+    followUps: boolean;
+    interviews: boolean;
+  };
   soundNotifications: boolean;
   emailNotifications: boolean;
+  dashboard: {
+    showStats: boolean;
+    showTasks: boolean;
+    defaultView: 'grid' | 'list';
+  };
   compactMode: boolean;
   showTooltips: boolean;
   autoSave: boolean;
@@ -23,14 +36,27 @@ export class SettingsService {
   private readonly STORAGE_KEY = 'settings';
 
   private defaultSettings: Settings = {
-    theme: 'auto',
+    theme: 'light',
+    clockFormat: '24',
+    dateFormat: 'DD/MM/YYYY',
+    country: '',
     fontSize: 14,
     highContrast: false,
     reduceMotion: false,
     keyboardNavigation: true,
-    notifications: true,
+    notifications: {
+      email: true,
+      desktop: true,
+      followUps: true,
+      interviews: true
+    },
     soundNotifications: true,
     emailNotifications: true,
+    dashboard: {
+      showStats: true,
+      showTasks: true,
+      defaultView: 'grid'
+    },
     compactMode: false,
     showTooltips: true,
     autoSave: true,

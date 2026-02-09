@@ -38,7 +38,17 @@ export class SettingsPanelComponent implements OnInit {
       value = parseInt(value, 10);
     }
 
-    this.settingsService.updateSetting(key, value);
+    // Handle nested properties
+    if (key.includes('.')) {
+      const [parent, child] = key.split('.');
+      const current = this.settingsService.getSettings();
+      const updated: any = { ...current };
+      updated[parent] = { ...updated[parent], [child]: value };
+      this.settingsService.updateSettings(updated);
+    } else {
+      this.settingsService.updateSetting(key as any, value);
+    }
+
     this.loadSettings();
 
     // Apply settings immediately

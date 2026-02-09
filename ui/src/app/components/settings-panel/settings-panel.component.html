@@ -185,47 +185,60 @@
       <div class="setting-group">
         <div class="setting-item">
           <div class="setting-info">
-            <label for="enable-notifications">Enable Notifications</label>
-            <span class="setting-description">Receive system notifications</span>
-          </div>
-          <label class="toggle-switch">
-            <input
-              type="checkbox"
-              id="enable-notifications"
-              [checked]="settings.notifications"
-              (change)="updateSetting('notifications', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item" [class.disabled]="!settings.notifications">
-          <div class="setting-info">
-            <label for="sound-notifications">Sound Alerts</label>
-            <span class="setting-description">Play sound on notifications</span>
-          </div>
-          <label class="toggle-switch">
-            <input
-              type="checkbox"
-              id="sound-notifications"
-              [checked]="settings.soundNotifications"
-              [disabled]="!settings.notifications"
-              (change)="updateSetting('soundNotifications', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item" [class.disabled]="!settings.notifications">
-          <div class="setting-info">
-            <label for="email-notifications">Email Notifications</label>
+            <label for="enable-notifications">Email Notifications</label>
             <span class="setting-description">Receive updates via email</span>
           </div>
           <label class="toggle-switch">
             <input
               type="checkbox"
-              id="email-notifications"
-              [checked]="settings.emailNotifications"
-              [disabled]="!settings.notifications"
-              (change)="updateSetting('emailNotifications', $any($event.target).checked)">
+              id="enable-notifications"
+              [checked]="settings.notifications?.email"
+              (change)="updateSetting('notifications.email', $any($event.target).checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <label for="desktop-notifications">Desktop Notifications</label>
+            <span class="setting-description">Show desktop notifications</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              id="desktop-notifications"
+              [checked]="settings.notifications?.desktop"
+              (change)="updateSetting('notifications.desktop', $any($event.target).checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <label for="followup-notifications">Follow-up Reminders</label>
+            <span class="setting-description">Get reminded about follow-ups</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              id="followup-notifications"
+              [checked]="settings.notifications?.followUps"
+              (change)="updateSetting('notifications.followUps', $any($event.target).checked)">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <label for="interview-notifications">Interview Reminders</label>
+            <span class="setting-description">Get reminded about interviews</span>
+          </div>
+          <label class="toggle-switch">
+            <input
+              type="checkbox"
+              id="interview-notifications"
+              [checked]="settings.notifications?.interviews"
+              (change)="updateSetting('notifications.interviews', $any($event.target).checked)">
             <span class="toggle-slider"></span>
           </label>
         </div>
