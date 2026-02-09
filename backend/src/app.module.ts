@@ -70,7 +70,7 @@ import { ProfilesModule } from './profiles/profiles.module';
         },
       },
       {
-        rootPath: join(__dirname, 'ui', 'browser'),
+        rootPath: join(__dirname, 'client'),
         exclude: ['/api{/*path}'],
       },
     ),
