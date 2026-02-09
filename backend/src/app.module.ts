@@ -8,12 +8,12 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ContactsService } from './contacts/contacts.service';
 import { ContactsController } from './contacts/contacts.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
+import { basename, extname, join } from 'path';
 import { existsSync } from 'fs';
 import { ResourcesModule } from './resources/resources.module';
 import { AuthModule } from './auth/auth.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import config from '../mikro-orm.config';
+import config from './mikro-orm.config';
 import { Contact } from './contacts/contact.entity';
 import { Process } from './processes/process.entity';
 import { ProfilesModule } from './profiles/profiles.module';
@@ -46,6 +46,28 @@ import { ProfilesModule } from './profiles/profiles.module';
           return existsSync(uploadsRoot) ? uploadsRoot : uploadsParent;
         })(),
         serveRoot: '/uploads',
+        serveStaticOptions: {
+          setHeaders: (res, filePath) => {
+            const blockedExtensions = new Set([
+              '.html',
+              '.htm',
+              '.svg',
+              '.js',
+              '.mjs',
+              '.xml',
+            ]);
+
+            const fileExt = extname(filePath).toLowerCase();
+            if (blockedExtensions.has(fileExt)) {
+              res.setHeader('Content-Type', 'application/octet-stream');
+            }
+
+            const safeFileName = basename(filePath).replace(/"/g, '');
+            res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
+            res.setHeader('X-Content-Type-Options', 'nosniff');
+            res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+          },
+        },
       },
       {
         rootPath: (() => {

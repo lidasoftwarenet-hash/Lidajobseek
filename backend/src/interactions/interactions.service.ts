@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { Interaction } from './interaction.entity';
 import { Process } from '../processes/process.entity';
 import { Contact } from '../contacts/contact.entity';
 import { CreateInteractionDto } from './dto/create-interaction.dto';
+import { UpdateInteractionDto } from './dto/update-interaction.dto';
 
 @Injectable()
 export class InteractionsService {
@@ -18,6 +19,14 @@ export class InteractionsService {
     private readonly em: EntityManager,
   ) { }
 
+  private parseDateOrThrow(value: string, fieldName: string): Date {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException(`${fieldName} must be a valid date`);
+    }
+    return parsed;
+  }
+
   async create(dto: CreateInteractionDto, userId: number): Promise<Interaction> {
     const process = await this.processRepository.findOne({ id: dto.processId, user: userId });
     if (!process) {
@@ -25,7 +34,7 @@ export class InteractionsService {
     }
 
     const interaction = this.interactionRepository.create({
-      date: new Date(dto.date),
+      date: this.parseDateOrThrow(dto.date, 'date'),
       interviewType: dto.interviewType,
       participants: dto.participants,
       summary: dto.summary,
@@ -34,7 +43,9 @@ export class InteractionsService {
       notes: dto.notes,
       headsup: dto.headsup,
       nextInviteStatus: dto.nextInviteStatus,
-      nextInviteDate: dto.nextInviteDate ? new Date(dto.nextInviteDate) : undefined,
+      nextInviteDate: dto.nextInviteDate
+        ? this.parseDateOrThrow(dto.nextInviteDate, 'nextInviteDate')
+        : undefined,
       nextInviteLink: dto.nextInviteLink,
       nextInviteType: dto.nextInviteType,
       invitationExtended: dto.invitationExtended,
@@ -78,16 +89,16 @@ export class InteractionsService {
 
     if (startDate && endDate) {
       where.date = {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
+        $gte: this.parseDateOrThrow(startDate, 'startDate'),
+        $lte: this.parseDateOrThrow(endDate, 'endDate'),
       };
     } else if (startDate) {
       where.date = {
-        $gte: new Date(startDate),
+        $gte: this.parseDateOrThrow(startDate, 'startDate'),
       };
     } else if (endDate) {
       where.date = {
-        $lte: new Date(endDate),
+        $lte: this.parseDateOrThrow(endDate, 'endDate'),
       };
     }
 
@@ -116,15 +127,15 @@ export class InteractionsService {
     );
   }
 
-  async update(id: number, dto: any, userId: number): Promise<Interaction | null> {
+  async update(id: number, dto: UpdateInteractionDto, userId: number): Promise<Interaction | null> {
     const interaction = await this.interactionRepository.findOne({ id, process: { user: userId } });
     if (!interaction) {
       return null;
     }
 
     const data: any = { ...dto };
-    if (dto.date) data.date = new Date(dto.date);
-    if (dto.nextInviteDate) data.nextInviteDate = new Date(dto.nextInviteDate);
+    if (dto.date) data.date = this.parseDateOrThrow(dto.date, 'date');
+    if (dto.nextInviteDate) data.nextInviteDate = this.parseDateOrThrow(dto.nextInviteDate, 'nextInviteDate');
 
     Object.assign(interaction, data);
     await this.em.flush();
@@ -156,32 +167,44 @@ export class InteractionsService {
   }
 
   async importData(interactions: any[], mode: 'overwrite' | 'append', userId: number): Promise<{ count: number }> {
-    if (mode === 'overwrite') {
-      const allInteractions = await this.interactionRepository.find({ process: { user: userId } });
-      await this.em.removeAndFlush(allInteractions);
-    }
-
-    let count = 0;
-    for (const i of interactions) {
-      const { id, process, ...interactionData } = i;
-
-      // Convert date strings to Date objects
-      if (interactionData.date) interactionData.date = new Date(interactionData.date);
-      if (interactionData.nextInviteDate) interactionData.nextInviteDate = new Date(interactionData.nextInviteDate);
-      if (interactionData.createdAt) interactionData.createdAt = new Date(interactionData.createdAt);
-
-      // Check if process exists
-      const processExists = await this.processRepository.findOne({ id: interactionData.processId, user: userId });
-
-      if (processExists) {
-        const { processId, ...data } = interactionData;
-        const interaction = this.interactionRepository.create({ ...data, process: processExists } as any);
-        this.em.persist(interaction);
-        count++;
+    return this.em.transactional(async (em) => {
+      if (mode === 'overwrite') {
+        const allInteractions = await em.find(Interaction, { process: { user: userId } });
+        await em.removeAndFlush(allInteractions);
       }
-    }
-    
-    await this.em.flush();
-    return { count };
+
+      let count = 0;
+      for (const i of interactions) {
+        const { id, process, ...interactionData } = i;
+
+        if (interactionData.date) {
+          interactionData.date = this.parseDateOrThrow(interactionData.date, 'date');
+        }
+        if (interactionData.nextInviteDate) {
+          interactionData.nextInviteDate = this.parseDateOrThrow(interactionData.nextInviteDate, 'nextInviteDate');
+        }
+        if (interactionData.createdAt) {
+          interactionData.createdAt = this.parseDateOrThrow(interactionData.createdAt, 'createdAt');
+        }
+
+        const processExists = await em.findOne(Process, {
+          id: interactionData.processId,
+          user: userId,
+        });
+
+        if (processExists) {
+          const { processId, ...data } = interactionData;
+          const interaction = em.create(Interaction, {
+            ...data,
+            process: processExists,
+          } as any);
+          em.persist(interaction);
+          count++;
+        }
+      }
+
+      await em.flush();
+      return { count };
+    });
   }
 }

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsInt,
   IsNumber,
@@ -7,43 +8,60 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateProcessDto {
+export class UpdateProcessDto {
+  @IsOptional()
   @IsString()
   @MinLength(1)
-  companyName: string;
-
-  @IsString()
-  @MinLength(1)
-  roleTitle: string;
-
-  @IsString()
-  @MinLength(1)
-  techStack: string;
-
-  @IsString()
-  @MinLength(1)
-  location: string;
-
-  @IsString()
-  @MinLength(1)
-  workMode: string;
+  companyName?: string;
 
   @IsOptional()
+  @IsString()
+  @MinLength(1)
+  roleTitle?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  techStack?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  workMode?: string;
+
+  @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
-  daysFromOffice?: number; // For hybrid work mode
+  daysFromOffice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  salaryExpectation?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  baseSalary?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  signingBonus?: number;
 
   @IsOptional()
   @IsString()
   source?: string;
 
   @IsOptional()
-  @IsNumber()
-  salaryExpectation?: number;
-
   @IsString()
-  @MinLength(1)
-  currentStage: string;
+  currentStage?: string;
 
   @IsOptional()
   @IsString()
@@ -53,7 +71,6 @@ export class CreateProcessDto {
   @IsString()
   nextFollowUp?: string;
 
-  // Initial Invitation Details
   @IsOptional()
   @IsString()
   initialInviteDate?: string;
@@ -66,36 +83,31 @@ export class CreateProcessDto {
   @IsString()
   initialInviteContent?: string;
 
-  // Career Intelligence
   @IsOptional()
+  @IsString()
+  offerDeadline?: string;
+
+  @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   scoreTech?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   scoreWLB?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   scoreGrowth?: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   scoreVibe?: number;
-
-  @IsOptional()
-  @IsString()
-  tailoredPitch?: string;
-
-  @IsOptional()
-  @IsString()
-  cvVersion?: string;
-
-  @IsOptional()
-  @IsString()
-  submissionLink?: string;
 }

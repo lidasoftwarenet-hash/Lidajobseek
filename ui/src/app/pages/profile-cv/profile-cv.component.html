@@ -144,8 +144,11 @@
                     {{ sendingCv ? 'Sending...' : 'Send CV' }}
                 </button>
             </div>
-            <p *ngIf="shareResult" class="cv-share-status success">
+            <p *ngIf="shareStatus === 'success'" class="cv-share-status success">
                 ✓ CV sent successfully!
+            </p>
+            <p *ngIf="shareStatus === 'error'" class="cv-share-status error">
+                ✗ Failed to send CV. Please retry.
             </p>
         </div>
     </section>

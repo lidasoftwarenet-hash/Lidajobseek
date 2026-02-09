@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { Resource } from './resource.entity';
+import { CreateResourceDto } from './dto/create-resource.dto';
+import { UpdateResourceDto } from './dto/update-resource.dto';
 
 @Injectable()
 export class ResourcesService {
@@ -11,7 +13,7 @@ export class ResourcesService {
     private readonly em: EntityManager,
   ) { }
 
-  async create(data: any, userId: number): Promise<Resource> {
+  async create(data: CreateResourceDto, userId: number): Promise<Resource> {
     const resource = this.resourceRepository.create({ ...data, user: userId } as any);
     await this.em.persistAndFlush(resource);
     return resource;
@@ -28,7 +30,7 @@ export class ResourcesService {
     return this.resourceRepository.findOne({ id, user: userId } as any);
   }
 
-  async update(id: number, data: any, userId: number): Promise<Resource | null> {
+  async update(id: number, data: UpdateResourceDto, userId: number): Promise<Resource | null> {
     const resource = await this.resourceRepository.findOne({ id, user: userId } as any);
     if (!resource) {
       return null;

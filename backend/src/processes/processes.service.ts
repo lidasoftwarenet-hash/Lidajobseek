@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { Process } from './process.entity';
@@ -7,6 +7,7 @@ import { SelfReview } from '../reviews/self-review.entity';
 import { Contact } from '../contacts/contact.entity';
 import { User } from '../users/user.entity';
 import { CreateProcessDto } from './dto/create-process.dto';
+import { UpdateProcessDto } from './dto/update-process.dto';
 
 @Injectable()
 export class ProcessesService {
@@ -16,15 +17,23 @@ export class ProcessesService {
     private readonly em: EntityManager,
   ) { }
 
+  private parseDateOrThrow(value: string, fieldName: string): Date {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new BadRequestException(`${fieldName} must be a valid date`);
+    }
+    return parsed;
+  }
+
   async create(dto: CreateProcessDto, userId: number): Promise<Process> {
     const data: any = { ...dto, user: this.em.getReference(User, userId) };
     
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {
-      data.initialInviteDate = new Date(dto.initialInviteDate);
+      data.initialInviteDate = this.parseDateOrThrow(dto.initialInviteDate, 'initialInviteDate');
     }
     if (dto.nextFollowUp) {
-      data.nextFollowUp = new Date(dto.nextFollowUp);
+      data.nextFollowUp = this.parseDateOrThrow(dto.nextFollowUp, 'nextFollowUp');
     }
 
     // Convert empty strings to null for numeric fields
@@ -53,9 +62,6 @@ export class ProcessesService {
   }
 
   async findAll(userId: number): Promise<any[]> {
-    // First, check and update any processes that need automatic stage update
-    await this.updateStaleProcesses();
-
     const processes = await this.processRepository.find(
       { user: userId },
       {
@@ -74,9 +80,6 @@ export class ProcessesService {
   }
 
   async findOne(id: number, userId: number): Promise<Process | null> {
-    // First, check and update any processes that need automatic stage update
-    await this.updateStaleProcesses();
-
     const process = await this.processRepository.findOne(
       { id, user: userId },
       {
@@ -93,7 +96,7 @@ export class ProcessesService {
     return process;
   }
 
-  async update(id: number, dto: any, userId: number): Promise<Process | null> {
+  async update(id: number, dto: UpdateProcessDto, userId: number): Promise<Process | null> {
     const process = await this.processRepository.findOne({ id, user: userId });
     if (!process) {
       return null;
@@ -103,13 +106,13 @@ export class ProcessesService {
     
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {
-      data.initialInviteDate = new Date(dto.initialInviteDate);
+      data.initialInviteDate = this.parseDateOrThrow(dto.initialInviteDate, 'initialInviteDate');
     }
     if (dto.nextFollowUp) {
-      data.nextFollowUp = new Date(dto.nextFollowUp);
+      data.nextFollowUp = this.parseDateOrThrow(dto.nextFollowUp, 'nextFollowUp');
     }
     if (dto.offerDeadline) {
-      data.offerDeadline = new Date(dto.offerDeadline);
+      data.offerDeadline = this.parseDateOrThrow(dto.offerDeadline, 'offerDeadline');
     }
 
     // Convert empty strings to null for numeric fields
@@ -149,95 +152,87 @@ export class ProcessesService {
   }
 
   async importData(processes: any[], mode: 'overwrite' | 'append', userId: number): Promise<{ count: number }> {
-    if (mode === 'overwrite') {
-      const userProcesses = await this.processRepository.find({ user: userId });
-      await this.em.removeAndFlush(userProcesses);
-    }
-
-    let count = 0;
-    for (const p of processes) {
-      const { id, interactions, reviews, contacts, _count, userId: oldUserId, ...processData } = p;
-
-      // Convert date strings to Date objects
-      if (processData.createdAt) processData.createdAt = new Date(processData.createdAt);
-      if (processData.updatedAt) processData.updatedAt = new Date(processData.updatedAt);
-      if (processData.initialInviteDate) processData.initialInviteDate = new Date(processData.initialInviteDate);
-      if (processData.offerDeadline) processData.offerDeadline = new Date(processData.offerDeadline);
-      if (processData.nextFollowUp) processData.nextFollowUp = new Date(processData.nextFollowUp);
-
-      const process = this.processRepository.create({
-        ...processData,
-        user: this.em.getReference(User, userId),
-      });
-
-      // Add nested relations
-      if (interactions && interactions.length > 0) {
-        for (const i of interactions) {
-          const { id, processId, ...iData } = i;
-          if (iData.date) iData.date = new Date(iData.date);
-          if (iData.nextInviteDate) iData.nextInviteDate = new Date(iData.nextInviteDate);
-          if (iData.createdAt) iData.createdAt = new Date(iData.createdAt);
-          
-          const interaction = this.em.create(Interaction, { ...iData, process });
-          process.interactions.add(interaction);
-        }
+    return this.em.transactional(async (em) => {
+      if (mode === 'overwrite') {
+        const userProcesses = await em.find(Process, { user: userId });
+        await em.removeAndFlush(userProcesses);
       }
 
-      if (reviews && reviews.length > 0) {
-        for (const r of reviews) {
-          const { id, processId, ...rData } = r;
-          if (rData.createdAt) rData.createdAt = new Date(rData.createdAt);
-          
-          const review = this.em.create(SelfReview, { ...rData, process });
-          process.reviews.add(review);
+      let count = 0;
+      for (const p of processes) {
+        const {
+          id,
+          interactions,
+          reviews,
+          contacts,
+          _count,
+          userId: oldUserId,
+          ...processData
+        } = p;
+
+        if (processData.createdAt) {
+          processData.createdAt = this.parseDateOrThrow(processData.createdAt, 'createdAt');
         }
+        if (processData.updatedAt) {
+          processData.updatedAt = this.parseDateOrThrow(processData.updatedAt, 'updatedAt');
+        }
+        if (processData.initialInviteDate) {
+          processData.initialInviteDate = this.parseDateOrThrow(processData.initialInviteDate, 'initialInviteDate');
+        }
+        if (processData.offerDeadline) {
+          processData.offerDeadline = this.parseDateOrThrow(processData.offerDeadline, 'offerDeadline');
+        }
+        if (processData.nextFollowUp) {
+          processData.nextFollowUp = this.parseDateOrThrow(processData.nextFollowUp, 'nextFollowUp');
+        }
+
+        const process = em.create(Process, {
+          ...processData,
+          user: em.getReference(User, userId),
+        });
+
+        if (Array.isArray(interactions) && interactions.length > 0) {
+          for (const i of interactions) {
+            const { id, processId, ...iData } = i;
+            if (iData.date) iData.date = this.parseDateOrThrow(iData.date, 'date');
+            if (iData.nextInviteDate) {
+              iData.nextInviteDate = this.parseDateOrThrow(iData.nextInviteDate, 'nextInviteDate');
+            }
+            if (iData.createdAt) {
+              iData.createdAt = this.parseDateOrThrow(iData.createdAt, 'createdAt');
+            }
+
+            const interaction = em.create(Interaction, { ...iData, process });
+            process.interactions.add(interaction);
+          }
+        }
+
+        if (Array.isArray(reviews) && reviews.length > 0) {
+          for (const r of reviews) {
+            const { id, processId, ...rData } = r;
+            if (rData.createdAt) {
+              rData.createdAt = this.parseDateOrThrow(rData.createdAt, 'createdAt');
+            }
+
+            const review = em.create(SelfReview, { ...rData, process });
+            process.reviews.add(review);
+          }
+        }
+
+        if (Array.isArray(contacts) && contacts.length > 0) {
+          for (const c of contacts) {
+            const { id, processId, ...cData } = c;
+            const contact = em.create(Contact, { ...cData, process });
+            process.contacts.add(contact);
+          }
+        }
+
+        em.persist(process);
+        count++;
       }
 
-      if (contacts && contacts.length > 0) {
-        for (const c of contacts) {
-          const { id, processId, ...cData } = c;
-          
-          const contact = this.em.create(Contact, { ...cData, process });
-          process.contacts.add(contact);
-        }
-      }
-
-      this.em.persist(process);
-      count++;
-    }
-    
-    await this.em.flush();
-    return { count };
-  }
-
-  /**
-   * Automatically update processes to "No Response (14+ Days)" if:
-   * - Last update was 14+ days ago
-   * - Current stage is NOT "Rejected" or "Withdrawn"
-   * - Current stage is NOT already "No Response (14+ Days)"
-   */
-  private async updateStaleProcesses(): Promise<void> {
-    const fourteenDaysAgo = new Date();
-    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-
-    try {
-      const staleProcesses = await this.processRepository.find({
-        updatedAt: { $lte: fourteenDaysAgo },
-        currentStage: { $nin: ['Rejected', 'Withdrawn', 'No Response (14+ Days)'] },
-      });
-
-      if (staleProcesses.length > 0) {
-        for (const process of staleProcesses) {
-          process.currentStage = 'No Response (14+ Days)';
-        }
-        await this.em.flush();
-        console.log(
-          `Automatically updated ${staleProcesses.length} process(es) to "No Response (14+ Days)"`,
-        );
-      }
-    } catch (error) {
-      console.error('Error updating stale processes:', error);
-      // Don't throw error to avoid breaking the main query
-    }
+      await em.flush();
+      return { count };
+    });
   }
 }

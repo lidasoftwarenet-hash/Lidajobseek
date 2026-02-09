@@ -20,6 +20,9 @@ export class User {
   @Property({ nullable: true })
   phone?: string;
 
+  @Property({ nullable: true, default: 'free' })
+  pricingPlan?: string;
+
   @Property({ default: false })
   isActive: boolean = false;
 

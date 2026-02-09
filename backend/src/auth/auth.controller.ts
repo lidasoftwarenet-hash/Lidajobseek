@@ -5,17 +5,22 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
-  ServiceUnavailableException,
+  InternalServerErrorException,
   Get,
   Query,
   Param,
+  Logger,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './public.decorator';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { VerifyCodeDto } from './dto/verify-code.dto';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(private authService: AuthService) { }
 
   @Public()
@@ -47,11 +52,15 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() body: any) {
+  async login(@Body() body: LoginDto) {
     try {
       const valid = await this.authService.validateUser(body.email, body.password);
       if (!valid) {
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException({
+          type: 'invalid_credentials',
+          code: 'INVALID_CREDENTIALS',
+          message: 'Invalid email or password.',
+        });
       }
       return this.authService.login(valid);
     } catch (error) {
@@ -59,9 +68,12 @@ export class AuthController {
         throw error;
       }
 
-      throw new ServiceUnavailableException(
-        'We are currently undergoing maintenance. Please try again shortly.',
-      );
+      this.logger.error('Unexpected login error', error instanceof Error ? error.stack : undefined);
+      throw new InternalServerErrorException({
+        type: 'server_error',
+        code: 'SERVER_ERROR',
+        message: 'Login failed due to a server error. Please try again.',
+      });
     }
   }
 
@@ -73,8 +85,8 @@ export class AuthController {
 
   @Public()
   @Post('verify-code')
-  async verifyCode(@Body('code') code: string) {
-    return this.authService.verifyInvitationCode(code);
+  async verifyCode(@Body() body: VerifyCodeDto) {
+    return this.authService.verifyInvitationCode(body.code);
   }
 
   @Public()

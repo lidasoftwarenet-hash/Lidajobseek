@@ -21,8 +21,14 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // Token is invalid or expired, logout and redirect to login
-          this.authService.logout();
+          const authErrorType = this.authService.classifyAuthError(error.error);
+          if (
+            authErrorType === 'expired_token' ||
+            authErrorType === 'invalid_token' ||
+            authErrorType === 'invalid_session'
+          ) {
+            this.authService.logout(authErrorType);
+          }
         }
         return throwError(() => error);
       })

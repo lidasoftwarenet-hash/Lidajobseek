@@ -132,11 +132,14 @@ export class SettingsPanelComponent implements OnInit {
   }
 
   logout() {
-    if (confirm('Are you sure you want to logout?')) {
+    this.confirmService.confirm('Are you sure you want to logout?', 'Logout').then((confirmed) => {
+      if (!confirmed) {
+        return;
+      }
       this.authService.logout();
       this.router.navigate(['/login']);
       this.close.emit();
-    }
+    });
   }
 
   closePanel() {
@@ -144,7 +147,7 @@ export class SettingsPanelComponent implements OnInit {
   }
 
   @HostListener('document:keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent) {
+  onEscapeKey(_event: KeyboardEvent) {
     this.closePanel();
   }
 }

@@ -6,8 +6,6 @@ import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dial
 import { SettingsPanelComponent } from './components/settings-panel/settings-panel.component';
 import { ScrollToTopComponent } from './components/scroll-to-top/scroll-to-top.component';
 import { AuthService } from './services/auth.service';
-import { SettingsService } from './services/settings.service';
-import { ToastService } from './services/toast.service';
 
 @Component({
   selector: 'app-root',
@@ -21,9 +19,7 @@ export class AppComponent implements OnInit {
   showSettings = false;
 
   constructor(
-    private authService: AuthService,
-    private settingsService: SettingsService,
-    private toastService: ToastService
+    private authService: AuthService
   ) { }
 
   get isAuthenticated(): boolean {

@@ -18,7 +18,13 @@ import { MailModule } from '../mail/mail.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'secret',
+        secret: (() => {
+          const jwtSecret = configService.get<string>('JWT_SECRET');
+          if (!jwtSecret?.trim()) {
+            throw new Error('JWT_SECRET is required and must be set in environment variables');
+          }
+          return jwtSecret.trim();
+        })(),
         signOptions: { expiresIn: '60m' },
       }),
       inject: [ConfigService],

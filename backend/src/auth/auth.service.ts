@@ -24,9 +24,11 @@ export class AuthService {
     const user = normalizedEmail ? await this.usersService.findOne(normalizedEmail) : null;
     if (user && await bcrypt.compare(pass, user.password)) {
       if (!user.isActive) {
-        throw new UnauthorizedException(
-          'Your account is not active yet. Please verify your email before logging in.',
-        );
+        throw new UnauthorizedException({
+          type: 'invalid_credentials',
+          code: 'ACCOUNT_NOT_ACTIVE',
+          message: 'Your account is not active yet. Please verify your email before logging in.',
+        });
       }
 
       // Convert MikroORM entity to plain object
@@ -35,6 +37,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         phone: user.phone,
+        pricingPlan: user.pricingPlan || 'free',
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -44,7 +47,11 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id };
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      pricingPlan: user.pricingPlan || 'free',
+    };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -52,6 +59,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         phone: user.phone,
+        pricingPlan: user.pricingPlan || 'free',
         isActive: user.isActive,
       }
     };
@@ -99,6 +107,7 @@ export class AuthService {
       password: hashedPassword,
       name: username,
       phone: phone || undefined,
+      pricingPlan: 'free',
       isActive: false,
       activationToken,
       activationTokenExpiresAt,
@@ -161,7 +170,11 @@ export class AuthService {
   async verifyInvitationCode(code: string) {
     const validCode = process.env.REGISTER;
     if (validCode && code !== validCode) {
-      throw new UnauthorizedException('Invalid verification code. Please contact Lida Software.');
+      throw new UnauthorizedException({
+        type: 'invalid_credentials',
+        code: 'INVALID_VERIFICATION_CODE',
+        message: 'Invalid verification code. Please contact Lida Software.',
+      });
     }
     return { success: true };
   }
@@ -196,7 +209,7 @@ export class AuthService {
   }
 
   // Deprecated helper to keep old code valid if called, but implementation changed
-  async validatePassword(password: string): Promise<boolean> {
+  async validatePassword(_password: string): Promise<boolean> {
     // Logic moved to validateUser
     return false;
   }

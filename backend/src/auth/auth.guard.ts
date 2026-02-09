@@ -21,9 +21,36 @@ export class AuthGuard extends PassportAuthGuard('jwt') {
   }
 
   handleRequest(err: any, user: any, info: any) {
-    // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
-      throw err || new UnauthorizedException();
+      const rawMessage = String(info?.message || err?.message || '').toLowerCase();
+      const tokenExpired = rawMessage.includes('jwt expired') || info?.name === 'TokenExpiredError';
+      const malformedToken =
+        rawMessage.includes('jwt malformed') ||
+        rawMessage.includes('invalid signature') ||
+        rawMessage.includes('invalid token') ||
+        info?.name === 'JsonWebTokenError';
+
+      if (tokenExpired) {
+        throw new UnauthorizedException({
+          type: 'expired_token',
+          code: 'TOKEN_EXPIRED',
+          message: 'Your session has expired. Please log in again.',
+        });
+      }
+
+      if (malformedToken) {
+        throw new UnauthorizedException({
+          type: 'invalid_token',
+          code: 'INVALID_TOKEN',
+          message: 'Your session token is invalid. Please log in again.',
+        });
+      }
+
+      throw new UnauthorizedException({
+        type: 'invalid_session',
+        code: 'INVALID_SESSION',
+        message: 'Authentication is required to access this resource.',
+      });
     }
     return user;
   }

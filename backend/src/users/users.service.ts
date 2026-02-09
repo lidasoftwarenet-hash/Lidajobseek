@@ -28,6 +28,7 @@ export class UsersService {
     password: string;
     name?: string;
     phone?: string;
+    pricingPlan?: string;
     isActive?: boolean;
     activationToken?: string | null;
     activationTokenExpiresAt?: Date | null;

@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { InteractionsService } from './interactions.service';
 import { CreateInteractionDto } from './dto/create-interaction.dto';
+import { UpdateInteractionDto } from './dto/update-interaction.dto';
+import { ImportInteractionsDto } from './dto/import-interactions.dto';
 
 @Controller('interactions')
 export class InteractionsController {
@@ -26,7 +28,7 @@ export class InteractionsController {
   findAll(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('processId') processId?: string,
+    @Query('processId', new ParseIntPipe({ optional: true })) processId?: number,
     @Req() req?: any,
   ) {
     // If startDate and endDate are provided, return interactions within date range
@@ -35,7 +37,7 @@ export class InteractionsController {
       req.user.userId,
       startDate,
       endDate,
-      processId ? parseInt(processId) : undefined,
+      processId,
     );
   }
 
@@ -45,7 +47,7 @@ export class InteractionsController {
   }
 
   @Post('import')
-  importData(@Body() data: { interactions: any[]; mode: 'overwrite' | 'append' }, @Req() req: any) {
+  importData(@Body() data: ImportInteractionsDto, @Req() req: any) {
     return this.interactionsService.importData(data.interactions, data.mode, req.user.userId);
   }
 
@@ -55,7 +57,7 @@ export class InteractionsController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: any, @Req() req: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateInteractionDto, @Req() req: any) {
     return this.interactionsService.update(id, dto, req.user.userId);
   }
 

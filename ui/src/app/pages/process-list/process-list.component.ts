@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'app-process-list',
@@ -14,6 +15,7 @@ import { ConfirmService } from '../../services/confirm.service';
     styleUrls: ['./process-list.component.css']
 })
 export class ProcessListComponent implements OnInit {
+    userName: string = 'Your';
     processes: any[] = [];
     processesOnActioin: any[] = [];
     filteredProcesses: any[] = [];
@@ -50,10 +52,17 @@ export class ProcessListComponent implements OnInit {
     constructor(
         private processesService: ProcessesService,
         private toastService: ToastService,
-        private confirmService: ConfirmService
+        private confirmService: ConfirmService,
+        private authService: AuthService,
     ) { }
 
     ngOnInit() {
+        const user = this.authService.getUser();
+        const normalizedName = user?.name?.trim();
+        if (normalizedName) {
+            this.userName = normalizedName;
+        }
+
         this.isLoading = true;
         this.processesService.getAll().subscribe({
             next: (data) => {
@@ -310,5 +319,9 @@ export class ProcessListComponent implements OnInit {
         return this.filteredProcesses.filter(p =>
             ['Offer', 'Signed'].includes(p.currentStage)
         ).length;
+    }
+
+    get processTitle(): string {
+        return `${this.userName} Process`;
     }
 }

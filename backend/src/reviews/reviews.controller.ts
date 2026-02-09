@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   Body,
-  Get,
   Param,
   ParseIntPipe,
   Patch,
@@ -11,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -22,7 +22,7 @@ export class ReviewsController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: any, @Req() req: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateReviewDto, @Req() req: any) {
     return this.reviewsService.update(id, dto, req.user.userId);
   }
 

@@ -22,7 +22,7 @@ export class ProfileCvComponent implements OnInit {
   downloadingPdf = false;
   sendingCv = false;
   shareEmail = '';
-  shareResult: { exists: boolean } | null = null;
+  shareStatus: 'idle' | 'success' | 'error' = 'idle';
   useAi = false;
   showUpgradePrompt = false;
 
@@ -165,6 +165,8 @@ ${cv.links || ''}
   }
 
   async shareCv() {
+    this.shareStatus = 'idle';
+
     const email = this.shareEmail.trim();
     if (!email) {
       this.toastService.show('Please enter an email address', 'warning');
@@ -198,19 +200,21 @@ ${cv.links || ''}
         })
       ).subscribe({
         next: () => {
-          this.shareResult = { exists: true };
+          this.shareStatus = 'success';
           this.toastService.show(`CV sent successfully to ${email}`, 'success');
           this.shareEmail = ''; // Clear the input
           this.sendingCv = false;
         },
         error: (error) => {
           console.error('Failed to send CV:', error);
+          this.shareStatus = 'error';
           this.toastService.show('Failed to send CV. Please try again.', 'error');
           this.sendingCv = false;
         }
       });
     } catch (error) {
       console.error('Error sharing CV:', error);
+      this.shareStatus = 'error';
       this.toastService.show('Failed to share CV. Please try again.', 'error');
       this.sendingCv = false;
     }
@@ -229,25 +233,57 @@ ${cv.links || ''}
       throw new Error('CV data not found');
     }
 
+    const extractCountry = (country?: string, address?: string) => {
+      const directCountry = (country || '').trim();
+      if (directCountry) {
+        return directCountry;
+      }
+
+      const normalizedAddress = (address || '').trim();
+      if (!normalizedAddress) {
+        return '';
+      }
+
+      const parts = normalizedAddress
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      return parts.length ? parts[parts.length - 1] : '';
+    };
+
     const currentUser = this.authService.getUser();
-    const candidateName =
-      (currentUser?.name || currentUser?.email || 'Candidate').toString();
-    const candidateEmail = currentUser?.email ? String(currentUser.email) : '';
+    const candidateName = (
+      cv.fullName || currentUser?.name || currentUser?.email || 'Candidate'
+    ).toString().trim();
+    const candidatePhone = currentUser?.phone ? String(currentUser.phone).trim() : '';
+    const candidateCountry = extractCountry(cv.country, cv.address);
 
     const pageWidth = 210;
     const pageHeight = 297;
     const marginX = 16;
-    const marginTop = 16;
+    const marginTop = 20;
     const contentWidth = pageWidth - marginX * 2;
-    const bottomLimit = pageHeight - 18;
+    const bottomLimit = pageHeight - 16;
     let y = marginTop;
+
+    const colors = {
+      navy: [23, 42, 76] as [number, number, number],
+      slate: [71, 85, 105] as [number, number, number],
+      light: [241, 245, 249] as [number, number, number],
+      line: [226, 232, 240] as [number, number, number],
+      text: [15, 23, 42] as [number, number, number],
+      muted: [100, 116, 139] as [number, number, number],
+    };
 
     const addPageIfNeeded = (requiredHeight = 8) => {
       if (y + requiredHeight > bottomLimit) {
         pdf.addPage();
-        y = marginTop;
+        y = marginTop + 2;
       }
     };
+
+    const sanitizeText = (value?: string) => (value || '').replace(/\s+/g, ' ').trim();
 
     const addWrappedParagraph = (
       text: string,
@@ -259,6 +295,7 @@ ${cv.links || ''}
 
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(fontSize);
+      pdf.setTextColor(...colors.text);
 
       if (!text.trim()) {
         return;
@@ -283,7 +320,9 @@ ${cv.links || ''}
       }
 
       addPageIfNeeded(lineHeight + 1);
+      pdf.setTextColor(...colors.navy);
       pdf.text('•', bulletX, y);
+      pdf.setTextColor(...colors.text);
       pdf.text(bulletLines[0], bulletTextX, y);
       y += lineHeight;
 
@@ -316,65 +355,79 @@ ${cv.links || ''}
 
       const items = asBullets ? toListItems(safeContent) : [];
 
-      addPageIfNeeded(12);
+      addPageIfNeeded(16);
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(11.5);
-      pdf.setTextColor(27, 52, 90);
+      pdf.setFontSize(11);
+      pdf.setTextColor(...colors.navy);
       pdf.text(title, marginX, y);
-      y += 6;
+      y += 5;
 
-      pdf.setDrawColor(230, 235, 243);
-      pdf.line(marginX, y - 3, pageWidth - marginX, y - 3);
-
-      pdf.setTextColor(20, 20, 20);
+      pdf.setDrawColor(...colors.line);
+      pdf.line(marginX, y - 2.2, pageWidth - marginX, y - 2.2);
 
       if (asBullets && items.length > 1) {
         for (const item of items) {
-          addWrappedParagraph(item, { bullet: true });
+          addWrappedParagraph(item, { bullet: true, fontSize: 10.2, lineHeight: 4.8 });
         }
       } else {
-        addWrappedParagraph(safeContent);
+        addWrappedParagraph(safeContent, { fontSize: 10.2, lineHeight: 4.8 });
       }
 
-      y += 3;
+      y += 3.6;
     };
 
-    // Header strip
-    pdf.setFillColor(242, 246, 252);
-    pdf.rect(marginX, y - 7, contentWidth, 26, 'F');
+    // Executive header
+    pdf.setFillColor(...colors.navy);
+    pdf.rect(0, 0, pageWidth, 44, 'F');
+
+    pdf.setFillColor(...colors.light);
+    pdf.rect(marginX, 14, contentWidth, 34, 'F');
 
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(20);
-    pdf.setTextColor(20, 20, 20);
-    pdf.text(candidateName, marginX + 3, y + 2);
+    pdf.setFontSize(23);
+    pdf.setTextColor(...colors.navy);
+    pdf.text(candidateName, marginX + 4, 27);
+
+    let headerLineY = 33;
 
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(11);
-    pdf.setTextColor(70, 70, 70);
-    pdf.text('Professional CV', marginX + 3, y + 9);
+    pdf.setFontSize(10.5);
+    pdf.setTextColor(...colors.slate);
 
-    const headerMeta = [
-      candidateEmail,
-      cv.links ? 'Portfolio links included' : '',
-      `${this.useAi ? 'AI-Enhanced' : 'Template'} Version`
-    ]
-      .filter(Boolean)
-      .join('  •  ');
-
-    if (headerMeta) {
-      pdf.setFontSize(9.5);
-      const metaLines = pdf.splitTextToSize(headerMeta, contentWidth - 6) as string[];
-      for (const metaLine of metaLines) {
-        pdf.text(metaLine, marginX + 3, y + 15);
-        y += 4.5;
-      }
+    if (candidatePhone) {
+      pdf.text(candidatePhone, marginX + 4, headerLineY);
+      headerLineY += 5.2;
     }
 
-    y += 14;
+    if (candidateCountry) {
+      pdf.text(candidateCountry, marginX + 4, headerLineY);
+      headerLineY += 5.2;
+    }
 
-    pdf.setDrawColor(220, 220, 220);
-    pdf.line(marginX, y, pageWidth - marginX, y);
-    y += 8;
+    const profileLabel = this.useAi ? 'AI-Enhanced Resume' : 'Professional Resume';
+    pdf.setFontSize(9.5);
+    pdf.setTextColor(...colors.muted);
+    pdf.text(profileLabel, marginX + 4, headerLineY);
+
+    y = 56;
+
+    pdf.setDrawColor(...colors.line);
+    pdf.line(marginX, y - 2, pageWidth - marginX, y - 2);
+
+    const isLinkedIn = /linkedin/i.test(sanitizeText(cv.links));
+    if (isLinkedIn || sanitizeText(cv.title)) {
+      addPageIfNeeded(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(...colors.muted);
+      const introParts = [sanitizeText(cv.title), isLinkedIn ? 'LinkedIn / Portfolio linked in CV' : '']
+        .filter(Boolean)
+        .join('  •  ');
+      if (introParts) {
+        pdf.text(introParts, marginX, y + 2);
+        y += 8;
+      }
+    }
 
     addSection('Professional Summary', cv.about);
     addSection('Top Skills', cv.topSkills, true);
@@ -391,7 +444,8 @@ ${cv.links || ''}
       pdf.setPage(i);
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
-      pdf.setTextColor(130, 130, 130);
+      pdf.setTextColor(...colors.muted);
+      pdf.text(candidateName, marginX, pageHeight - 8);
       pdf.text(`Page ${i} of ${pageCount}`, pageWidth - marginX - 22, pageHeight - 8);
     }
 

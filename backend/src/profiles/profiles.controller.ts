@@ -1,5 +1,6 @@
 import {
   Body,
+  BadRequestException,
   Controller,
   Get,
   Patch,
@@ -8,6 +9,7 @@ import {
   Query,
   UseGuards,
   ForbiddenException,
+  InternalServerErrorException,
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
@@ -16,9 +18,22 @@ import { ProfilesService } from './profiles.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ShareProfileDto } from './dto/share-profile.dto';
 import { SendCvEmailDto } from './dto/send-cv-email.dto';
-import { AuthGuard } from '../auth/auth.guard';
 import { PremiumGuard } from '../auth/premium.guard';
 import { RequiresPremium } from '../auth/requires-premium.decorator';
+
+const CV_UPLOAD_MAX_SIZE = 5 * 1024 * 1024;
+const ALLOWED_CV_MIME_TYPES = ['application/pdf'];
+
+const cvFileFilter = (
+  _req: any,
+  file: Express.Multer.File,
+  cb: (error: Error | null, acceptFile: boolean) => void,
+) => {
+  if (!ALLOWED_CV_MIME_TYPES.includes(file.mimetype)) {
+    return cb(new BadRequestException('Only PDF files are allowed'), false);
+  }
+  cb(null, true);
+};
 
 @Controller('profiles')
 export class ProfilesController {
@@ -54,7 +69,11 @@ export class ProfilesController {
     if (useAi) {
       const isPremium = req.user.pricingPlan === 'premium' || req.user.pricingPlan === 'enterprise';
       if (!isPremium) {
-        throw new ForbiddenException('AI-powered CV generation requires a premium account. Please upgrade your plan.');
+        throw new ForbiddenException({
+          type: 'unauthorized_scope',
+          code: 'UNAUTHORIZED_SCOPE',
+          message: 'AI-powered CV generation requires a premium account. Please upgrade your plan.',
+        });
       }
     }
     
@@ -62,6 +81,8 @@ export class ProfilesController {
   }
 
   @Post('me/ai-suggestion')
+  @UseGuards(PremiumGuard)
+  @RequiresPremium()
   getAiSuggestion(
     @Req() req: any,
     @Body() dto: { field: string; currentValue?: string },
@@ -74,17 +95,30 @@ export class ProfilesController {
   }
 
   @Post('me/send-cv-email')
-  @UseInterceptors(FileInterceptor('pdf'))
+  @UseInterceptors(
+    FileInterceptor('pdf', {
+      limits: { fileSize: CV_UPLOAD_MAX_SIZE },
+      fileFilter: cvFileFilter,
+    }),
+  )
   async sendCvByEmail(
     @Req() req: any,
     @Body() dto: SendCvEmailDto,
     @UploadedFile() pdf?: Express.Multer.File,
   ) {
     if (!dto?.email) {
-      throw new ForbiddenException('Email is required');
+      throw new BadRequestException({
+        type: 'validation_error',
+        code: 'EMAIL_REQUIRED',
+        message: 'Email is required.',
+      });
     }
     if (!pdf?.buffer && !dto.pdfBase64) {
-      throw new ForbiddenException('PDF is required');
+      throw new BadRequestException({
+        type: 'validation_error',
+        code: 'PDF_REQUIRED',
+        message: 'PDF is required.',
+      });
     }
     try {
       await this.profilesService.sendCvByEmail(
@@ -95,7 +129,11 @@ export class ProfilesController {
       );
       return { success: true, message: 'CV sent successfully' };
     } catch (error: any) {
-      throw new ForbiddenException(error?.message || 'Failed to send CV email');
+      throw new InternalServerErrorException({
+        type: 'server_error',
+        code: 'SERVER_ERROR',
+        message: error?.message || 'Failed to send CV email',
+      });
     }
   }
 }

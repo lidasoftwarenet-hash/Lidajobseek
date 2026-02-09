@@ -1,40 +1,32 @@
-import {
-  IsArray,
-  IsInt,
-  IsObject,
-  IsOptional,
-  IsString,
-  MinLength,
-} from 'class-validator';
+import { IsArray, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
 
-export class CreateInteractionDto {
-  @IsInt()
-  processId: number;
-
+export class UpdateInteractionDto {
+  @IsOptional()
   @IsString()
   @MinLength(1)
-  date: string;
+  date?: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(1)
-  interviewType: string;
+  interviewType?: string;
 
   @IsOptional()
   @IsArray()
   @IsObject({ each: true })
   participants?: any;
 
+  @IsOptional()
   @IsString()
-  @MinLength(1)
-  summary: string;
+  summary?: string;
 
   @IsOptional()
   @IsString()
-  testsAssessment?: string; // Tests or technical assessments during interview
+  testsAssessment?: string;
 
   @IsOptional()
   @IsString()
-  roleInsights?: string; // What was learned about the role
+  roleInsights?: string;
 
   @IsOptional()
   @IsString()
@@ -42,7 +34,7 @@ export class CreateInteractionDto {
 
   @IsOptional()
   @IsString()
-  headsup?: string; // Heads-up information for scheduled interview
+  headsup?: string;
 
   @IsOptional()
   @IsString()
@@ -62,5 +54,5 @@ export class CreateInteractionDto {
 
   @IsOptional()
   @IsString()
-  invitationExtended?: string; // 'yes', 'later', or 'no'
+  invitationExtended?: string;
 }

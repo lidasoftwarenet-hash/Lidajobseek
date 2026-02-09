@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ConfirmService, ConfirmOptions } from '../../services/confirm.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-confirm-dialog',
@@ -100,11 +100,11 @@ export class ConfirmDialogComponent {
   }
 
   @HostListener('document:keydown.escape', ['$event'])
-  onEscapeKey(event: KeyboardEvent) {
+  onEscapeKey(_event: KeyboardEvent) {
     this.onCancel();
   }
 
-  onOverlayClick(event: MouseEvent) {
+  onOverlayClick(_event: MouseEvent) {
     // Click outside to dismiss
     this.onCancel();
   }

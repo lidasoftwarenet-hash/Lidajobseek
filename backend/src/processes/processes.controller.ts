@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ProcessesService } from './processes.service';
 import { CreateProcessDto } from './dto/create-process.dto';
+import { UpdateProcessDto } from './dto/update-process.dto';
+import { ImportProcessesDto } from './dto/import-processes.dto';
 
 @Controller('processes')
 export class ProcessesController {
@@ -32,7 +34,7 @@ export class ProcessesController {
   }
 
   @Post('import')
-  importData(@Body() data: { processes: any[]; mode: 'overwrite' | 'append' }, @Req() req: any) {
+  importData(@Body() data: ImportProcessesDto, @Req() req: any) {
     return this.processesService.importData(data.processes, data.mode, req.user.userId);
   }
 
@@ -42,7 +44,7 @@ export class ProcessesController {
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateProcessDto: any, @Req() req: any) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateProcessDto: UpdateProcessDto, @Req() req: any) {
     return this.processesService.update(id, updateProcessDto, req.user.userId);
   }
 

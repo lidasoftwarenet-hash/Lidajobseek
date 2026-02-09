@@ -43,7 +43,12 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router,
     private toastService: ToastService
-  ) { }
+  ) {
+    const logoutReasonMessage = this.authService.consumeLogoutReasonMessage();
+    if (logoutReasonMessage) {
+      this.error = logoutReasonMessage;
+    }
+  }
 
   toggleMode() {
     this.router.navigate(['/register']);
@@ -108,6 +113,7 @@ export class LoginComponent {
       error: (err) => {
         const status = err?.status;
         const backendMessage = err?.error?.message;
+        const authErrorType = this.authService.classifyAuthError(err?.error);
 
         const isServiceDown =
           status === 0 ||
@@ -122,7 +128,12 @@ export class LoginComponent {
           return;
         }
 
-        this.error = backendMessage || 'Invalid credentials';
+        if (authErrorType === 'invalid_credentials') {
+          this.error = backendMessage || 'Invalid email or password.';
+          return;
+        }
+
+        this.error = backendMessage || 'Login failed. Please try again.';
       }
     });
   }

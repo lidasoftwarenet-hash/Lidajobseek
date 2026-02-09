@@ -13,6 +13,23 @@ type SocialAuthStartResult = {
   message: string;
 };
 
+export type AuthErrorType =
+  | 'expired_token'
+  | 'invalid_token'
+  | 'invalid_session'
+  | 'unauthorized_scope'
+  | 'invalid_credentials'
+  | 'server_error'
+  | 'unknown';
+
+export interface AuthErrorPayload {
+  type?: string;
+  code?: string;
+  message?: string;
+}
+
+const AUTH_LOGOUT_REASON_KEY = 'auth_logout_reason';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -88,10 +105,64 @@ export class AuthService {
     });
   }
 
-  logout() {
+  logout(reason?: Exclude<AuthErrorType, 'unknown' | 'invalid_credentials' | 'unauthorized_scope' | 'server_error'>) {
+    if (reason) {
+      sessionStorage.setItem(AUTH_LOGOUT_REASON_KEY, reason);
+    }
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem('app_user');
     this.router.navigate(['/login']);
+  }
+
+  consumeLogoutReasonMessage(): string | null {
+    const reason = sessionStorage.getItem(AUTH_LOGOUT_REASON_KEY);
+    if (!reason) {
+      return null;
+    }
+
+    sessionStorage.removeItem(AUTH_LOGOUT_REASON_KEY);
+
+    if (reason === 'expired_token') {
+      return 'Your session expired. Please log in again.';
+    }
+
+    if (reason === 'invalid_token' || reason === 'invalid_session') {
+      return 'Your session is no longer valid. Please log in again.';
+    }
+
+    return null;
+  }
+
+  classifyAuthError(payload: AuthErrorPayload | null | undefined): AuthErrorType {
+    const type = String(payload?.type || '').toLowerCase();
+    const code = String(payload?.code || '').toUpperCase();
+    const message = String(payload?.message || '').toLowerCase();
+
+    if (type === 'expired_token' || code === 'TOKEN_EXPIRED' || message.includes('session has expired')) {
+      return 'expired_token';
+    }
+
+    if (type === 'invalid_token' || code === 'INVALID_TOKEN') {
+      return 'invalid_token';
+    }
+
+    if (type === 'invalid_session' || code === 'INVALID_SESSION') {
+      return 'invalid_session';
+    }
+
+    if (type === 'unauthorized_scope' || code === 'UNAUTHORIZED_SCOPE') {
+      return 'unauthorized_scope';
+    }
+
+    if (type === 'invalid_credentials' || code === 'INVALID_CREDENTIALS') {
+      return 'invalid_credentials';
+    }
+
+    if (type === 'server_error' || code === 'SERVER_ERROR') {
+      return 'server_error';
+    }
+
+    return 'unknown';
   }
 
   isAuthenticated(): boolean {
