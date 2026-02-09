@@ -27,6 +27,7 @@ export interface Settings {
   showTooltips: boolean;
   autoSave: boolean;
   analytics: boolean;
+  activeFilterPreset: string | null;
 }
 
 @Injectable({
@@ -60,7 +61,8 @@ export class SettingsService {
     compactMode: false,
     showTooltips: true,
     autoSave: true,
-    analytics: true
+    analytics: true,
+    activeFilterPreset: null
   };
 
   private settingsSubject = new BehaviorSubject<Settings>(this.loadSettings());
@@ -68,6 +70,9 @@ export class SettingsService {
 
   private settingsPanelOpenSubject = new BehaviorSubject<boolean>(false);
   public isSettingsPanelOpen$ = this.settingsPanelOpenSubject.asObservable();
+
+  private activeFilterPresetSubject = new BehaviorSubject<string | null>(null);
+  public activeFilterPreset$ = this.activeFilterPresetSubject.asObservable();
 
   constructor() {
     this.initializeSettings();
@@ -171,5 +176,16 @@ export class SettingsService {
 
   toggleSettingsPanel() {
     this.settingsPanelOpenSubject.next(!this.settingsPanelOpenSubject.value);
+  }
+
+  setActiveFilterPreset(presetName: string | null) {
+    const current = this.getSettings();
+    const updated = { ...current, activeFilterPreset: presetName };
+    this.saveSettings(updated);
+    this.activeFilterPresetSubject.next(presetName);
+  }
+
+  getActiveFilterPreset(): string | null {
+    return this.getSettings().activeFilterPreset;
   }
 }

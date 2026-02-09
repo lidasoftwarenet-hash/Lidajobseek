@@ -26,6 +26,43 @@
   <!-- Content -->
   <div class="settings-content">
 
+    <!-- Quick Filters Section -->
+    <div class="settings-section">
+      <div class="section-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        <div class="section-title">
+          <h3>Quick Filters</h3>
+          <p>Apply preset filters to your process list</p>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="filter-presets-grid">
+          <button
+            *ngFor="let preset of filterPresets"
+            class="filter-preset-btn"
+            [class.active]="isFilterActive(preset.name)"
+            (click)="toggleFilterPreset(preset.name)"
+            [attr.aria-label]="preset.description"
+            [title]="preset.description">
+            <span class="filter-icon">{{ preset.icon }}</span>
+            <span class="filter-name">{{ preset.name }}</span>
+            <span class="filter-status" *ngIf="isFilterActive(preset.name)">✓</span>
+          </button>
+        </div>
+        <p class="filter-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          Click a filter to enable it. Click again to disable. Only one filter can be active at a time.
+        </p>
+      </div>
+    </div>
+
     <!-- Appearance Section -->
     <div class="settings-section">
       <div class="section-header">
