@@ -64,21 +64,42 @@ export class ResourcesController {
       }),
     }),
   )
-  create(@Body() body: CreateResourceDto, @UploadedFile() file: Express.Multer.File, @Req() req: any) {
+  create(@Body() body: CreateResourceDto & { folderId?: string }, @UploadedFile() file: Express.Multer.File, @Req() req: any) {
     if (file) {
       body.content = `/uploads/${file.filename}`;
-      // Allow overriding title if not provided
       if (!body.title) body.title = file.originalname;
     }
     if (!body.content?.trim()) {
       throw new BadRequestException('content is required when no file is uploaded');
     }
-    return this.resourcesService.create(body, req.user.userId);
+
+    const folderId = body.folderId ? parseInt(body.folderId, 10) : undefined;
+    return this.resourcesService.create({ ...body, folderId }, req.user.userId);
   }
 
   @Get()
   findAll(@Req() req: any) {
     return this.resourcesService.findAll(req.user.userId);
+  }
+
+  @Get('folders')
+  getFolders(@Req() req: any) {
+    return this.resourcesService.getFolderTree(req.user.userId);
+  }
+
+  @Post('folders')
+  createFolder(@Body('name') name: string, @Body('parentId') parentId: number, @Req() req: any) {
+    return this.resourcesService.createFolder(name, req.user.userId, parentId);
+  }
+
+  @Put('folders/:id')
+  updateFolder(@Param('id', ParseIntPipe) id: number, @Body('name') name: string, @Req() req: any) {
+    return this.resourcesService.updateFolder(id, name, req.user.userId);
+  }
+
+  @Delete('folders/:id')
+  removeFolder(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.resourcesService.removeFolder(id, req.user.userId);
   }
 
   @Get(':id')

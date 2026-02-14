@@ -181,10 +181,21 @@
     font-weight: 500;
 }
 
-.stat-primary .stat-icon { background: rgba(102, 126, 234, 0.1); }
-.stat-success .stat-icon { background: rgba(46, 213, 115, 0.1); }
-.stat-warning .stat-icon { background: rgba(255, 159, 64, 0.1); }
-.stat-info .stat-icon { background: rgba(52, 152, 219, 0.1); }
+.stat-primary .stat-icon {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.stat-success .stat-icon {
+    background: rgba(46, 213, 115, 0.1);
+}
+
+.stat-warning .stat-icon {
+    background: rgba(255, 159, 64, 0.1);
+}
+
+.stat-info .stat-icon {
+    background: rgba(52, 152, 219, 0.1);
+}
 
 /* Filter Presets */
 .filter-presets {
@@ -307,7 +318,17 @@
 /* Search Box */
 .search-box {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.search-box.deep-search .search-input {
+    border-style: dashed;
+    background-color: rgba(102, 126, 234, 0.02);
+}
+
+.search-box.deep-search .search-input:focus {
+    background-color: white;
+    border-style: solid;
 }
 
 .search-icon {
@@ -583,17 +604,49 @@
     background: #95a5a6;
 }
 
-.status-dot.status-initial-call-scheduled { background: #3498db; }
-.status-dot.status-awaiting-next-interview-after-initial-call { background: #f39c12; }
-.status-dot.status-interview-scheduled { background: #e67e22; }
-.status-dot.status-waiting-for-interview-feedback { background: #9b59b6; }
-.status-dot.status-home-task-assigned { background: #16a085; }
-.status-dot.status-references-requested { background: #27ae60; }
-.status-dot.status-final-hr-interview-scheduled { background: #2ecc71; }
-.status-dot.status-offer-received { background: #2ecc71; }
-.status-dot.status-withdrawn { background: #95a5a6; }
-.status-dot.status-rejected { background: #e74c3c; }
-.status-dot.status-no-response-14-days { background: #c0392b; }
+.status-dot.status-initial-call-scheduled {
+    background: #3498db;
+}
+
+.status-dot.status-awaiting-next-interview-after-initial-call {
+    background: #f39c12;
+}
+
+.status-dot.status-interview-scheduled {
+    background: #e67e22;
+}
+
+.status-dot.status-waiting-for-interview-feedback {
+    background: #9b59b6;
+}
+
+.status-dot.status-home-task-assigned {
+    background: #16a085;
+}
+
+.status-dot.status-references-requested {
+    background: #27ae60;
+}
+
+.status-dot.status-final-hr-interview-scheduled {
+    background: #2ecc71;
+}
+
+.status-dot.status-offer-received {
+    background: #2ecc71;
+}
+
+.status-dot.status-withdrawn {
+    background: #95a5a6;
+}
+
+.status-dot.status-rejected {
+    background: #e74c3c;
+}
+
+.status-dot.status-no-response-14-days {
+    background: #c0392b;
+}
 
 .card-body {
     flex: 1;
@@ -652,17 +705,60 @@
     color: #495057;
 }
 
-.badge-stage.status-initial-call-scheduled { background: rgba(52, 152, 219, 0.1); color: #3498db; }
-.badge-stage.status-awaiting-next-interview-after-initial-call { background: rgba(243, 156, 18, 0.1); color: #f39c12; }
-.badge-stage.status-interview-scheduled { background: rgba(230, 126, 34, 0.1); color: #e67e22; }
-.badge-stage.status-waiting-for-interview-feedback { background: rgba(155, 89, 182, 0.1); color: #9b59b6; }
-.badge-stage.status-home-task-assigned { background: rgba(22, 160, 133, 0.1); color: #16a085; }
-.badge-stage.status-references-requested { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
-.badge-stage.status-final-hr-interview-scheduled { background: rgba(46, 204, 113, 0.1); color: #2ecc71; }
-.badge-stage.status-offer-received { background: rgba(46, 204, 113, 0.1); color: #2ecc71; }
-.badge-stage.status-withdrawn { background: rgba(149, 165, 166, 0.1); color: #95a5a6; }
-.badge-stage.status-rejected { background: rgba(231, 76, 60, 0.1); color: #e74c3c; }
-.badge-stage.status-no-response-14-days { background: rgba(192, 57, 43, 0.1); color: #c0392b; }
+.badge-stage.status-initial-call-scheduled {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+}
+
+.badge-stage.status-awaiting-next-interview-after-initial-call {
+    background: rgba(243, 156, 18, 0.1);
+    color: #f39c12;
+}
+
+.badge-stage.status-interview-scheduled {
+    background: rgba(230, 126, 34, 0.1);
+    color: #e67e22;
+}
+
+.badge-stage.status-waiting-for-interview-feedback {
+    background: rgba(155, 89, 182, 0.1);
+    color: #9b59b6;
+}
+
+.badge-stage.status-home-task-assigned {
+    background: rgba(22, 160, 133, 0.1);
+    color: #16a085;
+}
+
+.badge-stage.status-references-requested {
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+}
+
+.badge-stage.status-final-hr-interview-scheduled {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+.badge-stage.status-offer-received {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+.badge-stage.status-withdrawn {
+    background: rgba(149, 165, 166, 0.1);
+    color: #95a5a6;
+}
+
+.badge-stage.status-rejected {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.badge-stage.status-no-response-14-days {
+    background: rgba(192, 57, 43, 0.1);
+    color: #c0392b;
+}
 
 .footer-right {
     display: flex;
@@ -862,8 +958,13 @@
 }
 
 @keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 /* Responsive Design */

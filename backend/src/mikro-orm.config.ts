@@ -11,6 +11,7 @@ import { Contact } from './contacts/contact.entity';
 import { Resource } from './resources/resource.entity';
 import { SelfReview } from './reviews/self-review.entity';
 import { Profile } from './profiles/profile.entity';
+import { Folder } from './resources/folder.entity';
 
 const envPath = existsSync(join(process.cwd(), 'backend', '.env'))
   ? join(process.cwd(), 'backend', '.env')
@@ -38,6 +39,7 @@ const config: MikroOrmModuleOptions = {
     Resource,
     SelfReview,
     Profile,
+    Folder,
   ],
 
   allowGlobalContext: true,

@@ -16,4 +16,7 @@ export class CreateResourceDto {
   @IsOptional()
   @IsString()
   tags?: string;
+
+  @IsOptional()
+  folderId?: any;
 }

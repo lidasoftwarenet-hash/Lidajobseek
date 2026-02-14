@@ -11,7 +11,8 @@
                     </svg>
                     New Interview
                 </span>
-                <button type="button" class="btn-icon-subtle" (click)="showTemplates = !showTemplates" title="Use template">
+                <button type="button" class="btn-icon-subtle" (click)="showTemplates = !showTemplates"
+                    title="Use template">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                         <polyline points="14 2 14 8 20 8"></polyline>
@@ -29,9 +30,11 @@
         <div class="templates-panel" *ngIf="showTemplates">
             <h3>Quick Templates</h3>
             <div class="templates-grid">
-                <button type="button" class="template-card" *ngFor="let template of interviewTemplates" (click)="applyTemplate(template)">
+                <button type="button" class="template-card" *ngFor="let template of interviewTemplates"
+                    (click)="applyTemplate(template)">
                     <div class="template-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
                         </svg>
@@ -49,8 +52,11 @@
             <section class="form-section">
                 <div class="section-title">
                     <h2>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
                         </svg>
                         Process & Basics
                     </h2>
@@ -62,37 +68,37 @@
                     <p class="field-description">Link this interview to an active job application process</p>
 
                     <div class="search-wrapper">
-                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
-                        <input
-                            type="text"
-                            [(ngModel)]="processSearch"
-                            (ngModelChange)="onProcessSearchChange()"
-                            [name]="'processSearch'"
-                            placeholder="Search for a process..."
-                            class="input-field search-input"
-                            [class.has-selection]="interaction.processId"
-                        />
-                        <button
-                            type="button"
-                            *ngIf="interaction.processId"
-                            (click)="clearProcessSelection()"
-                            class="clear-btn"
-                            title="Clear selection">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
+                        <input type="text" [(ngModel)]="processSearch" (ngModelChange)="onProcessSearchChange()"
+                            (focus)="toggleProcessDropdown(true)" (blur)="toggleProcessDropdown(false)"
+                            [name]="'processSearch'" placeholder="Select a process..." class="input-field search-input"
+                            [class.has-selection]="interaction.processId" autocomplete="off" />
+                        <input type="hidden" name="processId" [(ngModel)]="interaction.processId" required>
 
-                        <div *ngIf="filteredProcesses.length > 0 && !interaction.processId" class="search-dropdown">
-                            <button
-                                type="button"
-                                *ngFor="let process of filteredProcesses"
-                                class="search-option"
-                                (click)="selectProcess(process)">
+                        <div class="input-actions-wrapper">
+                            <button type="button" *ngIf="interaction.processId" (click)="clearProcessSelection()"
+                                class="clear-btn" title="Clear selection">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                            <div class="dropdown-chevron" [class.rotated]="showProcessDropdown">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div *ngIf="showProcessDropdown && filteredProcesses.length > 0" class="search-dropdown">
+                            <button type="button" *ngFor="let process of filteredProcesses" class="search-option"
+                                (mousedown)="selectProcess(process)">
                                 <div class="option-content">
                                     <span class="company">{{process.companyName}}</span>
                                     <span class="role">{{process.roleTitle}}</span>
@@ -100,9 +106,13 @@
                                 </div>
                             </button>
                         </div>
+                        <div *ngIf="showProcessDropdown && filteredProcesses.length === 0" class="search-dropdown">
+                            <div class="no-results">No processes found</div>
+                        </div>
                     </div>
                     <p *ngIf="!interaction.processId && interviewForm.submitted" class="error-message">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" y1="8" x2="12" y2="12"></line>
                             <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -114,10 +124,7 @@
                 <div class="form-group">
                     <label>Interview Type <span class="required">*</span></label>
                     <div class="type-grid">
-                        <button
-                            type="button"
-                            *ngFor="let type of interviewTypes"
-                            class="type-btn"
+                        <button type="button" *ngFor="let type of interviewTypes" class="type-btn"
                             [class.active]="interaction.interviewType === type"
                             (click)="interaction.interviewType = type">
                             {{type}}
@@ -130,7 +137,8 @@
             <section class="form-section">
                 <div class="section-title">
                     <h2>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
@@ -139,28 +147,14 @@
                     <p>Set when this interview will take place</p>
                 </div>
 
-                <div class="time-presets">
-                    <span class="presets-label">Quick Select:</span>
-                    <button
-                        type="button"
-                        *ngFor="let preset of timePresets"
-                        class="preset-btn"
-                        (click)="applyTimePreset(preset)">
-                        {{preset.label}}
-                    </button>
-                </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Date & Time <span class="required">*</span></label>
-                        <input
-                            type="datetime-local"
-                            name="date"
-                            [(ngModel)]="interaction.date"
-                            required
+                        <input type="datetime-local" name="date" [(ngModel)]="interaction.date" required
                             class="input-field">
                         <p class="muted-hint" *ngIf="getEndTime()">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <polyline points="9 11 12 14 22 4"></polyline>
                                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                             </svg>
@@ -175,16 +169,38 @@
                                 {{getDurationLabel(dur)}}
                             </option>
                         </select>
+                        <div class="time-presets duration-presets">
+                            <span class="presets-label">Quick Select:</span>
+                            <button type="button" *ngFor="let preset of durationPresets" class="preset-btn"
+                                (click)="applyDurationPreset(preset)">
+                                {{preset.label}}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Reminder</label>
-                    <select name="reminder" [(ngModel)]="interaction.reminder" class="input-field">
-                        <option *ngFor="let rem of reminderOptions" [value]="rem.value">
-                            {{rem.label}}
-                        </option>
-                    </select>
+                <div class="form-group reminder-section-wrapper">
+                    <label>Reminders</label>
+                    <div class="reminder-row">
+                        <div class="reminder-control">
+                            <select name="reminder" [(ngModel)]="interaction.reminder" class="input-field small-select">
+                                <option *ngFor="let rem of reminderOptions" [value]="rem.value">
+                                    {{rem.label}}
+                                </option>
+                            </select>
+                            <span class="reminder-label">Reminder by email</span>
+                        </div>
+
+                        <div class="premium-reminder">
+                            <span class="premium-badge">PREMIUM</span>
+                            <span class="reminder-label muted">Reminder by phone message / WhatsApp</span>
+                            <svg class="lock-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -192,7 +208,8 @@
             <section class="form-section">
                 <div class="section-title">
                     <h2>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
@@ -203,40 +220,43 @@
 
                 <div class="form-group">
                     <label>Location</label>
-                    <input
-                        type="text"
-                        name="location"
-                        [(ngModel)]="interaction.location"
-                        placeholder="Office address, remote, etc."
-                        class="input-field">
+                    <div class="location-selection-grid">
+                        <select name="locationType" [(ngModel)]="interaction.locationType" class="input-field">
+                            <option value="Home">Home</option>
+                            <option value="Office">Office</option>
+                            <option value="Other">Other</option>
+                        </select>
+
+                        <input *ngIf="interaction.locationType === 'Office'" type="text" name="locationAddress"
+                            [(ngModel)]="interaction.locationAddress" placeholder="Office street address..."
+                            class="input-field dynamic-field">
+
+                        <div *ngIf="interaction.locationType === 'Other'" class="other-location-row">
+                            <input type="text" name="locationName" [(ngModel)]="interaction.locationName"
+                                placeholder="Place name (e.g., Starbucks)..." class="input-field">
+                            <input type="text" name="locationAddress" [(ngModel)]="interaction.locationAddress"
+                                placeholder="Full address..." class="input-field">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label>Meeting Link</label>
                     <div class="input-with-actions">
-                        <input
-                            type="url"
-                            name="meetingLink"
-                            [(ngModel)]="interaction.meetingLink"
-                            placeholder="https://zoom.us/j/..."
-                            class="input-field">
-                        <button
-                            type="button"
-                            class="btn-inline"
-                            (click)="generateMeetingLink()"
+                        <input type="url" name="meetingLink" [(ngModel)]="interaction.meetingLink"
+                            placeholder="https://zoom.us/j/..." class="input-field">
+                        <button type="button" class="btn-inline" (click)="generateMeetingLink()"
                             title="Generate template link">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <polyline points="16 18 22 12 16 6"></polyline>
                                 <polyline points="8 6 2 12 8 18"></polyline>
                             </svg>
                         </button>
-                        <button
-                            type="button"
-                            *ngIf="interaction.meetingLink"
-                            class="btn-inline"
-                            (click)="copyMeetingLink()"
-                            title="Copy link">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <button type="button" *ngIf="interaction.meetingLink" class="btn-inline"
+                            (click)="copyMeetingLink()" title="Copy link">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                             </svg>
@@ -246,15 +266,12 @@
 
                 <div class="form-group">
                     <label>Summary <span class="required">*</span></label>
-                    <textarea
-                        name="summary"
-                        [(ngModel)]="interaction.summary"
-                        rows="3"
-                        required
+                    <textarea name="summary" [(ngModel)]="interaction.summary" rows="3" required
                         placeholder="What is this interview about? Main topics, agenda, expectations..."
                         class="input-field"></textarea>
                     <p class="muted-hint">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M12 16v-4"></path>
                             <path d="M12 8h.01"></path>
@@ -268,7 +285,8 @@
             <section class="form-section">
                 <div class="section-title">
                     <h2>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -283,7 +301,8 @@
                     <div class="section-label-row">
                         <label>Participants</label>
                         <button type="button" class="btn-text" (click)="addParticipant()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
@@ -296,31 +315,18 @@
                             <select [name]="'role' + i" [(ngModel)]="p.role" class="input-field small-select">
                                 <option *ngFor="let role of availableRoles" [value]="role">{{role}}</option>
                             </select>
-                            <input
-                                type="text"
-                                [name]="'name' + i"
-                                [(ngModel)]="p.name"
-                                placeholder="Full name"
+                            <input type="text" [name]="'name' + i" [(ngModel)]="p.name" placeholder="Full name"
                                 class="input-field">
-                            <input
-                                type="email"
-                                [name]="'email' + i"
-                                [(ngModel)]="p.email"
-                                placeholder="Email (optional)"
-                                class="input-field">
-                            <button
-                                type="button"
-                                class="btn-remove"
-                                (click)="removeParticipant(i)"
+                            <input type="email" [name]="'email' + i" [(ngModel)]="p.email"
+                                placeholder="Email (optional)" class="input-field">
+                            <button type="button" class="btn-remove" (click)="removeParticipant(i)"
                                 aria-label="Remove interviewer">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
+                                Remove
                             </button>
                         </div>
                         <p class="muted-hint" *ngIf="interaction.participants.length === 0">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                             </svg>
                             No participants added yet. Add people you'll be meeting with.
@@ -333,20 +339,16 @@
             <section class="form-section collapsible">
                 <div class="section-title clickable" (click)="showAdvancedOptions = !showAdvancedOptions">
                     <h2>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <circle cx="12" cy="12" r="3"></circle>
-                            <path d="M12 1v6m0 6v6m5.196-15.196l-4.242 4.242m0 5.908l-4.242 4.242m15.196-5.196l-6 0m-6 0l-6 0m15.196 5.196l-4.242-4.242m0-5.908l-4.242-4.242"></path>
+                            <path
+                                d="M12 1v6m0 6v6m5.196-15.196l-4.242 4.242m0 5.908l-4.242 4.242m15.196-5.196l-6 0m-6 0l-6 0m15.196 5.196l-4.242-4.242m0-5.908l-4.242-4.242">
+                            </path>
                         </svg>
                         Preparation & Notes
-                        <svg
-                            class="chevron"
-                            [class.rotated]="showAdvancedOptions"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2">
+                        <svg class="chevron" [class.rotated]="showAdvancedOptions" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="6 9 12 15 18 9"></polyline>
                         </svg>
                     </h2>
@@ -356,10 +358,7 @@
                 <div class="collapsible-content" *ngIf="showAdvancedOptions">
                     <div class="form-group">
                         <label>Heads-up / Important Notes</label>
-                        <textarea
-                            name="headsup"
-                            [(ngModel)]="interaction.headsup"
-                            rows="2"
+                        <textarea name="headsup" [(ngModel)]="interaction.headsup" rows="2"
                             placeholder="Critical information to remember (e.g., topics to avoid, specific prep needed)..."
                             class="input-field"></textarea>
                         <p class="muted-hint">High-priority information that requires your attention</p>
@@ -368,18 +367,13 @@
                     <div class="form-group">
                         <label>Preparation Checklist</label>
                         <div class="checklist-items">
-                            <div *ngFor="let item of interaction.preparationChecklist; let i = index" class="checklist-row">
-                                <input
-                                    type="text"
-                                    [name]="'checklistItem' + i"
-                                    [(ngModel)]="item.text"
-                                    placeholder="Preparation task..."
-                                    class="input-field">
-                                <button
-                                    type="button"
-                                    class="btn-remove-small"
-                                    (click)="removeChecklistItem(i)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <div *ngFor="let item of interaction.preparationChecklist; let i = index"
+                                class="checklist-row">
+                                <input type="text" [name]="'checklistItem' + i" [(ngModel)]="item.text"
+                                    placeholder="Preparation task..." class="input-field">
+                                <button type="button" class="btn-remove-small" (click)="removeChecklistItem(i)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
                                         <line x1="18" y1="6" x2="6" y2="18"></line>
                                         <line x1="6" y1="6" x2="18" y2="18"></line>
                                     </svg>
@@ -387,7 +381,8 @@
                             </div>
                         </div>
                         <button type="button" class="btn-text" (click)="addChecklistItem()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
@@ -397,30 +392,20 @@
 
                     <div class="form-group">
                         <label>General Notes</label>
-                        <textarea
-                            name="notes"
-                            [(ngModel)]="interaction.notes"
-                            rows="3"
-                            placeholder="Additional notes, observations, or context..."
-                            class="input-field"></textarea>
+                        <textarea name="notes" [(ngModel)]="interaction.notes" rows="3"
+                            placeholder="Additional notes, observations, or context..." class="input-field"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label>Tests / Technical Assessment</label>
-                        <textarea
-                            name="testsAssessment"
-                            [(ngModel)]="interaction.testsAssessment"
-                            rows="3"
+                        <textarea name="testsAssessment" [(ngModel)]="interaction.testsAssessment" rows="3"
                             placeholder="Expected tests, coding challenges, technical assessments..."
                             class="input-field"></textarea>
                     </div>
 
                     <div class="form-group">
                         <label>Role Insights</label>
-                        <textarea
-                            name="roleInsights"
-                            [(ngModel)]="interaction.roleInsights"
-                            rows="3"
+                        <textarea name="roleInsights" [(ngModel)]="interaction.roleInsights" rows="3"
                             placeholder="What you know about this role, team structure, technologies..."
                             class="input-field"></textarea>
                     </div>
@@ -438,7 +423,8 @@
                 </button>
                 <button type="submit" class="btn-primary" [disabled]="loading || !interviewForm.form.valid">
                     <span *ngIf="loading" class="spinner-small"></span>
-                    <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                     {{loading ? 'Scheduling...' : 'Schedule Interview'}}

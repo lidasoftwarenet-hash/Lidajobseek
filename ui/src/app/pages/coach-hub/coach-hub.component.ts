@@ -1,205 +1,242 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ReviewsService } from '../../services/reviews.service';
 import { ResourcesService } from '../../services/resources.service';
-import { ProcessesService } from '../../services/processes.service';
-import { InteractionsService } from '../../services/interactions.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmService } from '../../services/confirm.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
-interface Stats {
-  activeProcesses: number;
-  completedReviews: number;
-  totalResources: number;
-  upcomingInteractions: number;
-  resourcesRead: number;
+interface Folder {
+  id: number;
+  name: string;
+  parentId?: number;
+  parent?: Folder;
 }
 
-interface Tip {
-  icon: string;
+interface DocumentItem {
+  id: number;
   title: string;
-  text: string;
+  type: string;
+  content: string;
+  folderId?: number;
+  updatedAt: string;
 }
 
 @Component({
   selector: 'app-coach-hub',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './coach-hub.component.html',
   styleUrls: ['./coach-hub.component.css']
 })
 export class CoachHubComponent implements OnInit {
-  stats: Stats = {
-    activeProcesses: 0,
-    completedReviews: 0,
-    totalResources: 0,
-    upcomingInteractions: 0,
-    resourcesRead: 0
-  };
+  allFolders: Folder[] = [];
+  currentFolder: Folder | null = null;
 
-  reviews: any[] = [];
-  resources: any[] = [];
-  currentTipIndex = 0;
+  folders: Folder[] = [];
+  documents: DocumentItem[] = [];
 
-  tips: Tip[] = [
-    {
-      icon: '🎯',
-      title: 'Set Clear Goals',
-      text: 'Define what success looks like for you. Whether it\'s landing interviews, improving skills, or building networks - clarity drives action.'
-    },
-    {
-      icon: '📝',
-      title: 'Track Everything',
-      text: 'Document your applications, interviews, and learnings. Patterns emerge from data, helping you refine your approach and celebrate progress.'
-    },
-    {
-      icon: '🔄',
-      title: 'Iterate & Improve',
-      text: 'Every application is a learning opportunity. Use self-reviews to identify what works, adjust your strategy, and continuously grow.'
-    },
-    {
-      icon: '💪',
-      title: 'Stay Consistent',
-      text: 'Job searching is a marathon, not a sprint. Small, consistent actions compound over time. Show up daily, even when it\'s hard.'
-    },
-    {
-      icon: '🌟',
-      title: 'Celebrate Wins',
-      text: 'Acknowledge every milestone - a great interview, positive feedback, or skills learned. Progress deserves recognition!'
-    },
-    {
-      icon: '🤝',
-      title: 'Build Relationships',
-      text: 'Your network is your net worth. Connect authentically, offer value first, and nurture professional relationships.'
-    },
-    {
-      icon: '📚',
-      title: 'Never Stop Learning',
-      text: 'Invest in yourself. Take courses, read articles, practice skills. Continuous learning keeps you competitive and confident.'
-    },
-    {
-      icon: '🧘',
-      title: 'Practice Self-Care',
-      text: 'Job searching can be stressful. Maintain balance, take breaks, and prioritize your mental health. You perform best when you feel your best.'
-    }
-  ];
+  isLoading = true;
+  showNewFolderModal = false;
+  newFolderName = '';
+
+  // Breadcrumbs
+  breadcrumbs: Folder[] = [];
+
+  readonly MAX_FREE_DOCUMENTS = 5;
+  isPremium = false;
 
   constructor(
-    private reviewsService: ReviewsService,
     private resourcesService: ResourcesService,
-    private processesService: ProcessesService,
-    private interactionsService: InteractionsService
-  ) {}
+    private toastService: ToastService,
+    private confirmService: ConfirmService,
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
-    this.loadData();
-    this.startTipRotation();
+    this.isPremium = this.authService.isPremiumUser();
+    this.loadAllData();
   }
 
-  async loadData() {
-    try {
-      // Load all data in parallel
-      const [processes, reviews, resources, interactions] = await Promise.all([
-        this.processesService.getAll().toPromise(),
-        this.reviewsService.getAll().toPromise(),
-        this.resourcesService.getAll().toPromise(),
-        this.interactionsService.getAll().toPromise()
-      ]);
+  loadAllData() {
+    this.isLoading = true;
+    // Load folders and files
+    this.resourcesService.getFolders().subscribe({
+      next: (folders) => {
+        this.allFolders = folders;
+        this.loadDocuments();
+      },
+      error: (err) => {
+        this.toastService.show('Failed to load folders', 'error');
+        this.isLoading = false;
+      }
+    });
+  }
 
-      // Calculate stats
-      this.stats.activeProcesses = processes?.filter((p: any) =>
-        p.status === 'Applied' || p.status === 'Interviewing' || p.status === 'In Progress'
-      ).length || 0;
+  loadDocuments() {
+    this.resourcesService.getAll().subscribe({
+      next: (docs) => {
+        this.documents = docs;
+        this.refreshView();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.toastService.show('Failed to load documents', 'error');
+        this.isLoading = false;
+      }
+    });
+  }
 
-      this.stats.completedReviews = reviews?.length || 0;
-      this.stats.totalResources = resources?.length || 0;
+  refreshView() {
+    // Filter folders and documents based on the current folder
+    const currentId = this.currentFolder?.id || null;
 
-      // Count upcoming interactions (within next 7 days)
-      const now = new Date();
-      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      this.stats.upcomingInteractions = interactions?.filter((i: any) => {
-        const interactionDate = new Date(i.date);
-        return interactionDate >= now && interactionDate <= nextWeek;
-      }).length || 0;
+    this.folders = this.allFolders.filter(f => {
+      if (currentId === null) return !f.parentId && !f.parent;
+      return f.parentId === currentId || f.parent?.id === currentId;
+    });
 
-      // Simulate resources read (you can track this in localStorage or backend)
-      this.stats.resourcesRead = this.getResourcesReadCount();
+    // Update breadcrumbs
+    this.updateBreadcrumbs();
+  }
 
-      // Store recent reviews
-      this.reviews = reviews?.slice(0, 3) || [];
+  getCurrentDocuments() {
+    const currentId = this.currentFolder?.id || null;
+    return this.documents.filter(d => (d.folderId || null) === currentId);
+  }
 
-      // Store resources
-      this.resources = resources || [];
+  updateBreadcrumbs() {
+    const path: Folder[] = [];
+    let curr = this.currentFolder;
+    while (curr) {
+      path.unshift(curr);
+      const parentId = curr.parentId || curr.parent?.id;
+      curr = parentId ? this.allFolders.find(f => f.id === parentId) || null : null;
+    }
+    this.breadcrumbs = path;
+  }
 
-    } catch (error) {
-      console.error('Error loading coach hub data:', error);
+  navigateToFolder(folder: Folder | null) {
+    this.currentFolder = folder;
+    this.refreshView();
+  }
+
+  createFolder() {
+    if (!this.newFolderName.trim()) return;
+
+    this.resourcesService.createFolder(this.newFolderName, this.currentFolder?.id).subscribe({
+      next: (newFolder) => {
+        this.allFolders.push(newFolder);
+        this.newFolderName = '';
+        this.showNewFolderModal = false;
+        this.refreshView();
+        this.toastService.show('Folder created', 'success');
+      },
+      error: () => this.toastService.show('Failed to create folder', 'error')
+    });
+  }
+
+  async deleteFolder(event: Event, folder: Folder) {
+    event.stopPropagation();
+    if (await this.confirmService.confirm(`Are you sure you want to delete "${folder.name}" and all its contents?`, 'Delete Folder')) {
+      this.resourcesService.removeFolder(folder.id).subscribe({
+        next: () => {
+          this.allFolders = this.allFolders.filter(f => f.id !== folder.id);
+          this.refreshView();
+          this.toastService.show('Folder deleted', 'success');
+        },
+        error: () => this.toastService.show('Failed to delete folder', 'error')
+      });
     }
   }
 
-  getResourcesReadCount(): number {
-    const readResources = localStorage.getItem('resourcesRead');
-    return readResources ? JSON.parse(readResources).length : 0;
+  onFileUpload(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check limits for free users
+    if (!this.isPremium && this.documents.length >= this.MAX_FREE_DOCUMENTS) {
+      this.toastService.show(`Limit reached: Free users can only upload up to ${this.MAX_FREE_DOCUMENTS} documents.`, 'warning');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', file.originalname);
+    formData.append('type', this.getFileType(file.name));
+    if (this.currentFolder) {
+      formData.append('folderId', this.currentFolder.id.toString());
+    }
+
+    this.isLoading = true;
+    this.resourcesService.create(formData).subscribe({
+      next: (newDoc) => {
+        this.documents.push(newDoc);
+        this.isLoading = false;
+        this.toastService.show('File uploaded successfully', 'success');
+      },
+      error: (err) => {
+        this.toastService.show('Upload failed: ' + (err.error?.message || err.message), 'error');
+        this.isLoading = false;
+      }
+    });
   }
 
-  formatDate(date: string | Date): string {
-    const d = new Date(date);
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    };
-    return d.toLocaleDateString('en-US', options);
+  getFileType(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (['pdf'].includes(ext!)) return 'pdf';
+    if (['doc', 'docx'].includes(ext!)) return 'doc';
+    if (['png', 'jpg', 'jpeg', 'webp'].includes(ext!)) return 'image';
+    return 'file';
   }
 
-  getScoreClass(score: number): string {
-    if (score >= 8) return 'score-high';
-    if (score >= 5) return 'score-medium';
-    return 'score-low';
-  }
-
-  getResourceIcon(type: string): string {
-    const icons: { [key: string]: string } = {
-      'article': '📄',
-      'video': '🎥',
-      'tutorial': '🎓',
-      'premium': '⭐',
-      'book': '📚',
-      'podcast': '🎙️',
-      'course': '🎯'
-    };
-    return icons[type.toLowerCase()] || '📌';
-  }
-
-  // Tip carousel functionality
-  nextTip() {
-    if (this.currentTipIndex < this.tips.length - 1) {
-      this.currentTipIndex++;
+  getFileIcon(type: string): string {
+    switch (type.toLowerCase()) {
+      case 'pdf': return '📄';
+      case 'doc': return '📝';
+      case 'image': return '🖼️';
+      default: return '📁';
     }
   }
 
-  previousTip() {
-    if (this.currentTipIndex > 0) {
-      this.currentTipIndex--;
+  downloadFile(event: Event, doc: DocumentItem) {
+    event.stopPropagation();
+    window.open(doc.content, '_blank');
+  }
+
+  async deleteFile(event: Event, doc: DocumentItem) {
+    event.stopPropagation();
+    if (await this.confirmService.confirm(`Are you sure you want to delete "${doc.title}"?`, 'Delete File')) {
+      this.resourcesService.delete(doc.id).subscribe({
+        next: () => {
+          this.documents = this.documents.filter(d => d.id !== doc.id);
+          this.toastService.show('File deleted', 'success');
+        },
+        error: () => this.toastService.show('Failed to delete file', 'error')
+      });
     }
   }
 
-  goToTip(index: number) {
-    this.currentTipIndex = index;
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString();
   }
 
-  startTipRotation() {
-    // Auto-rotate tips every 8 seconds
-    setInterval(() => {
-      this.currentTipIndex = (this.currentTipIndex + 1) % this.tips.length;
-    }, 8000);
+  get docCount(): number {
+    return this.documents.length;
   }
 
-  openGuide() {
-    // You can link to documentation or open a modal with guides
-    window.open('https://docs.example.com/guide', '_blank');
+  get docsRemaining(): number {
+    return Math.max(0, this.MAX_FREE_DOCUMENTS - this.docCount);
   }
 
-  contactSupport() {
-    // Open support modal or email
-    window.location.href = 'mailto:support@example.com?subject=Coach Hub Support';
+  get isLimitReached(): boolean {
+    return !this.isPremium && this.docCount >= this.MAX_FREE_DOCUMENTS;
+  }
+
+  goToPricing() {
+    this.router.navigate(['/pricing']); // Assuming pricing route exists or user wants it
   }
 }

@@ -7,9 +7,9 @@ import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
 
-interface TimePreset {
+interface DurationPreset {
   label: string;
-  value: Date;
+  value: number;
 }
 
 interface InterviewTemplate {
@@ -38,9 +38,12 @@ export class ScheduleInterviewComponent implements OnInit {
   interaction: any = {
     processId: null,
     date: '',
-    interviewType: 'zoom',
+    interviewType: 'video call',
     duration: 60,
     location: '',
+    locationType: 'Home',
+    locationAddress: '',
+    locationName: '',
     meetingLink: '',
     participants: [],
     summary: '',
@@ -54,8 +57,8 @@ export class ScheduleInterviewComponent implements OnInit {
   };
 
   availableRoles = ['HR', 'Tech Lead', 'Team Member', 'Team Lead', 'Manager', 'CTO', 'Director', 'Group Leader', 'Architect', 'Recruiter', 'VP Engineering', 'Senior Engineer'];
-  interviewTypes = ['call', 'zoom', 'teams', 'meet', 'frontal', 'home assignment', 'technical', 'hr', 'managerial', 'culture fit', 'panel'];
-  durationOptions = [15, 30, 45, 60, 90, 120, 180, 240];
+  interviewTypes = ['phone call', 'video call', 'home assignment', 'office interview'];
+  durationOptions = [15, 30, 45, 60, 90, 120, 180, 240, 480];
   reminderOptions = [
     { label: 'No reminder', value: 0 },
     { label: '15 minutes before', value: 15 },
@@ -66,40 +69,36 @@ export class ScheduleInterviewComponent implements OnInit {
     { label: '2 days before', value: 2880 }
   ];
 
-  timePresets: TimePreset[] = [];
+  durationPresets: DurationPreset[] = [];
 
   interviewTemplates: InterviewTemplate[] = [
     {
-      name: 'HR Screening',
-      type: 'hr',
-      duration: 30,
+      name: 'Phone Screen',
+      type: 'phone call',
+      duration: 15,
       participants: [{ role: 'HR', name: '' }],
-      summary: 'Initial screening to discuss background, expectations, and culture fit'
+      summary: 'Initial phone screening'
     },
     {
-      name: 'Technical Interview',
-      type: 'technical',
-      duration: 90,
-      participants: [{ role: 'Tech Lead', name: '' }],
-      summary: 'Deep dive into technical skills, coding abilities, and problem-solving'
-    },
-    {
-      name: 'Panel Interview',
-      type: 'panel',
-      duration: 120,
-      participants: [
-        { role: 'Tech Lead', name: '' },
-        { role: 'Team Lead', name: '' },
-        { role: 'Manager', name: '' }
-      ],
-      summary: 'Comprehensive evaluation with multiple team members'
-    },
-    {
-      name: 'Final Round',
-      type: 'managerial',
+      name: 'Technical Video Call',
+      type: 'video call',
       duration: 60,
-      participants: [{ role: 'Director', name: '' }],
-      summary: 'Final discussion about role expectations, compensation, and next steps'
+      participants: [{ role: 'Tech Lead', name: '' }],
+      summary: 'Technical interview via video'
+    },
+    {
+      name: 'Office Interview',
+      type: 'office interview',
+      duration: 120,
+      participants: [{ role: 'Team Lead', name: '' }],
+      summary: 'On-site interview at the office'
+    },
+    {
+      name: 'Home Assignment',
+      type: 'home assignment',
+      duration: 180,
+      participants: [{ role: 'Recruiter', name: '' }],
+      summary: 'Technical home assignment task'
     }
   ];
 
@@ -109,11 +108,11 @@ export class ScheduleInterviewComponent implements OnInit {
     private router: Router,
     private toastService: ToastService,
     private confirmService: ConfirmService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadProcesses();
-    this.generateTimePresets();
+    this.generateDurationPresets();
     this.setDefaultDateTime();
   }
 
@@ -129,47 +128,20 @@ export class ScheduleInterviewComponent implements OnInit {
     this.interaction.date = new Date(now.getTime() - tzOffset).toISOString().slice(0, 16);
   }
 
-  generateTimePresets() {
-    const now = new Date();
-
-    // Today at next hour
-    const todayNextHour = new Date(now);
-    todayNextHour.setHours(now.getHours() + 1, 0, 0, 0);
-
-    // Tomorrow at 9 AM
-    const tomorrow9am = new Date(now);
-    tomorrow9am.setDate(now.getDate() + 1);
-    tomorrow9am.setHours(9, 0, 0, 0);
-
-    // Tomorrow at 2 PM
-    const tomorrow2pm = new Date(now);
-    tomorrow2pm.setDate(now.getDate() + 1);
-    tomorrow2pm.setHours(14, 0, 0, 0);
-
-    // Next Monday at 10 AM
-    const nextMonday = new Date(now);
-    const daysUntilMonday = (8 - now.getDay()) % 7 || 7;
-    nextMonday.setDate(now.getDate() + daysUntilMonday);
-    nextMonday.setHours(10, 0, 0, 0);
-
-    // Next week same day
-    const nextWeek = new Date(now);
-    nextWeek.setDate(now.getDate() + 7);
-    nextWeek.setHours(10, 0, 0, 0);
-
-    this.timePresets = [
-      { label: 'In 1 hour', value: todayNextHour },
-      { label: 'Tomorrow at 9 AM', value: tomorrow9am },
-      { label: 'Tomorrow at 2 PM', value: tomorrow2pm },
-      { label: 'Next Monday at 10 AM', value: nextMonday },
-      { label: 'Next week', value: nextWeek }
+  generateDurationPresets() {
+    this.durationPresets = [
+      { label: '30 minutes', value: 30 },
+      { label: '45 minutes', value: 45 },
+      { label: '1 hour', value: 60 },
+      { label: '1.5 hour', value: 90 },
+      { label: '2 hours', value: 120 },
+      { label: 'full day', value: 480 }
     ];
   }
 
-  applyTimePreset(preset: TimePreset) {
-    const tzOffset = preset.value.getTimezoneOffset() * 60000;
-    this.interaction.date = new Date(preset.value.getTime() - tzOffset).toISOString().slice(0, 16);
-    this.toastService.show(`Time set to ${preset.label}`, 'success');
+  applyDurationPreset(preset: DurationPreset) {
+    this.interaction.duration = preset.value;
+    this.toastService.show(`Duration set to ${preset.label}`, 'success');
   }
 
   applyTemplate(template: InterviewTemplate) {
@@ -194,25 +166,41 @@ export class ScheduleInterviewComponent implements OnInit {
   }
 
   onProcessSearchChange() {
-    if (!this.processSearch.trim()) {
-      this.filteredProcesses = [];
+    const searchTerm = this.processSearch.toLowerCase().trim();
+    if (!searchTerm) {
+      this.filteredProcesses = this.processes;
       return;
     }
 
-    const searchTerm = this.processSearch.toLowerCase();
     this.filteredProcesses = this.processes
       .filter(process => {
         const companyName = process.companyName?.toLowerCase() || '';
         const roleTitle = process.roleTitle?.toLowerCase() || '';
-        return companyName.includes(searchTerm) || roleTitle.includes(searchTerm);
-      })
-      .slice(0, 8); // Limit to 8 results
+        const stage = process.currentStage?.toLowerCase() || '';
+        return companyName.includes(searchTerm) ||
+          roleTitle.includes(searchTerm) ||
+          stage.includes(searchTerm);
+      });
   }
+
+  toggleProcessDropdown(show: boolean) {
+    if (show) {
+      this.onProcessSearchChange();
+      // Use setTimeout to allow click events to process before closing
+      setTimeout(() => this.showProcessDropdown = true, 100);
+    } else {
+      // Small delay to allow clicking an option
+      setTimeout(() => this.showProcessDropdown = false, 200);
+    }
+  }
+
+  showProcessDropdown = false;
 
   selectProcess(process: any) {
     this.interaction.processId = process.id;
     this.processSearch = `${process.companyName} - ${process.roleTitle}`;
     this.filteredProcesses = [];
+    this.showProcessDropdown = false;
   }
 
   clearProcessSelection() {
@@ -242,9 +230,7 @@ export class ScheduleInterviewComponent implements OnInit {
 
   generateMeetingLink() {
     const types: any = {
-      'zoom': 'https://zoom.us/j/meeting-id',
-      'teams': 'https://teams.microsoft.com/l/meetup-join/...',
-      'meet': 'https://meet.google.com/xxx-xxxx-xxx'
+      'video call': 'https://zoom.us/j/meeting-id'
     };
 
     this.interaction.meetingLink = types[this.interaction.interviewType] || '';
@@ -270,7 +256,13 @@ export class ScheduleInterviewComponent implements OnInit {
       if (!confirmed) return;
     }
 
-    this.loading = true;
+    // Construct location string based on type
+    let finalLocation = this.interaction.locationType;
+    if (this.interaction.locationType === 'Office') {
+      finalLocation = `Office: ${this.interaction.locationAddress}`;
+    } else if (this.interaction.locationType === 'Other') {
+      finalLocation = `${this.interaction.locationName} - ${this.interaction.locationAddress}`;
+    }
 
     const payload: any = {
       processId: Number(this.interaction.processId),
@@ -280,11 +272,9 @@ export class ScheduleInterviewComponent implements OnInit {
       participants: this.interaction.participants.filter((p: any) => p.name.trim()),
       summary: this.interaction.summary,
       reminder: this.interaction.reminder,
-      timezone: this.interaction.timezone
+      timezone: this.interaction.timezone,
+      location: finalLocation
     };
-
-    // Add optional fields
-    if (this.interaction.location) payload.location = this.interaction.location;
     if (this.interaction.meetingLink) payload.meetingLink = this.interaction.meetingLink;
     if (this.interaction.headsup) payload.headsup = this.interaction.headsup;
     if (this.interaction.notes) payload.notes = this.interaction.notes;
@@ -321,15 +311,17 @@ export class ScheduleInterviewComponent implements OnInit {
   hasUnsavedChanges(): boolean {
     // Simple check - in production, you'd compare with original values
     return this.interaction.summary?.trim().length > 0 ||
-           this.interaction.participants.length > 0 ||
-           this.interaction.notes?.trim().length > 0;
+      this.interaction.participants.length > 0 ||
+      this.interaction.notes?.trim().length > 0;
   }
 
   getDurationLabel(minutes: number): string {
+    if (minutes === 480) return 'Full Day';
     if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    const hours = minutes / 60;
+    if (hours === 1) return '1 hour';
+    if (hours % 1 === 0) return `${hours} hours`;
+    return `${hours} hours`; // Will show 1.5 etc
   }
 
   getEndTime(): string {

@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
 import { User } from '../users/user.entity';
+import { Folder } from './folder.entity';
 
 @Entity({ schema: 'app' })
 export class Resource {
@@ -26,4 +27,7 @@ export class Resource {
 
   @ManyToOne(() => User)
   user!: User;
+
+  @ManyToOne(() => Folder, { nullable: true })
+  folder?: Folder;
 }

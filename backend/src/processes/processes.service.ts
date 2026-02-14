@@ -27,7 +27,7 @@ export class ProcessesService {
 
   async create(dto: CreateProcessDto, userId: number): Promise<Process> {
     const data: any = { ...dto, user: this.em.getReference(User, userId) };
-    
+
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {
       data.initialInviteDate = this.parseDateOrThrow(dto.initialInviteDate, 'initialInviteDate');
@@ -65,7 +65,7 @@ export class ProcessesService {
     const processes = await this.processRepository.find(
       { user: userId },
       {
-        populate: ['interactions', 'reviews'],
+        populate: ['interactions', 'reviews', 'contacts'],
         orderBy: { updatedAt: QueryOrder.DESC },
       },
     );
@@ -103,7 +103,7 @@ export class ProcessesService {
     }
 
     const data: any = { ...dto };
-    
+
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {
       data.initialInviteDate = this.parseDateOrThrow(dto.initialInviteDate, 'initialInviteDate');

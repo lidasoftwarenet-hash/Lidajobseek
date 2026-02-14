@@ -12,6 +12,7 @@ interface FilterPreset {
     icon: string;
     filters: {
         searchText?: string;
+        deepSearch?: string;
         selectedStage?: string;
         selectedWorkMode?: string;
         selectedLocation?: string;
@@ -43,6 +44,7 @@ export class ProcessListComponent implements OnInit {
 
     // Filter properties
     searchText: string = '';
+    deepSearch: string = '';
     selectedStage: string = '';
     selectedWorkMode: string = '';
     selectedLocation: string = '';
@@ -264,6 +266,48 @@ export class ProcessListComponent implements OnInit {
                 if (!matchesSearch) return false;
             }
 
+            // Deep search (within process content)
+            if (this.deepSearch) {
+                const searchLower = this.deepSearch.toLowerCase();
+
+                // Search in process internal fields
+                const matchesProcess =
+                    process.dataFromThePhoneCall?.toLowerCase().includes(searchLower) ||
+                    process.initialInviteContent?.toLowerCase().includes(searchLower) ||
+                    process.headsup?.toLowerCase().includes(searchLower) ||
+                    process.notes?.toLowerCase().includes(searchLower) ||
+                    process.benefits?.toLowerCase().includes(searchLower) ||
+                    process.equity?.toLowerCase().includes(searchLower) ||
+                    process.bonus?.toLowerCase().includes(searchLower);
+
+                // Search in interactions
+                const matchesInteractions = process.interactions?.some((i: any) =>
+                    i.summary?.toLowerCase().includes(searchLower) ||
+                    i.notes?.toLowerCase().includes(searchLower) ||
+                    i.headsup?.toLowerCase().includes(searchLower) ||
+                    i.testsAssessment?.toLowerCase().includes(searchLower) ||
+                    i.roleInsights?.toLowerCase().includes(searchLower) ||
+                    i.meetingLink?.toLowerCase().includes(searchLower)
+                );
+
+                // Search in reviews
+                const matchesReviews = process.reviews?.some((r: any) =>
+                    r.pros?.toLowerCase().includes(searchLower) ||
+                    r.cons?.toLowerCase().includes(searchLower) ||
+                    r.vibeSummary?.toLowerCase().includes(searchLower)
+                );
+
+                // Search in contacts
+                const matchesContacts = process.contacts?.some((c: any) =>
+                    c.name?.toLowerCase().includes(searchLower) ||
+                    c.role?.toLowerCase().includes(searchLower) ||
+                    c.email?.toLowerCase().includes(searchLower) ||
+                    c.socialHooks?.toLowerCase().includes(searchLower)
+                );
+
+                if (!(matchesProcess || matchesInteractions || matchesReviews || matchesContacts)) return false;
+            }
+
             // Stage filter
             if (this.selectedStage && process.currentStage !== this.selectedStage) {
                 return false;
@@ -326,6 +370,7 @@ export class ProcessListComponent implements OnInit {
     // Clear all filters
     clearFilters() {
         this.searchText = '';
+        this.deepSearch = '';
         this.selectedStage = '';
         this.selectedWorkMode = '';
         this.selectedLocation = '';
@@ -448,6 +493,7 @@ export class ProcessListComponent implements OnInit {
 
     get isFilterActive(): boolean {
         return !!this.searchText ||
+            !!this.deepSearch ||
             !!this.selectedStage ||
             !!this.selectedWorkMode ||
             !!this.selectedLocation ||
@@ -461,6 +507,7 @@ export class ProcessListComponent implements OnInit {
     get activeFilterCount(): number {
         let count = 0;
         if (this.searchText) count++;
+        if (this.deepSearch) count++;
         if (this.selectedStage) count++;
         if (this.selectedWorkMode) count++;
         if (this.selectedLocation) count++;

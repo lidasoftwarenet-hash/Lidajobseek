@@ -17,7 +17,7 @@ export class InteractionCreateComponent implements OnInit {
 
     interaction: any = {
         date: '',
-        interviewType: 'zoom',
+        interviewType: 'video call',
         participants: [], // array of { role: string, name: string }
         summary: '',
         testsAssessment: '', // Tests or technical assessments during interview

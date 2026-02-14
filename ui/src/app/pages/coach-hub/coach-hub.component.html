@@ -1,323 +1,146 @@
-<div class="coach-hub">
-  <!-- Hero Welcome Section -->
-  <div class="hero-section">
-    <div class="hero-content">
-      <div class="hero-text">
-        <h1 class="hero-title">
-          <span class="wave">👋</span> Welcome Back!
-        </h1>
-        <p class="hero-subtitle">Your personal career growth companion</p>
-        <p class="hero-description">
-          Track your progress, access resources, and get insights to accelerate your job search journey
+<div class="coach-hub-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-title">
+      <span>🛡️</span> Coach Hub
+    </div>
+
+    <nav class="nav-section">
+      <span class="nav-label">Library</span>
+      <div class="nav-item" [class.active]="!currentFolder" (click)="navigateToFolder(null)">
+        <span>🏠</span> My Documents
+      </div>
+      <div class="nav-item">
+        <span>⭐</span> Favorites
+      </div>
+      <div class="nav-item">
+        <span>🕒</span> Recent
+      </div>
+    </nav>
+
+    <nav class="nav-section plan-usage-section">
+      <span class="nav-label">Plan Usage</span>
+      <div class="usage-status" [class.usage-full]="isLimitReached">
+        <div class="usage-header">
+          <span class="usage-label">{{ isPremium ? 'Premium Plan' : 'Free Plan' }}</span>
+          <span class="usage-count" *ngIf="!isPremium">{{ docCount }}/{{ MAX_FREE_DOCUMENTS }} files</span>
+          <span class="usage-count" *ngIf="isPremium">{{ docCount }} files</span>
+        </div>
+        <div class="usage-bar" *ngIf="!isPremium">
+          <div class="usage-fill" [style.width.%]="(docCount / MAX_FREE_DOCUMENTS) * 100"></div>
+        </div>
+        <p class="usage-hint" *ngIf="!isPremium">
+          {{ docsRemaining }} slots left for free
         </p>
-      </div>
-      <div class="hero-illustration">
-        <div class="floating-emoji">🚀</div>
-        <div class="floating-emoji delay-1">⭐</div>
-        <div class="floating-emoji delay-2">💼</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Stats Dashboard -->
-  <div class="stats-section">
-    <h2 class="section-title">
-      <span class="title-icon">📊</span>
-      Your Journey at a Glance
-    </h2>
-
-    <div class="stats-grid">
-      <div class="stat-card stat-card-primary">
-        <div class="stat-icon">🎯</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.activeProcesses }}</div>
-          <div class="stat-label">Active Applications</div>
-        </div>
-        <div class="stat-trend positive" *ngIf="stats.activeProcesses > 0">
-          <span class="trend-icon">↗</span>
-          Keep going!
+        <button class="btn-upgrade-sidebar" *ngIf="!isPremium" (click)="goToPricing()">
+          <span>💎</span> Upgrade to Unlimited
+        </button>
+        <div class="premium-badge-sidebar" *ngIf="isPremium">
+          <span>✨</span> Unlimited Storage
         </div>
       </div>
+    </nav>
 
-      <div class="stat-card stat-card-success">
-        <div class="stat-icon">✅</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.completedReviews }}</div>
-          <div class="stat-label">Self-Reviews Done</div>
-        </div>
-        <div class="stat-trend positive" *ngIf="stats.completedReviews > 0">
-          <span class="trend-icon">📈</span>
-          Great progress!
-        </div>
+    <nav class="nav-section">
+      <span class="nav-label">Labels</span>
+      <div class="nav-item">
+        <span>📌</span> Important
+      </div>
+      <div class="nav-item">
+        <span>📝</span> Personal Notes
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Header -->
+    <header class="content-header">
+      <div class="breadcrumb-nav">
+        <span class="breadcrumb-item" (click)="navigateToFolder(null)">Root</span>
+        <ng-container *ngFor="let crumb of breadcrumbs">
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-item" (click)="navigateToFolder(crumb)">{{ crumb.name }}</span>
+        </ng-container>
       </div>
 
-      <div class="stat-card stat-card-info">
-        <div class="stat-icon">📚</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.totalResources }}</div>
-          <div class="stat-label">Resources Available</div>
+      <div class="header-actions">
+        <div class="premium-tip" *ngIf="!isPremium" (click)="goToPricing()">
+          <span>🚀</span> Unlock Unlimited Storage
         </div>
-        <div class="stat-trend">
-          <span class="trend-icon">💡</span>
-          Learn & grow
-        </div>
-      </div>
-
-      <div class="stat-card stat-card-warning">
-        <div class="stat-icon">🗓️</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.upcomingInteractions }}</div>
-          <div class="stat-label">Upcoming Events</div>
-        </div>
-        <div class="stat-trend" *ngIf="stats.upcomingInteractions > 0">
-          <span class="trend-icon">⏰</span>
-          Stay prepared!
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="actions-section">
-    <h2 class="section-title">
-      <span class="title-icon">⚡</span>
-      Quick Actions
-    </h2>
-
-    <div class="actions-grid">
-      <a routerLink="/process-create" class="action-card action-card-1">
-        <div class="action-icon">➕</div>
-        <div class="action-content">
-          <h3 class="action-title">New Application</h3>
-          <p class="action-description">Start tracking a new job opportunity</p>
-        </div>
-        <div class="action-arrow">→</div>
-      </a>
-
-      <a routerLink="/review-create" class="action-card action-card-2">
-        <div class="action-icon">🔍</div>
-        <div class="action-content">
-          <h3 class="action-title">Self-Review</h3>
-          <p class="action-description">Reflect on your recent experiences</p>
-        </div>
-        <div class="action-arrow">→</div>
-      </a>
-
-      <a routerLink="/calendar" class="action-card action-card-3">
-        <div class="action-icon">📅</div>
-        <div class="action-content">
-          <h3 class="action-title">View Calendar</h3>
-          <p class="action-description">Check your upcoming interviews</p>
-        </div>
-        <div class="action-arrow">→</div>
-      </a>
-
-      <a routerLink="/analytics" class="action-card action-card-4">
-        <div class="action-icon">📈</div>
-        <div class="action-content">
-          <h3 class="action-title">Analytics</h3>
-          <p class="action-description">Track your search performance</p>
-        </div>
-        <div class="action-arrow">→</div>
-      </a>
-    </div>
-  </div>
-
-  <!-- Resources Section -->
-  <div class="resources-section" *ngIf="resources.length > 0">
-    <div class="section-header">
-      <h2 class="section-title">
-        <span class="title-icon">🎓</span>
-        Learning Resources
-      </h2>
-      <a routerLink="/process-list" class="view-all-link">
-        View All Resources →
-      </a>
-    </div>
-
-    <div class="resources-grid">
-      <div *ngFor="let resource of resources.slice(0, 6)" class="resource-card" [class.resource-premium]="resource.type === 'premium'">
-        <div class="resource-header">
-          <div class="resource-type-badge" [class]="'badge-' + resource.type">
-            {{ resource.type }}
-          </div>
-          <div class="resource-icon">
-            {{ getResourceIcon(resource.type) }}
-          </div>
-        </div>
-        <div class="resource-content">
-          <h3 class="resource-title">{{ resource.title }}</h3>
-          <p class="resource-description">{{ resource.description }}</p>
-        </div>
-        <div class="resource-footer">
-          <a [href]="resource.url" target="_blank" class="resource-link">
-            <span>Access Resource</span>
-            <span class="link-icon">🔗</span>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="resources.length === 0" class="empty-state">
-      <div class="empty-icon">📚</div>
-      <p class="empty-text">No resources available yet</p>
-      <p class="empty-subtext">Resources will appear here as you add them</p>
-    </div>
-  </div>
-
-  <!-- Recent Reviews Section -->
-  <div class="reviews-section" *ngIf="reviews.length > 0">
-    <div class="section-header">
-      <h2 class="section-title">
-        <span class="title-icon">💭</span>
-        Recent Self-Reviews
-      </h2>
-      <a routerLink="/process-list" class="view-all-link">
-        View All Reviews →
-      </a>
-    </div>
-
-    <div class="reviews-list">
-      <div *ngFor="let review of reviews.slice(0, 3)" class="review-card">
-        <div class="review-header">
-          <div class="review-date">
-            <span class="date-icon">📅</span>
-            {{ formatDate(review.date) }}
-          </div>
-          <div class="review-score" [class]="getScoreClass(review.overallScore)">
-            <span class="score-label">Score:</span>
-            <span class="score-value">{{ review.overallScore }}/10</span>
-          </div>
-        </div>
-        <div class="review-content">
-          <h4 class="review-title">{{ review.processName || 'General Review' }}</h4>
-          <div class="review-insights">
-            <div class="insight-item" *ngIf="review.mainWin">
-              <span class="insight-icon">🏆</span>
-              <span class="insight-label">Win:</span>
-              <span class="insight-text">{{ review.mainWin }}</span>
-            </div>
-            <div class="insight-item" *ngIf="review.mainChallenge">
-              <span class="insight-icon">⚡</span>
-              <span class="insight-label">Challenge:</span>
-              <span class="insight-text">{{ review.mainChallenge }}</span>
-            </div>
-          </div>
-        </div>
-        <a [routerLink]="['/review-edit', review.id]" class="review-edit-btn">
-          <span>View Details</span>
-          <span>→</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Motivational Tips Section -->
-  <div class="tips-section">
-    <h2 class="section-title">
-      <span class="title-icon">💡</span>
-      Daily Inspiration
-    </h2>
-
-    <div class="tips-carousel">
-      <div class="tip-card" [class.active]="currentTipIndex === i" *ngFor="let tip of tips; let i = index">
-        <div class="tip-icon">{{ tip.icon }}</div>
-        <div class="tip-content">
-          <h3 class="tip-title">{{ tip.title }}</h3>
-          <p class="tip-text">{{ tip.text }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="carousel-controls">
-      <button class="carousel-btn" (click)="previousTip()" [disabled]="currentTipIndex === 0">
-        ← Previous
-      </button>
-      <div class="carousel-dots">
-        <span
-          *ngFor="let tip of tips; let i = index"
-          class="dot"
-          [class.active]="currentTipIndex === i"
-          (click)="goToTip(i)">
-        </span>
-      </div>
-      <button class="carousel-btn" (click)="nextTip()" [disabled]="currentTipIndex === tips.length - 1">
-        Next →
-      </button>
-    </div>
-  </div>
-
-  <!-- Achievement Progress -->
-  <div class="achievements-section">
-    <h2 class="section-title">
-      <span class="title-icon">🏅</span>
-      Your Achievements
-    </h2>
-
-    <div class="achievements-grid">
-      <div class="achievement-card" [class.unlocked]="stats.activeProcesses >= 5">
-        <div class="achievement-icon">🎯</div>
-        <div class="achievement-content">
-          <h3 class="achievement-title">Job Hunter</h3>
-          <p class="achievement-description">Track 5+ applications</p>
-          <div class="achievement-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(stats.activeProcesses / 5) * 100"></div>
-            </div>
-            <span class="progress-text">{{ stats.activeProcesses }}/5</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="achievement-card" [class.unlocked]="stats.completedReviews >= 10">
-        <div class="achievement-icon">🧠</div>
-        <div class="achievement-content">
-          <h3 class="achievement-title">Self-Aware</h3>
-          <p class="achievement-description">Complete 10 self-reviews</p>
-          <div class="achievement-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(stats.completedReviews / 10) * 100"></div>
-            </div>
-            <span class="progress-text">{{ stats.completedReviews }}/10</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="achievement-card" [class.unlocked]="stats.resourcesRead >= 5">
-        <div class="achievement-icon">📚</div>
-        <div class="achievement-content">
-          <h3 class="achievement-title">Eager Learner</h3>
-          <p class="achievement-description">Read 5+ resources</p>
-          <div class="achievement-progress">
-            <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="(stats.resourcesRead / 5) * 100"></div>
-            </div>
-            <span class="progress-text">{{ stats.resourcesRead }}/5</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Help & Support -->
-  <div class="help-section">
-    <div class="help-card">
-      <div class="help-icon">❓</div>
-      <div class="help-content">
-        <h3 class="help-title">Need Help?</h3>
-        <p class="help-text">
-          We're here to support your journey. Check out our guides or reach out to our community.
-        </p>
-        <div class="help-actions">
-          <button class="help-btn help-btn-primary" (click)="openGuide()">
-            <span>📖</span>
-            View Guide
+        <button class="btn-secondary" (click)="showNewFolderModal = true">
+          <span>📁</span> New Folder
+        </button>
+        <div class="upload-wrapper" [class.disabled]="isLimitReached" (click)="isLimitReached ? goToPricing() : null">
+          <button class="btn-primary" [disabled]="isLimitReached" (click)="$event.stopPropagation(); fileInput.click()">
+            <span>📤</span> {{ isLimitReached ? 'Limit Reached' : 'Upload File' }}
           </button>
-          <button class="help-btn help-btn-secondary" (click)="contactSupport()">
-            <span>💬</span>
-            Contact Support
+          <div class="upload-tooltip" *ngIf="isLimitReached">
+            Upgrade for unlimited uploads 🚀
+          </div>
+        </div>
+        <input #fileInput type="file" (change)="onFileUpload($event)" style="display: none">
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div class="empty-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Scanning your documents...</p>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="items-grid" *ngIf="!isLoading">
+      <!-- Folders -->
+      <div class="grid-item folder-item" *ngFor="let folder of folders; let i = index" [style.--i]="i"
+        (click)="navigateToFolder(folder)">
+        <div class="item-actions">
+          <button class="action-btn-subtle" (click)="deleteFolder($event, folder)">🗑️</button>
+        </div>
+        <div class="item-icon folder-icon">📂</div>
+        <div class="item-name">{{ folder.name }}</div>
+        <div class="item-meta">Folder</div>
+      </div>
+
+      <!-- Documents -->
+      <div class="grid-item file-item" *ngFor="let doc of getCurrentDocuments(); let i = index"
+        [style.--i]="i + folders.length" (click)="downloadFile($event, doc)">
+        <div class="item-actions">
+          <button class="action-btn-subtle" (click)="deleteFile($event, doc)">🗑️</button>
+        </div>
+        <div class="item-icon file-icon">{{ getFileIcon(doc.type) }}</div>
+        <div class="item-name">{{ doc.title }}</div>
+        <div class="item-meta">{{ formatDate(doc.updatedAt) }}</div>
+      </div>
+
+      <!-- Empty State if no content -->
+      <div class="empty-state" *ngIf="folders.length === 0 && getCurrentDocuments().length === 0">
+        <div class="empty-state-icon">📂</div>
+        <h3>This folder is empty</h3>
+        <p>Upload files or create folders to get started</p>
+        <div class="empty-actions">
+          <button class="btn-glass" (click)="isLimitReached ? goToPricing() : fileInput.click()">
+            {{ isLimitReached ? '💎 View Plans for Unlimited Storage' : 'Upload First File' }}
           </button>
         </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- New Folder Modal -->
+  <div class="modal-overlay" *ngIf="showNewFolderModal" (click)="showNewFolderModal = false">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Create New Folder</h2>
+      </div>
+      <div class="form-group">
+        <label class="nav-label">Folder Name</label>
+        <input type="text" [(ngModel)]="newFolderName" placeholder="Enter folder name..." class="input-field" autoFocus
+          (keyup.enter)="createFolder()">
+      </div>
+      <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end;">
+        <button class="btn-secondary" (click)="showNewFolderModal = false">Cancel</button>
+        <button class="btn-primary" (click)="createFolder()" [disabled]="!newFolderName.trim()">Create Folder</button>
       </div>
     </div>
   </div>

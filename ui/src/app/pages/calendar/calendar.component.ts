@@ -32,7 +32,7 @@ export class CalendarComponent implements OnInit {
     private processesService: ProcessesService,
     private toastService: ToastService,
     private confirmService: ConfirmService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadProcesses();
@@ -78,7 +78,7 @@ export class CalendarComponent implements OnInit {
       params.endDate = this.endDate + 'T23:59:59.999Z';
     }
 
-        this.interactionsService.getAll(params).subscribe({
+    this.interactionsService.getAll(params).subscribe({
       next: (interviews) => {
         // Filter interviews based on showAllInterviews checkbox
         if (!this.showAllInterviews) {
@@ -106,13 +106,10 @@ export class CalendarComponent implements OnInit {
 
   getInterviewColor(interviewType: string): string {
     const colors: Record<string, string> = {
-      'call': '#3b82f6',
-      'zoom': '#8b5cf6',
-      'frontal': '#10b981',
-      'home assigment': '#f59e0b',
-      'technical': '#ef4444',
-      'hr': '#06b6d4',
-      'managerial': '#8b5cf6'
+      'phone call': '#3b82f6',
+      'video call': '#8b5cf6',
+      'office interview': '#10b981',
+      'home assignment': '#f59e0b'
     };
     return colors[interviewType] || '#6b7280';
   }
