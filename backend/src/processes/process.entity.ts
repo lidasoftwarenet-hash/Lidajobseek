@@ -18,8 +18,8 @@ export class Process {
   @Property()
   techStack!: string;
 
-  @Property()
-  location!: string;
+  @Property({ nullable: true })
+  location?: string;
 
   @Property()
   workMode!: string;
@@ -95,6 +95,15 @@ export class Process {
 
   @Property({ default: 0 })
   scoreVibe: number = 0;
+
+  @Property({ nullable: true, type: 'text' })
+  tailoredPitch?: string;
+
+  @Property({ nullable: true })
+  cvVersion?: string;
+
+  @Property({ nullable: true })
+  submissionLink?: string;
 
   @OneToMany(() => Interaction, interaction => interaction.process, { orphanRemoval: true })
   interactions = new Collection<Interaction>(this);

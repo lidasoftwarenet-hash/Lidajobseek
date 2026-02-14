@@ -13,7 +13,8 @@
                 </div>
                 <div class="progress-label">
                     <span>Form Completion: <strong>{{ formProgress }}%</strong></span>
-                    <span class="progress-hint">{{ formProgress < 100 ? 'Fill required fields' : 'Ready to submit!' }}</span>
+                    <span class="progress-hint">{{ formProgress < 100 ? 'Fill required fields' : 'Ready to submit!'
+                            }}</span>
                 </div>
             </div>
         </header>
@@ -68,32 +69,22 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Location <span class="required">*</span></label>
+                        <label>Location <span class="required" *ngIf="process.workMode !== 'remote'">*</span></label>
                         <div class="location-combobox country-combobox" [class.open]="showLocationDropdown">
-                            <input
-                                class="input-field"
-                                type="text"
-                                name="locationSearch"
-                                autocomplete="off"
-                                [disabled]="!selectedCountry"
-                                [(ngModel)]="locationSearch"
-                                (input)="onLocationSearchChange()"
-                                (focus)="onLocationSearchChange()"
-                                [placeholder]="selectedCountry ? 'Select town' : 'Select a country in settings'">
-                            <button
-                                type="button"
-                                class="location-toggle country-toggle"
+                            <input class="input-field" type="text" name="locationSearch" autocomplete="off"
+                                [disabled]="process.workMode === 'remote'" [(ngModel)]="locationSearch"
+                                (input)="onLocationSearchChange()" (focus)="onLocationSearchChange()"
+                                [placeholder]="process.workMode === 'remote' ? 'Not required for Remote' : (selectedCountry ? 'Select town' : 'Type location...')">
+                            <button type="button" class="location-toggle country-toggle"
                                 aria-label="Toggle location list"
-                                [disabled]="!selectedCountry"
+                                [disabled]="process.workMode === 'remote' || !selectedCountry"
                                 (click)="toggleLocationDropdown()">
                                 <span aria-hidden="true">▾</span>
                             </button>
-                            <div class="location-dropdown country-dropdown" *ngIf="showLocationDropdown">
-                                <button
-                                    type="button"
-                                    class="location-option country-option"
-                                    *ngFor="let loc of filteredLocationOptions"
-                                    (click)="selectLocation(loc)">
+                            <div class="location-dropdown country-dropdown"
+                                *ngIf="showLocationDropdown && selectedCountry">
+                                <button type="button" class="location-option country-option"
+                                    *ngFor="let loc of filteredLocationOptions" (click)="selectLocation(loc)">
                                     {{ loc }}
                                 </button>
                                 <div class="location-empty country-empty" *ngIf="filteredLocationOptions.length === 0">
@@ -180,7 +171,8 @@
                         class="input-field"></textarea>
                     <div class="field-footer">
                         <p class="muted-hint">Capture key insights from your initial conversation with HR/recruiter.</p>
-                        <span class="char-counter" [class.warning]="process.dataFromThePhoneCall?.length > dataFromCallMaxLength * 0.9">
+                        <span class="char-counter"
+                            [class.warning]="process.dataFromThePhoneCall?.length > dataFromCallMaxLength * 0.9">
                             {{ process.dataFromThePhoneCall?.length || 0 }} / {{ dataFromCallMaxLength }}
                         </span>
                     </div>
@@ -196,7 +188,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="label-with-icon">
-                             <button type="button" class="label-icon" (click)="datePicker.showPicker()"
+                            <button type="button" class="label-icon" (click)="datePicker.showPicker()"
                                 aria-label="Open date picker">
                                 📅
                             </button>
@@ -232,7 +224,8 @@
                         placeholder="Paste or write the invitation content here..." class="input-field"></textarea>
                     <div class="field-footer">
                         <p class="muted-hint">What did the invitation say? Copy-paste or summarize the message.</p>
-                        <span class="char-counter" [class.warning]="process.initialInviteContent?.length > initialInviteContentMaxLength * 0.9">
+                        <span class="char-counter"
+                            [class.warning]="process.initialInviteContent?.length > initialInviteContentMaxLength * 0.9">
                             {{ process.initialInviteContent?.length || 0 }} / {{ initialInviteContentMaxLength }}
                         </span>
                     </div>

@@ -17,6 +17,7 @@ import { RegisterComponent } from './pages/register/register.component';
 import { ActivateAccountComponent } from './pages/activate-account/activate-account.component';
 import { PricingComponent } from './pages/pricing/pricing.component';
 import { AuthGuard } from './guards/auth.guard';
+import { unsavedChangesGuard } from './guards/unsaved-changes.guard';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { ProfileCvComponent } from './pages/profile-cv/profile-cv.component';
 
@@ -34,16 +35,44 @@ export const routes: Routes = [
             { path: 'decision-board', component: DecisionBoardComponent },
             { path: 'coach-hub', component: CoachHubComponent },
             { path: 'calendar', component: CalendarComponent },
-            { path: 'schedule-interview', component: ScheduleInterviewComponent },
+            {
+                path: 'schedule-interview',
+                component: ScheduleInterviewComponent,
+                canDeactivate: [unsavedChangesGuard]
+            },
             { path: 'profile', component: ProfileComponent },
             { path: 'profile/cv', component: ProfileCvComponent },
-            { path: 'new', component: ProcessCreateComponent },
+            {
+                path: 'new',
+                component: ProcessCreateComponent,
+                canDeactivate: [unsavedChangesGuard]
+            },
             { path: 'process/:id', component: ProcessDetailsComponent },
-            { path: 'process/:id/edit', component: ProcessEditComponent },
-            { path: 'process/:id/interaction/new', component: InteractionCreateComponent },
-            { path: 'process/:pid/interaction/:id/edit', component: InteractionEditComponent },
-            { path: 'process/:id/review/new', component: ReviewCreateComponent },
-            { path: 'process/:pid/review/:id/edit', component: ReviewEditComponent }
+            {
+                path: 'process/:id/edit',
+                component: ProcessEditComponent,
+                canDeactivate: [unsavedChangesGuard]
+            },
+            {
+                path: 'process/:id/interaction/new',
+                component: InteractionCreateComponent,
+                canDeactivate: [unsavedChangesGuard]
+            },
+            {
+                path: 'process/:pid/interaction/:id/edit',
+                component: InteractionEditComponent,
+                canDeactivate: [unsavedChangesGuard]
+            },
+            {
+                path: 'process/:id/review/new',
+                component: ReviewCreateComponent,
+                canDeactivate: [unsavedChangesGuard]
+            },
+            {
+                path: 'process/:pid/review/:id/edit',
+                component: ReviewEditComponent,
+                canDeactivate: [unsavedChangesGuard]
+            }
         ]
     }
 ];

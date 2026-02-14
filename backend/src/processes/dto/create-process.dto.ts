@@ -20,9 +20,9 @@ export class CreateProcessDto {
   @MinLength(1)
   techStack: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(1)
-  location: string;
+  location?: string;
 
   @IsString()
   @MinLength(1)
@@ -31,7 +31,7 @@ export class CreateProcessDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  daysFromOffice?: number; // For hybrid work mode
+  daysFromOffice?: number;
 
   @IsOptional()
   @IsString()
@@ -40,6 +40,14 @@ export class CreateProcessDto {
   @IsOptional()
   @IsNumber()
   salaryExpectation?: number;
+
+  @IsOptional()
+  @IsString()
+  salaryCurrency?: string;
+
+  @IsOptional()
+  @IsString()
+  salaryPeriod?: string;
 
   @IsString()
   @MinLength(1)
@@ -53,7 +61,6 @@ export class CreateProcessDto {
   @IsString()
   nextFollowUp?: string;
 
-  // Initial Invitation Details
   @IsOptional()
   @IsString()
   initialInviteDate?: string;
@@ -66,7 +73,6 @@ export class CreateProcessDto {
   @IsString()
   initialInviteContent?: string;
 
-  // Career Intelligence
   @IsOptional()
   @IsInt()
   @Min(0)

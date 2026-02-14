@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InteractionsService } from '../../services/interactions.service';
 import { ProcessesService } from '../../services/processes.service';
+import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
 @Component({
     selector: 'app-interaction-edit',
@@ -12,7 +13,9 @@ import { ProcessesService } from '../../services/processes.service';
     templateUrl: './interaction-edit.component.html',
     styleUrls: ['./interaction-edit.component.css']
 })
-export class InteractionEditComponent implements OnInit {
+export class InteractionEditComponent implements OnInit, HasUnsavedChanges {
+    @ViewChild('interactionForm') interactionForm!: NgForm;
+    submitted = false;
     interaction: any;
     processId!: number;
     availableRoles = ['HR', 'Tech Lead', 'Team Member', 'Team Lead', 'Manager', 'CTO', 'Director', 'Group Leader', 'Architect'];
@@ -52,11 +55,16 @@ export class InteractionEditComponent implements OnInit {
         this.interaction.participants.splice(index, 1);
     }
 
+    hasUnsavedChanges(): boolean {
+        return !this.submitted && (this.interactionForm?.dirty === true);
+    }
+
     onSubmit() {
         const payload = { ...this.interaction };
         payload.date = new Date(this.interaction.date).toISOString();
 
         this.interactionsService.update(this.interaction.id, payload).subscribe(() => {
+            this.submitted = true;
             this.router.navigate(['/process', this.processId]);
         });
     }

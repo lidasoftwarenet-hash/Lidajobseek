@@ -61,6 +61,10 @@ export class ProcessListComponent implements OnInit {
     // View mode
     viewMode: 'grid' | 'table' = 'grid';
 
+    // Focus states for search blur
+    searchFocused: boolean = false;
+    deepSearchFocused: boolean = false;
+
     // Available options for filters (dynamically populated)
     availableStages: string[] = [
         'Initial Call Scheduled',
@@ -401,6 +405,14 @@ export class ProcessListComponent implements OnInit {
     // Toggle filters panel
     toggleFiltersPanel() {
         this.showFiltersPanel = !this.showFiltersPanel;
+    }
+
+    handleSearchBlur() {
+        setTimeout(() => this.searchFocused = false, 200);
+    }
+
+    handleDeepSearchBlur() {
+        setTimeout(() => this.deepSearchFocused = false, 200);
     }
 
     onStageChange(event: any) {

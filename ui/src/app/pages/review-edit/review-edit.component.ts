@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReviewsService } from '../../services/reviews.service';
 import { ProcessesService } from '../../services/processes.service';
+import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
 @Component({
     selector: 'app-review-edit',
@@ -11,7 +12,9 @@ import { ProcessesService } from '../../services/processes.service';
     imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './review-edit.component.html'
 })
-export class ReviewEditComponent implements OnInit {
+export class ReviewEditComponent implements OnInit, HasUnsavedChanges {
+    @ViewChild('reviewForm') reviewForm!: NgForm;
+    submitted = false;
     review: any;
     processId!: number;
 
@@ -34,8 +37,13 @@ export class ReviewEditComponent implements OnInit {
         });
     }
 
+    hasUnsavedChanges(): boolean {
+        return !this.submitted && (this.reviewForm?.dirty === true);
+    }
+
     onSubmit() {
         this.reviewsService.update(this.review.id, this.review).subscribe(() => {
+            this.submitted = true;
             this.router.navigate(['/process', this.processId]);
         });
     }

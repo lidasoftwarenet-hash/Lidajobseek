@@ -11,15 +11,6 @@
                     </svg>
                     New Interview
                 </span>
-                <button type="button" class="btn-icon-subtle" (click)="showTemplates = !showTemplates"
-                    title="Use template">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="12" y1="18" x2="12" y2="12"></line>
-                        <line x1="9" y1="15" x2="15" y2="15"></line>
-                    </svg>
-                </button>
             </div>
             <h1>Schedule Interview</h1>
             <p class="subtitle">Keep your calendar aligned with every hiring step</p>
@@ -67,25 +58,33 @@
                     <label>Select Process <span class="required">*</span></label>
                     <p class="field-description">Link this interview to an active job application process</p>
 
-                    <div class="search-wrapper">
+                    <div class="search-wrapper" [class.is-open]="showProcessDropdown">
                         <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                         <input type="text" [(ngModel)]="processSearch" (ngModelChange)="onProcessSearchChange()"
-                            (focus)="toggleProcessDropdown(true)" (blur)="toggleProcessDropdown(false)"
-                            [name]="'processSearch'" placeholder="Select a process..." class="input-field search-input"
+                            (focus)="toggleProcessDropdown(true)" (click)="toggleProcessDropdown(true)"
+                            (blur)="toggleProcessDropdown(false)" [name]="'processSearch'"
+                            placeholder="Select a process..." class="input-field search-input"
                             [class.has-selection]="interaction.processId" autocomplete="off" />
                         <input type="hidden" name="processId" [(ngModel)]="interaction.processId" required>
 
                         <div class="input-actions-wrapper">
                             <button type="button" *ngIf="interaction.processId" (click)="clearProcessSelection()"
                                 class="clear-btn" title="Clear selection">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    class="icon icon-tabler icons-tabler-outline icon-tabler-copy-x">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" />
+                                    <path
+                                        d="M4.012 16.737a2 2 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" />
+                                    <path d="M11.5 11.5l4.9 5" />
+                                    <path d="M16.5 11.5l-5.1 5" />
                                 </svg>
                             </button>
                             <div class="dropdown-chevron" [class.rotated]="showProcessDropdown">
@@ -94,6 +93,9 @@
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
                             </div>
+                        </div>
+
+                        <div class="dropdown-overlay" *ngIf="showProcessDropdown" (click)="showProcessDropdown = false">
                         </div>
 
                         <div *ngIf="showProcessDropdown && filteredProcesses.length > 0" class="search-dropdown">
@@ -129,6 +131,10 @@
                             (click)="interaction.interviewType = type">
                             {{type}}
                         </button>
+                    </div>
+                    <div class="custom-type-wrapper" *ngIf="interaction.interviewType === 'Other'">
+                        <input type="text" name="otherInterviewType" [(ngModel)]="interaction.otherInterviewType"
+                            placeholder="Please specify..." class="input-field" required>
                     </div>
                 </div>
             </section>
@@ -179,26 +185,67 @@
                     </div>
                 </div>
 
-                <div class="form-group reminder-section-wrapper">
-                    <label>Reminders</label>
-                    <div class="reminder-row">
-                        <div class="reminder-control">
-                            <select name="reminder" [(ngModel)]="interaction.reminder" class="input-field small-select">
-                                <option *ngFor="let rem of reminderOptions" [value]="rem.value">
-                                    {{rem.label}}
-                                </option>
-                            </select>
-                            <span class="reminder-label">Reminder by email</span>
+                <div class="form-group">
+                    <label>Interview Reminders</label>
+                    <div class="reminder-cards-grid">
+                        <!-- Email Card -->
+                        <div class="reminder-card" [class.active-reminder]="interaction.reminder > 0">
+                            <div class="reminder-icon-box">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                    </path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                            </div>
+                            <div class="reminder-info-content">
+                                <span class="reminder-title">Email Notifications</span>
+                                <p class="reminder-subtitle">Receive alerts via your email</p>
+                            </div>
+                            <div class="reminder-card-action">
+                                <select name="reminder" [(ngModel)]="interaction.reminder"
+                                    class="input-field small-select">
+                                    <option *ngFor="let rem of reminderOptions" [value]="rem.value">
+                                        {{rem.label}}
+                                    </option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="premium-reminder">
-                            <span class="premium-badge">PREMIUM</span>
-                            <span class="reminder-label muted">Reminder by phone message / WhatsApp</span>
-                            <svg class="lock-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
+                        <!-- Phone Card -->
+                        <div class="reminder-card premium-style" [class.locked]="!isPremiumUser">
+                            <div class="reminder-icon-box">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.27-2.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <div class="reminder-info-content">
+                                <div class="badge-row">
+                                    <span class="reminder-title">SMS & WhatsApp</span>
+                                    <span class="pro-badge">PRO</span>
+                                </div>
+                                <p class="reminder-subtitle">Real-time alerts to your phone</p>
+                            </div>
+                            <div class="reminder-card-action">
+                                <select name="premiumReminder" [(ngModel)]="interaction.premiumReminder"
+                                    class="input-field small-select" [disabled]="!isPremiumUser">
+                                    <option *ngFor="let rem of reminderOptions" [value]="rem.value">
+                                        {{rem.label}}
+                                    </option>
+                                </select>
+                                <div class="lock-shield" *ngIf="!isPremiumUser"
+                                    (click)="toastService.show('SMS reminders are available for Premium members!', 'warning')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -319,9 +366,19 @@
                                 class="input-field">
                             <input type="email" [name]="'email' + i" [(ngModel)]="p.email"
                                 placeholder="Email (optional)" class="input-field">
-                            <button type="button" class="btn-remove" (click)="removeParticipant(i)"
-                                aria-label="Remove interviewer">
-                                Remove
+                            <button type="button" class="btn-remove" (click)="removeParticipant(i)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    class="icon icon-tabler icons-tabler-outline icon-tabler-copy-x">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path
+                                        d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" />
+                                    <path
+                                        d="M4.012 16.737a2 2 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" />
+                                    <path d="M11.5 11.5l4.9 5" />
+                                    <path d="M16.5 11.5l-5.1 5" />
+                                </svg>
                             </button>
                         </div>
                         <p class="muted-hint" *ngIf="interaction.participants.length === 0">

@@ -26,7 +26,6 @@ export class UpdateProcessDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(1)
   location?: string;
 
   @IsOptional()
@@ -44,6 +43,14 @@ export class UpdateProcessDto {
   @Type(() => Number)
   @IsNumber()
   salaryExpectation?: number;
+
+  @IsOptional()
+  @IsString()
+  salaryCurrency?: string;
+
+  @IsOptional()
+  @IsString()
+  salaryPeriod?: string;
 
   @IsOptional()
   @Type(() => Number)

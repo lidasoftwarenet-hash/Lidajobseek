@@ -6,6 +6,7 @@ import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { SettingsService } from '../../services/settings.service';
 import countriesData from '../../../assets/countries.json';
+import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
 @Component({
     selector: 'app-process-edit',
@@ -14,8 +15,9 @@ import countriesData from '../../../assets/countries.json';
     templateUrl: './process-edit.component.html',
     styleUrls: ['./process-edit.component.css']
 })
-export class ProcessEditComponent implements OnInit {
+export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
     @ViewChild('processForm') processForm!: NgForm;
+    submitted = false;
     process: any;
     locationSearch = '';
     showLocationDropdown = false;
@@ -27,7 +29,10 @@ export class ProcessEditComponent implements OnInit {
     // Form progress
     get formProgress(): number {
         if (!this.process) return 0;
-        const requiredFields = ['companyName', 'roleTitle', 'techStack', 'location', 'currentStage'];
+        const requiredFields = ['companyName', 'roleTitle', 'techStack', 'currentStage'];
+        if (this.process.workMode !== 'remote') {
+            requiredFields.push('location');
+        }
         const filledFields = requiredFields.filter(field => this.process[field]?.toString().trim()).length;
         return Math.round((filledFields / requiredFields.length) * 100);
     }
@@ -36,6 +41,10 @@ export class ProcessEditComponent implements OnInit {
         if (this.formProgress < 40) return '#e74c3c';
         if (this.formProgress < 70) return '#f39c12';
         return '#2ecc71';
+    }
+
+    hasUnsavedChanges(): boolean {
+        return !this.submitted && this.processForm?.dirty === true;
     }
     stages = [
         'Initial Call Scheduled',
@@ -145,6 +154,11 @@ export class ProcessEditComponent implements OnInit {
         if (selectedValue !== 'hybrid') {
             this.process.daysFromOffice = null;
         }
+        // Clear location if remote
+        if (selectedValue === 'remote') {
+            this.process.location = '';
+            this.locationSearch = '';
+        }
     }
 
     onSubmit() {
@@ -154,53 +168,76 @@ export class ProcessEditComponent implements OnInit {
         }
 
         // Validate required fields have non-empty values
-        if (!this.process.location || this.process.location.trim() === '') {
-            this.toastService.show('Location is required.', 'warning');
+        if (this.process.workMode !== 'remote' && (!this.process.location || this.process.location.trim() === '')) {
+            this.toastService.show('Location is required for On-site/Hybrid roles.', 'warning');
             return;
         }
 
-        const payload = { ...this.process };
+        const payload: any = {};
 
-        // Clean up empty strings to null for optional fields
-        Object.keys(payload).forEach(key => {
-            if (payload[key] === '' && key !== 'location' && key !== 'companyName' && key !== 'roleTitle' && key !== 'techStack' && key !== 'workMode' && key !== 'currentStage') {
-                payload[key] = null;
+        // Allowed keys for the update DTO
+        const whitelist = [
+            'companyName', 'roleTitle', 'techStack', 'location', 'workMode',
+            'daysFromOffice', 'source', 'salaryExpectation', 'salaryCurrency',
+            'salaryPeriod', 'currentStage', 'dataFromThePhoneCall', 'nextFollowUp',
+            'initialInviteDate', 'initialInviteMethod', 'initialInviteContent',
+            'scoreTech', 'scoreWLB', 'scoreGrowth', 'scoreVibe',
+            'baseSalary', 'equity', 'bonus', 'signingBonus', 'benefits', 'offerDeadline'
+        ];
+
+        // Only include non-empty values that are in the whitelist
+        Object.keys(this.process).forEach(key => {
+            const value = this.process[key];
+            if (value !== null && value !== undefined && value !== '' && whitelist.includes(key)) {
+                payload[key] = value;
             }
         });
 
-        // Ensure dates are ISO or null
+        // Ensure dates are ISO
         if (payload.nextFollowUp) {
             payload.nextFollowUp = new Date(payload.nextFollowUp).toISOString();
-        } else {
-            payload.nextFollowUp = null;
         }
-
         if (payload.initialInviteDate) {
             payload.initialInviteDate = new Date(payload.initialInviteDate).toISOString();
-        } else {
-            payload.initialInviteDate = null;
         }
-
         if (payload.offerDeadline) {
             payload.offerDeadline = new Date(payload.offerDeadline).toISOString();
-        } else {
-            payload.offerDeadline = null;
         }
 
-        if (payload.salaryExpectation) {
+        // Ensure numbers are numbers
+        if (payload.salaryExpectation !== undefined) {
             payload.salaryExpectation = Number(payload.salaryExpectation);
+        }
+
+        if (payload.daysFromOffice !== undefined) {
+            payload.daysFromOffice = Number(payload.daysFromOffice);
         }
 
         console.log('Submitting process edit:', payload);
         this.processesService.update(this.process.id, payload).subscribe({
             next: () => {
                 console.log('Process updated successfully');
+                this.submitted = true;
                 this.toastService.show('Process updated successfully', 'success');
                 this.router.navigate(['/process', this.process.id]);
             },
             error: (err) => {
                 console.error('Error updating process:', err);
-                this.toastService.show('Error updating process: ' + (err.error?.message || err.message), 'error');
+
+                let errorMessage = 'Unknown error';
+                if (err.error) {
+                    if (Array.isArray(err.error.message)) {
+                        errorMessage = err.error.message.join(', ');
+                        console.error('Validation errors:', err.error.message);
+                    } else {
+                        errorMessage = err.error.message || err.message;
+                    }
+                } else {
+                    errorMessage = err.message;
+                }
+
+                console.error('Formatted Error Message:', errorMessage);
+                this.toastService.show('Error updating process: ' + errorMessage, 'error');
             }
         });
     }

@@ -55,4 +55,26 @@ export class UpdateInteractionDto {
   @IsOptional()
   @IsString()
   invitationExtended?: string;
+
+  @IsOptional()
+  duration?: number;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  meetingLink?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @IsOptional()
+  reminder?: number;
+
+  @IsOptional()
+  @IsArray()
+  preparationChecklist?: any;
 }

@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InteractionsService } from '../../services/interactions.service';
 import { ProcessesService } from '../../services/processes.service';
+import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
 @Component({
     selector: 'app-interaction-create',
@@ -11,7 +12,9 @@ import { ProcessesService } from '../../services/processes.service';
     imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './interaction-create.component.html' // Fixed path
 })
-export class InteractionCreateComponent implements OnInit {
+export class InteractionCreateComponent implements OnInit, HasUnsavedChanges {
+    @ViewChild('interactionForm') interactionForm!: NgForm;
+    submitted = false;
     processId!: number;
     existingContacts: any[] = [];
 
@@ -76,6 +79,10 @@ export class InteractionCreateComponent implements OnInit {
         }
     }
 
+    hasUnsavedChanges(): boolean {
+        return !this.submitted && this.interactionForm?.dirty === true;
+    }
+
     onSubmit() {
         const payload = {
             ...this.interaction,
@@ -83,6 +90,7 @@ export class InteractionCreateComponent implements OnInit {
             date: new Date(this.interaction.date).toISOString()
         };
         this.interactionsService.create(payload).subscribe(() => {
+            this.submitted = true;
             this.router.navigate(['/process', this.processId]);
         });
     }

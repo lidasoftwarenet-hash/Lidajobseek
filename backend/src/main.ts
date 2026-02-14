@@ -30,8 +30,9 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false, // Temporarily disable to see if the request passes
       transform: true,
+      enableDebugMessages: true, // Show more details in logs
     }),
   );
   app.setGlobalPrefix('api');

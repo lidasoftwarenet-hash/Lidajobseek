@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InteractionsService } from '../../services/interactions.service';
 import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { AuthService } from '../../services/auth.service';
+import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
 interface DurationPreset {
   label: string;
@@ -27,8 +29,10 @@ interface InterviewTemplate {
   templateUrl: './schedule-interview.component.html',
   styleUrls: ['./schedule-interview.component.css']
 })
-export class ScheduleInterviewComponent implements OnInit {
+export class ScheduleInterviewComponent implements OnInit, HasUnsavedChanges {
+  @ViewChild('interviewForm') interviewForm!: NgForm;
   processes: any[] = [];
+  submitted = false;
   loading = false;
   processSearch = '';
   filteredProcesses: any[] = [];
@@ -39,6 +43,7 @@ export class ScheduleInterviewComponent implements OnInit {
     processId: null,
     date: '',
     interviewType: 'video call',
+    otherInterviewType: '',
     duration: 60,
     location: '',
     locationType: 'Home',
@@ -52,12 +57,13 @@ export class ScheduleInterviewComponent implements OnInit {
     testsAssessment: '',
     roleInsights: '',
     reminder: 60,
+    premiumReminder: 0,
     preparationChecklist: [],
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
   };
 
   availableRoles = ['HR', 'Tech Lead', 'Team Member', 'Team Lead', 'Manager', 'CTO', 'Director', 'Group Leader', 'Architect', 'Recruiter', 'VP Engineering', 'Senior Engineer'];
-  interviewTypes = ['phone call', 'video call', 'home assignment', 'office interview'];
+  interviewTypes = ['phone call', 'video call', 'home assignment', 'office interview', 'Other'];
   durationOptions = [15, 30, 45, 60, 90, 120, 180, 240, 480];
   reminderOptions = [
     { label: 'No reminder', value: 0 },
@@ -106,8 +112,9 @@ export class ScheduleInterviewComponent implements OnInit {
     private processesService: ProcessesService,
     private interactionsService: InteractionsService,
     private router: Router,
-    private toastService: ToastService,
-    private confirmService: ConfirmService
+    public toastService: ToastService,
+    private confirmService: ConfirmService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
@@ -134,9 +141,13 @@ export class ScheduleInterviewComponent implements OnInit {
       { label: '45 minutes', value: 45 },
       { label: '1 hour', value: 60 },
       { label: '1.5 hour', value: 90 },
-      { label: '2 hours', value: 120 },
-      { label: 'full day', value: 480 }
+      { label: '4h', value: 240 },
+      { label: '8h', value: 480 }
     ];
+  }
+
+  get isPremiumUser(): boolean {
+    return this.authService.isPremiumUser();
   }
 
   applyDurationPreset(preset: DurationPreset) {
@@ -156,7 +167,10 @@ export class ScheduleInterviewComponent implements OnInit {
   loadProcesses() {
     this.processesService.getAll().subscribe({
       next: (processes: any) => {
-        this.processes = processes;
+        // Only show open processes (not Rejected or Withdrawn)
+        this.processes = processes.filter((p: any) =>
+          p.currentStage !== 'Rejected' && p.currentStage !== 'Withdrawn'
+        );
       },
       error: (err: any) => {
         console.error('Failed to load processes', err);
@@ -168,7 +182,7 @@ export class ScheduleInterviewComponent implements OnInit {
   onProcessSearchChange() {
     const searchTerm = this.processSearch.toLowerCase().trim();
     if (!searchTerm) {
-      this.filteredProcesses = this.processes;
+      this.filteredProcesses = this.processes.slice(0, 10); // Show top 10 open naturally
       return;
     }
 
@@ -186,10 +200,9 @@ export class ScheduleInterviewComponent implements OnInit {
   toggleProcessDropdown(show: boolean) {
     if (show) {
       this.onProcessSearchChange();
-      // Use setTimeout to allow click events to process before closing
-      setTimeout(() => this.showProcessDropdown = true, 100);
+      this.showProcessDropdown = true;
     } else {
-      // Small delay to allow clicking an option
+      // Small delay to allow clicking an option before the dropdown closes
       setTimeout(() => this.showProcessDropdown = false, 200);
     }
   }
@@ -267,7 +280,7 @@ export class ScheduleInterviewComponent implements OnInit {
     const payload: any = {
       processId: Number(this.interaction.processId),
       date: new Date(this.interaction.date).toISOString(),
-      interviewType: this.interaction.interviewType,
+      interviewType: this.interaction.interviewType === 'Other' ? this.interaction.otherInterviewType : this.interaction.interviewType,
       duration: this.interaction.duration,
       participants: this.interaction.participants.filter((p: any) => p.name.trim()),
       summary: this.interaction.summary,
@@ -286,6 +299,7 @@ export class ScheduleInterviewComponent implements OnInit {
 
     this.interactionsService.create(payload).subscribe({
       next: () => {
+        this.submitted = true;
         this.toastService.show('Interview scheduled successfully', 'success');
         this.router.navigate(['/calendar']);
       },
@@ -297,22 +311,12 @@ export class ScheduleInterviewComponent implements OnInit {
     });
   }
 
-  async onCancel() {
-    if (this.hasUnsavedChanges()) {
-      const confirmed = await this.confirmService.confirm(
-        'You have unsaved changes. Are you sure you want to leave?',
-        'Unsaved Changes'
-      );
-      if (!confirmed) return;
-    }
+  onCancel() {
     this.router.navigate(['/calendar']);
   }
 
   hasUnsavedChanges(): boolean {
-    // Simple check - in production, you'd compare with original values
-    return this.interaction.summary?.trim().length > 0 ||
-      this.interaction.participants.length > 0 ||
-      this.interaction.notes?.trim().length > 0;
+    return !this.submitted && (this.interviewForm?.dirty === true);
   }
 
   getDurationLabel(minutes: number): string {

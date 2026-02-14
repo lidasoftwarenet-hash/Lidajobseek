@@ -30,6 +30,24 @@ export class Interaction {
   @Property({ nullable: true })
   headsup?: string;
 
+  @Property({ default: 60 })
+  duration: number = 60;
+
+  @Property({ nullable: true })
+  location?: string;
+
+  @Property({ nullable: true })
+  meetingLink?: string;
+
+  @Property({ nullable: true })
+  timezone?: string;
+
+  @Property({ default: 60 })
+  reminder: number = 60;
+
+  @Property({ type: 'json', nullable: true })
+  preparationChecklist?: any;
+
   // Next Interview Invitation Tracking
   @Property({ nullable: true })
   nextInviteStatus?: string;

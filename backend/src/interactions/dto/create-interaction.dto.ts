@@ -63,4 +63,28 @@ export class CreateInteractionDto {
   @IsOptional()
   @IsString()
   invitationExtended?: string; // 'yes', 'later', or 'no'
+
+  @IsOptional()
+  @IsInt()
+  duration?: number;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
+  @IsString()
+  meetingLink?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @IsOptional()
+  @IsInt()
+  reminder?: number;
+
+  @IsOptional()
+  @IsArray()
+  preparationChecklist?: any;
 }

@@ -6,6 +6,7 @@ import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { SettingsService } from '../../services/settings.service';
 import countriesData from '../../../assets/countries.json';
+import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
 @Component({
     selector: 'app-process-create',
@@ -14,8 +15,9 @@ import countriesData from '../../../assets/countries.json';
     templateUrl: './process-create.component.html',
     styleUrls: ['./process-create.component.css']
 })
-export class ProcessCreateComponent {
+export class ProcessCreateComponent implements HasUnsavedChanges {
     @ViewChild('processForm') processForm!: NgForm;
+    submitted = false;
 
     process: any = {
         companyName: '',
@@ -44,7 +46,10 @@ export class ProcessCreateComponent {
 
     // Form progress
     get formProgress(): number {
-        const requiredFields = ['companyName', 'roleTitle', 'techStack', 'location', 'currentStage'];
+        const requiredFields = ['companyName', 'roleTitle', 'techStack', 'currentStage'];
+        if (this.process.workMode !== 'remote') {
+            requiredFields.push('location');
+        }
         const filledFields = requiredFields.filter(field => this.process[field]?.toString().trim()).length;
         return Math.round((filledFields / requiredFields.length) * 100);
     }
@@ -53,6 +58,10 @@ export class ProcessCreateComponent {
         if (this.formProgress < 40) return '#e74c3c';
         if (this.formProgress < 70) return '#f39c12';
         return '#2ecc71';
+    }
+
+    hasUnsavedChanges(): boolean {
+        return !this.submitted && this.processForm?.dirty === true;
     }
 
     stages = [
@@ -146,6 +155,11 @@ export class ProcessCreateComponent {
         if (selectedValue !== 'hybrid') {
             this.process.daysFromOffice = null;
         }
+        // Clear location if remote
+        if (selectedValue === 'remote') {
+            this.process.location = '';
+            this.locationSearch = '';
+        }
     }
 
     onSubmit() {
@@ -155,36 +169,37 @@ export class ProcessCreateComponent {
         }
 
         // Validate required fields have non-empty values
-        if (!this.process.location || this.process.location.trim() === '') {
-            this.toastService.show('Location is required.', 'warning');
+        if (this.process.workMode !== 'remote' && (!this.process.location || this.process.location.trim() === '')) {
+            this.toastService.show('Location is required for On-site/Hybrid roles.', 'warning');
             return;
         }
 
-        const payload = { ...this.process };
+        const payload: any = {};
 
-        // Clean up empty strings to null for optional fields
-        Object.keys(payload).forEach(key => {
-            if (payload[key] === '' && key !== 'location' && key !== 'companyName' && key !== 'roleTitle' && key !== 'techStack' && key !== 'workMode' && key !== 'currentStage') {
-                payload[key] = null;
+        // Only include non-empty values
+        Object.keys(this.process).forEach(key => {
+            const value = this.process[key];
+            if (value !== null && value !== undefined && value !== '') {
+                payload[key] = value;
             }
         });
 
-        // Ensure dates are ISO or null
+        // Ensure dates are ISO
         if (payload.nextFollowUp) {
             payload.nextFollowUp = new Date(payload.nextFollowUp).toISOString();
-        } else {
-            payload.nextFollowUp = null;
         }
 
         if (payload.initialInviteDate) {
             payload.initialInviteDate = new Date(payload.initialInviteDate).toISOString();
-        } else {
-            payload.initialInviteDate = null;
         }
 
         // Ensure numbers are numbers
-        if (payload.salaryExpectation) {
+        if (payload.salaryExpectation !== undefined) {
             payload.salaryExpectation = Number(payload.salaryExpectation);
+        }
+
+        if (payload.daysFromOffice !== undefined) {
+            payload.daysFromOffice = Number(payload.daysFromOffice);
         }
 
         console.log('Submitting Process:', payload);
@@ -192,12 +207,27 @@ export class ProcessCreateComponent {
         this.processesService.create(payload).subscribe({
             next: () => {
                 console.log('Success');
+                this.submitted = true;
                 this.toastService.show('Process created successfully', 'success');
                 this.router.navigate(['/']);
             },
             error: (err) => {
                 console.error('Submission Failed:', err);
-                this.toastService.show('Error creating process: ' + (err.error?.message || err.message), 'error');
+
+                let errorMessage = 'Unknown error';
+                if (err.error) {
+                    if (Array.isArray(err.error.message)) {
+                        errorMessage = err.error.message.join(', ');
+                        console.error('Validation errors:', err.error.message);
+                    } else {
+                        errorMessage = err.error.message || err.message;
+                    }
+                } else {
+                    errorMessage = err.message;
+                }
+
+                console.error('Formatted Error Message:', errorMessage);
+                this.toastService.show('Error creating process: ' + errorMessage, 'error');
             }
         });
     }
