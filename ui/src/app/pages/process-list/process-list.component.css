@@ -314,62 +314,9 @@
     cursor: not-allowed;
 }
 
-/* Search Box */
-.search-box {
-    position: relative;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
 
-.search-box:focus-within {
-    z-index: 500;
-    transform: scale(1.02);
-}
 
-.search-dropdown-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 490;
-    animation: fadeInOverlay 0.2s ease;
-}
 
-@keyframes fadeInOverlay {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-.search-box.deep-search .search-input {
-    border-style: dashed;
-    background-color: rgba(102, 126, 234, 0.02);
-}
-
-.search-box:focus-within .search-input {
-    background-color: white !important;
-    border-color: #667eea;
-    border-style: solid;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-.search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #7f8c8d;
-    pointer-events: none;
-    z-index: 501;
-}
 
 .clear-search {
     position: absolute;
@@ -450,6 +397,56 @@
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 0.5rem;
+}
+
+.date-filter-help {
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #6b7280;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.55rem 0.65rem;
+}
+
+.date-filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.btn-apply-filter,
+.btn-clear-date {
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-apply-filter {
+    border: 1px solid #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    flex: 1;
+}
+
+.btn-apply-filter:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(102, 126, 234, 0.25);
+}
+
+.btn-clear-date {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #6b7280;
+}
+
+.btn-clear-date:hover {
+    background: #f3f4f6;
+    color: #374151;
 }
 
 /* Toggle Chip */

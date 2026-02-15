@@ -44,6 +44,7 @@ export class ProcessListComponent implements OnInit {
 
     // Filter properties
     searchText: string = '';
+    companyText: string = '';
     deepSearch: string = '';
     selectedStage: string = '';
     selectedWorkMode: string = '';
@@ -270,6 +271,13 @@ export class ProcessListComponent implements OnInit {
                 if (!matchesSearch) return false;
             }
 
+            // Company free text filter
+            if (this.companyText) {
+                const companyLower = this.companyText.toLowerCase();
+                const matchesCompany = process.companyName?.toLowerCase().includes(companyLower);
+                if (!matchesCompany) return false;
+            }
+
             // Deep search (within process content)
             if (this.deepSearch) {
                 const searchLower = this.deepSearch.toLowerCase();
@@ -374,6 +382,7 @@ export class ProcessListComponent implements OnInit {
     // Clear all filters
     clearFilters() {
         this.searchText = '';
+        this.companyText = '';
         this.deepSearch = '';
         this.selectedStage = '';
         this.selectedWorkMode = '';
@@ -505,6 +514,7 @@ export class ProcessListComponent implements OnInit {
 
     get isFilterActive(): boolean {
         return !!this.searchText ||
+            !!this.companyText ||
             !!this.deepSearch ||
             !!this.selectedStage ||
             !!this.selectedWorkMode ||
@@ -519,6 +529,7 @@ export class ProcessListComponent implements OnInit {
     get activeFilterCount(): number {
         let count = 0;
         if (this.searchText) count++;
+        if (this.companyText) count++;
         if (this.deepSearch) count++;
         if (this.selectedStage) count++;
         if (this.selectedWorkMode) count++;

@@ -110,7 +110,9 @@ export class InteractionsService {
     // Format response to match expected structure
     return interactions.map(interaction => ({
       ...interaction,
+      processId: interaction.process.id,
       process: {
+        id: interaction.process.id,
         companyName: interaction.process.companyName,
         roleTitle: interaction.process.roleTitle,
       },
@@ -156,7 +158,9 @@ export class InteractionsService {
 
     return interactions.map(interaction => ({
       ...interaction,
+      processId: interaction.process.id,
       process: {
+        id: interaction.process.id,
         companyName: interaction.process.companyName,
         roleTitle: interaction.process.roleTitle,
       },

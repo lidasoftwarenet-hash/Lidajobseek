@@ -31,17 +31,35 @@
     align-items: center;
     gap: 16px;
     background: var(--bg-card);
-    padding: 12px 16px;
-    border-radius: var(--radius-md);
+    padding: 14px;
+    border-radius: var(--radius-lg, 14px);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     flex-wrap: wrap;
 }
 
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toolbar-left {
+    flex: 1;
+    min-width: 260px;
+}
+
+.toolbar-right {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
 .search-wrapper {
     position: relative;
     flex: 1;
-    max-width: 320px;
+    min-width: 220px;
+    max-width: 420px;
 }
 
 .search-icon {
@@ -55,7 +73,8 @@
 
 .search-input {
     width: 100%;
-    padding: 8px 12px 8px 36px;
+    height: 40px;
+    padding: 0 12px 0 36px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 14px;
@@ -97,29 +116,44 @@
     background-color: var(--bg-hover);
 }
 
-.filters-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
 .date-range {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    padding: 4px 8px;
+    padding: 2px 8px;
+    min-height: 40px;
+}
+
+/* Highlight the whole container when focused */
+.date-range:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .filter-input {
     border: none;
     background: transparent;
-    color: var(--text-primary);
-    font-size: 13px;
-    font-family: inherit;
     outline: none;
+    padding: 6px 4px;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.date-field {
+    min-width: 130px;
+}
+
+.range-divider {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    user-select: none;
 }
 
 .separator {
@@ -135,6 +169,7 @@
     color: var(--text-secondary);
     cursor: pointer;
     user-select: none;
+    padding: 0 4px;
 }
 
 .checkbox-filter input {
@@ -143,41 +178,60 @@
     height: 16px;
 }
 
-.btn-icon-only {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    width: 32px;
-    height: 32px;
-    display: flex;
+.checkbox-text {
+    font-weight: 500;
+}
+
+.btn-refresh-elevated {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-subtle) 100%);
+    color: var(--text-primary);
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    font-size: 16px; /* Ensure font size is not 0 */
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.btn-icon-only:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
-    border-color: var(--text-secondary);
+.btn-refresh-elevated:hover {
+    transform: translateY(-1px);
+    border-color: var(--border-focus);
+    box-shadow: var(--shadow-md);
 }
 
-.btn-icon-only .material-icons {
-    font-size: 18px;
+.btn-refresh-elevated:active {
+    transform: translateY(0);
+}
+
+.btn-text {
+    font-size: 13px;
+    letter-spacing: 0.01em;
+}
+
+.refresh-icon {
     color: var(--text-secondary);
+    transition: transform 0.35s ease, color 0.2s ease;
 }
 
-.btn-icon-only:hover .material-icons {
-    color: var(--text-primary);
+.btn-refresh-elevated:hover .refresh-icon {
+    color: var(--accent-color);
+    transform: rotate(120deg) scale(1.05);
+}
+
+.btn-refresh-elevated:active .refresh-icon {
+    transform: rotate(240deg) scale(0.95);
 }
 
 /* Calendar List */
 .interviews-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
 }
 
 .interview-card {
@@ -186,12 +240,11 @@
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
-    display: grid;
-    grid-template-columns: 4px 200px 1fr auto;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
     transition: all 0.2s ease;
     position: relative;
-    padding: 0;
+    min-height: 250px;
 }
 
 .interview-card:hover {
@@ -201,18 +254,16 @@
 }
 
 .card-status-strip {
-    height: 100%;
-    width: 4px;
+    height: 4px;
+    width: 100%;
 }
 
 .card-header {
-    padding: 16px 24px;
+    padding: 14px 16px 10px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
-    border-right: 1px solid var(--border-color);
-    height: 100%;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
 }
 
 .interview-meta {
@@ -226,6 +277,11 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 4px 8px;
+    width: fit-content;
 }
 
 .interview-date {
@@ -234,11 +290,17 @@
     font-weight: 500;
 }
 
+.card-actions {
+    display: flex;
+    align-items: center;
+}
+
 .action-link {
     color: var(--text-muted);
     transition: color 0.2s;
-    padding: 4px;
-    border-radius: 4px;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
 }
 
 .action-link:hover {
@@ -247,20 +309,20 @@
 }
 
 .card-body {
-    padding: 16px 24px;
+    padding: 0 16px 12px;
     display: flex;
-    align-items: center;
-    gap: 24px;
-    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .company-info {
-    min-width: 200px;
+    min-width: 0;
 }
 
 .company-name {
     margin: 0 0 2px 0;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -274,6 +336,7 @@
 .participants-list {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
@@ -332,13 +395,13 @@
 }
 
 .card-footer {
-    padding: 16px 24px;
+    margin-top: auto;
+    padding: 12px 16px 16px;
     display: flex;
     align-items: center;
-    gap: 16px;
-    border-left: 1px solid var(--border-color);
-    height: 100%;
-    background: transparent;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-subtle);
 }
 
 .view-process-link {
@@ -409,34 +472,8 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .interview-card {
-        grid-template-columns: 4px 1fr;
-        grid-template-rows: auto auto auto;
-        gap: 0;
-    }
-
-    .card-status-strip {
-        grid-row: 1 / -1;
-    }
-
-    .card-header {
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-        padding: 12px 16px;
-    }
-
-    .card-body {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 12px 16px;
-    }
-
-    .card-footer {
-        border-left: none;
-        border-top: 1px solid var(--border-color);
-        padding: 12px 16px;
-        justify-content: flex-end;
+    .interviews-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
 }
 
@@ -444,22 +481,35 @@
     .toolbar {
         flex-direction: column;
         align-items: stretch;
+        gap: 10px;
     }
 
-    .search-wrapper {
-        max-width: 100%;
+    .toolbar-left,
+    .toolbar-right {
+        width: 100%;
+        justify-content: flex-start;
     }
 
-    .filters-row {
-        flex-direction: column;
-        align-items: stretch;
+    .toolbar-right {
+        gap: 10px;
     }
 
     .date-range {
         width: 100%;
+        justify-content: space-between;
     }
 
-    .filter-input {
+    .date-field {
         flex: 1;
+        min-width: 0;
+    }
+
+    .btn-refresh-elevated {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .interviews-grid {
+        grid-template-columns: 1fr;
     }
 }
