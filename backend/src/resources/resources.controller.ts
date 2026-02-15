@@ -22,14 +22,10 @@ import { UpdateResourceDto } from './dto/update-resource.dto';
 const RESOURCE_UPLOAD_MAX_SIZE = 10 * 1024 * 1024;
 const ALLOWED_RESOURCE_MIME_TYPES = [
   'application/pdf',
-  'text/plain',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'image/png',
-  'image/jpeg',
-  'image/webp',
 ];
 
 const resourceFileFilter = (

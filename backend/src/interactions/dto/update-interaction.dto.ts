@@ -1,4 +1,4 @@
-import { IsArray, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsInt, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateInteractionDto {
   @IsOptional()
@@ -57,6 +57,7 @@ export class UpdateInteractionDto {
   invitationExtended?: string;
 
   @IsOptional()
+  @IsInt()
   duration?: number;
 
   @IsOptional()
@@ -72,6 +73,7 @@ export class UpdateInteractionDto {
   timezone?: string;
 
   @IsOptional()
+  @IsInt()
   reminder?: number;
 
   @IsOptional()

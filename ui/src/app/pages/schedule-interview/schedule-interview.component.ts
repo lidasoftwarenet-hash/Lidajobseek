@@ -281,10 +281,10 @@ export class ScheduleInterviewComponent implements OnInit, HasUnsavedChanges {
       processId: Number(this.interaction.processId),
       date: new Date(this.interaction.date).toISOString(),
       interviewType: this.interaction.interviewType === 'Other' ? this.interaction.otherInterviewType : this.interaction.interviewType,
-      duration: this.interaction.duration,
-      participants: this.interaction.participants.filter((p: any) => p.name.trim()),
-      summary: this.interaction.summary,
-      reminder: this.interaction.reminder,
+      duration: Number(this.interaction.duration),
+      participants: (this.interaction.participants || []).filter((p: any) => p.name?.trim()),
+      summary: this.interaction.summary || 'Scheduled Interview',
+      reminder: Number(this.interaction.reminder),
       timezone: this.interaction.timezone,
       location: finalLocation
     };
@@ -294,9 +294,10 @@ export class ScheduleInterviewComponent implements OnInit, HasUnsavedChanges {
     if (this.interaction.testsAssessment) payload.testsAssessment = this.interaction.testsAssessment;
     if (this.interaction.roleInsights) payload.roleInsights = this.interaction.roleInsights;
     if (this.interaction.preparationChecklist?.length > 0) {
-      payload.preparationChecklist = this.interaction.preparationChecklist.filter((item: any) => item.text.trim());
+      payload.preparationChecklist = this.interaction.preparationChecklist.filter((item: any) => item.text?.trim());
     }
 
+    this.loading = true;
     this.interactionsService.create(payload).subscribe({
       next: () => {
         this.submitted = true;
@@ -305,7 +306,21 @@ export class ScheduleInterviewComponent implements OnInit, HasUnsavedChanges {
       },
       error: (err: any) => {
         console.error('Failed to save interview', err);
-        this.toastService.show('Failed to save interview', 'error');
+
+        let errorMessage = 'Unknown error';
+        if (err.error) {
+          if (Array.isArray(err.error.message)) {
+            errorMessage = err.error.message.join(', ');
+            console.error('Validation errors:', err.error.message);
+          } else {
+            errorMessage = err.error.message || err.message;
+          }
+        } else {
+          errorMessage = err.message;
+        }
+
+        console.error('Formatted Error Message:', errorMessage);
+        this.toastService.show('Error saving interview: ' + errorMessage, 'error');
         this.loading = false;
       }
     });

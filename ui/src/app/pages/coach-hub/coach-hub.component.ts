@@ -91,21 +91,23 @@ export class CoachHubComponent implements OnInit {
   }
 
   refreshView() {
-    // Filter folders and documents based on the current folder
     const currentId = this.currentFolder?.id || null;
 
     this.folders = this.allFolders.filter(f => {
-      if (currentId === null) return !f.parentId && !f.parent;
-      return f.parentId === currentId || f.parent?.id === currentId;
+      const parentId = f.parentId || (typeof f.parent === 'object' ? f.parent?.id : f.parent);
+      if (currentId === null) return !parentId;
+      return parentId === currentId;
     });
 
-    // Update breadcrumbs
     this.updateBreadcrumbs();
   }
 
   getCurrentDocuments() {
     const currentId = this.currentFolder?.id || null;
-    return this.documents.filter(d => (d.folderId || null) === currentId);
+    return this.documents.filter(d => {
+      const docFolderId = d.folderId || (typeof (d as any).folder === 'object' ? (d as any).folder?.id : (d as any).folder);
+      return (docFolderId || null) === currentId;
+    });
   }
 
   updateBreadcrumbs() {
@@ -113,7 +115,7 @@ export class CoachHubComponent implements OnInit {
     let curr = this.currentFolder;
     while (curr) {
       path.unshift(curr);
-      const parentId = curr.parentId || curr.parent?.id;
+      const parentId = curr.parentId || (typeof curr.parent === 'object' ? curr.parent?.id : curr.parent);
       curr = parentId ? this.allFolders.find(f => f.id === parentId) || null : null;
     }
     this.breadcrumbs = path;
@@ -129,6 +131,10 @@ export class CoachHubComponent implements OnInit {
 
     this.resourcesService.createFolder(this.newFolderName, this.currentFolder?.id).subscribe({
       next: (newFolder) => {
+        // Ensure folder has parent info for filtering
+        if (this.currentFolder) {
+          newFolder.parentId = this.currentFolder.id;
+        }
         this.allFolders.push(newFolder);
         this.newFolderName = '';
         this.showNewFolderModal = false;
@@ -165,7 +171,7 @@ export class CoachHubComponent implements OnInit {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', file.originalname);
+    formData.append('title', file.name); // Corrected from .originalname
     formData.append('type', this.getFileType(file.name));
     if (this.currentFolder) {
       formData.append('folderId', this.currentFolder.id.toString());
@@ -174,9 +180,17 @@ export class CoachHubComponent implements OnInit {
     this.isLoading = true;
     this.resourcesService.create(formData).subscribe({
       next: (newDoc) => {
+        // Normalize the new document to ensure folderId is present for filtering
+        if (this.currentFolder) {
+          newDoc.folderId = this.currentFolder.id;
+        } else {
+          newDoc.folderId = null;
+        }
+
         this.documents.push(newDoc);
         this.isLoading = false;
         this.toastService.show('File uploaded successfully', 'success');
+        this.refreshView();
       },
       error: (err) => {
         this.toastService.show('Upload failed: ' + (err.error?.message || err.message), 'error');
@@ -189,6 +203,7 @@ export class CoachHubComponent implements OnInit {
     const ext = filename.split('.').pop()?.toLowerCase();
     if (['pdf'].includes(ext!)) return 'pdf';
     if (['doc', 'docx'].includes(ext!)) return 'doc';
+    if (['xls', 'xlsx'].includes(ext!)) return 'excel';
     if (['png', 'jpg', 'jpeg', 'webp'].includes(ext!)) return 'image';
     return 'file';
   }
@@ -197,6 +212,7 @@ export class CoachHubComponent implements OnInit {
     switch (type.toLowerCase()) {
       case 'pdf': return '📄';
       case 'doc': return '📝';
+      case 'excel': return '📊';
       case 'image': return '🖼️';
       default: return '📁';
     }

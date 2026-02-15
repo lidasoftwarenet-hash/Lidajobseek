@@ -33,22 +33,19 @@ export class InteractionsService {
       throw new Error('Process not found');
     }
 
+    const {
+      processId,
+      date,
+      nextInviteDate,
+      ...rest
+    } = dto;
+
     const interaction = this.interactionRepository.create({
-      date: this.parseDateOrThrow(dto.date, 'date'),
-      interviewType: dto.interviewType,
-      participants: dto.participants,
-      summary: dto.summary,
-      testsAssessment: dto.testsAssessment,
-      roleInsights: dto.roleInsights,
-      notes: dto.notes,
-      headsup: dto.headsup,
-      nextInviteStatus: dto.nextInviteStatus,
-      nextInviteDate: dto.nextInviteDate
-        ? this.parseDateOrThrow(dto.nextInviteDate, 'nextInviteDate')
+      ...rest,
+      date: this.parseDateOrThrow(date, 'date'),
+      nextInviteDate: nextInviteDate
+        ? this.parseDateOrThrow(nextInviteDate, 'nextInviteDate')
         : undefined,
-      nextInviteLink: dto.nextInviteLink,
-      nextInviteType: dto.nextInviteType,
-      invitationExtended: dto.invitationExtended,
       process,
     } as any);
 
