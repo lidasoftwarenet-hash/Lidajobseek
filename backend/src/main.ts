@@ -6,6 +6,7 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { buildCorsOptions } from './security/cors.config';
 import cookieParser from 'cookie-parser';
+import { csrfMiddleware } from './security/csrf.middleware';
 
 const envPath = (() => {
   const backendEnv = join(process.cwd(), 'backend', '.env');
@@ -31,6 +32,7 @@ async function bootstrap() {
   const { AppModule } = await import('./app.module.js');
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
+  app.use(csrfMiddleware);
   const expressApp = app.getHttpAdapter().getInstance();
 
   app.use(

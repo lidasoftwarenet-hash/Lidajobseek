@@ -11,7 +11,19 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     if (this.isApiRequest(request.url)) {
-      request = request.clone({ withCredentials: true });
+      const setHeaders: Record<string, string> = {};
+
+      if (this.isMutatingMethod(request.method)) {
+        const csrfToken = this.getCsrfTokenFromCookie();
+        if (csrfToken) {
+          setHeaders['X-CSRF-Token'] = csrfToken;
+        }
+      }
+
+      request = request.clone({
+        withCredentials: true,
+        ...(Object.keys(setHeaders).length ? { setHeaders } : {}),
+      });
     }
 
     return next.handle(request).pipe(
@@ -39,5 +51,19 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     return url.startsWith('/api') || url.startsWith('api/');
+  }
+
+  private isMutatingMethod(method: string): boolean {
+    const normalized = method.toUpperCase();
+    return normalized === 'POST' || normalized === 'PUT' || normalized === 'PATCH' || normalized === 'DELETE';
+  }
+
+  private getCsrfTokenFromCookie(): string | null {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+    return match?.[1] ? decodeURIComponent(match[1]) : null;
   }
 }

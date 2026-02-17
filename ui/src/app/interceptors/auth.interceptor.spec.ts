@@ -30,6 +30,7 @@ describe('AuthInterceptor', () => {
   });
 
   afterEach(() => {
+    document.cookie = 'csrf_token=; Max-Age=0; path=/';
     httpMock.verify();
   });
 
@@ -38,6 +39,18 @@ describe('AuthInterceptor', () => {
 
     const req = httpMock.expectOne('/api/protected');
     expect(req.request.withCredentials).toBeTrue();
+    expect(req.request.headers.has('Authorization')).toBeFalse();
+    req.flush({ ok: true });
+  });
+
+  it('adds X-CSRF-Token for mutating internal API requests when csrf cookie is present', () => {
+    document.cookie = 'csrf_token=test-csrf-token; path=/';
+
+    http.post('/api/protected', { hello: 'world' }).subscribe();
+
+    const req = httpMock.expectOne('/api/protected');
+    expect(req.request.withCredentials).toBeTrue();
+    expect(req.request.headers.get('X-CSRF-Token')).toBe('test-csrf-token');
     expect(req.request.headers.has('Authorization')).toBeFalse();
     req.flush({ ok: true });
   });

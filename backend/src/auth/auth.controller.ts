@@ -12,6 +12,7 @@ import {
   Logger,
   Res,
 } from '@nestjs/common';
+import crypto from 'node:crypto';
 import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -27,6 +28,22 @@ export class AuthController {
   private readonly logger = new Logger(AuthController.name);
 
   constructor(private authService: AuthService) { }
+
+  @Public()
+  @Get('csrf')
+  getCsrf(@Res({ passthrough: true }) res: Response) {
+    const token = crypto.randomBytes(32).toString('hex');
+
+    res.cookie('csrf_token', token, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 1000,
+    });
+
+    return { csrfToken: token };
+  }
 
   @Public()
   @Get('oauth/:provider/start')
