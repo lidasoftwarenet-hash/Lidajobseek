@@ -18,27 +18,28 @@ export const buildCorsOptions = (
 ): CorsOptions => {
   const isProduction = nodeEnv === 'production';
   const configuredOrigins = parseOrigins(corsOriginsEnv);
-  const allowedOrigins =
-    configuredOrigins.length > 0
-      ? configuredOrigins
-      : isProduction
-        ? []
-        : DEV_LOCALHOST_ORIGINS;
-
   const credentials = String(corsCredentialsEnv).toLowerCase() === 'true';
 
   return {
     credentials,
     origin: (origin, callback) => {
+      // allow non-browser clients (no Origin header)
       if (!origin) {
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+      // if explicit origins configured, enforce allowlist
+      if (configuredOrigins.length > 0) {
+        if (configuredOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'), false);
       }
 
-      return callback(new Error('Not allowed by CORS'), false);
+      // no configured origins:
+      // in same-origin deployment we allow all
+      return callback(null, true);
     },
   };
 };
+
