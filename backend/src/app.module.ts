@@ -84,7 +84,7 @@ import { APP_GUARD } from '@nestjs/core';
       },
       {
         rootPath: join(__dirname, 'client'),
-        exclude: ['/api{/*path}'],
+        exclude: ['/api/(.*)'],
       },
     ),
     ProcessesModule,
