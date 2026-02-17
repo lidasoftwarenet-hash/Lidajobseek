@@ -29,13 +29,13 @@ export interface AuthErrorPayload {
 }
 
 const AUTH_LOGOUT_REASON_KEY = 'auth_logout_reason';
+const AUTH_USER_KEY = 'app_user';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/api/auth`;
-  private tokenKey = 'app_token';
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -83,9 +83,8 @@ export class AuthService {
   login(email: string, password: string) {
     return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
       tap(res => {
-        localStorage.setItem(this.tokenKey, res.access_token);
         if (res.user) {
-          localStorage.setItem('app_user', JSON.stringify(res.user));
+          sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
         }
       })
     );
@@ -109,8 +108,7 @@ export class AuthService {
     if (reason) {
       sessionStorage.setItem(AUTH_LOGOUT_REASON_KEY, reason);
     }
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem('app_user');
+    sessionStorage.removeItem(AUTH_USER_KEY);
     this.router.navigate(['/login']);
   }
 
@@ -166,15 +164,11 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem(this.tokenKey);
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return !!sessionStorage.getItem(AUTH_USER_KEY);
   }
 
   getUser(): any {
-    const userStr = localStorage.getItem('app_user');
+    const userStr = sessionStorage.getItem(AUTH_USER_KEY);
     return userStr ? JSON.parse(userStr) : null;
   }
 
