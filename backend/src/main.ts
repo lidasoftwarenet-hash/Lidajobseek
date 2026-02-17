@@ -35,6 +35,7 @@ async function bootstrap() {
 
   app.use(
     helmet({
+      contentSecurityPolicy: false,
       hsts: process.env.NODE_ENV === 'production'
         ? {
           maxAge: 31536000,
