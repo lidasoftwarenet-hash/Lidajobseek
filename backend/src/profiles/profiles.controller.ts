@@ -3,6 +3,8 @@ import {
   BadRequestException,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Patch,
   Post,
   Req,
@@ -10,10 +12,12 @@ import {
   UseGuards,
   ForbiddenException,
   InternalServerErrorException,
+  PayloadTooLargeException,
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import FileType from 'file-type';
 import { ProfilesService } from './profiles.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ShareProfileDto } from './dto/share-profile.dto';
@@ -23,6 +27,17 @@ import { RequiresPremium } from '../auth/requires-premium.decorator';
 
 const CV_UPLOAD_MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_CV_MIME_TYPES = ['application/pdf'];
+
+const assertPdfMagicBytes = async (buffer: Buffer) => {
+  const fileType = await FileType.fromBuffer(buffer);
+  if (!fileType || fileType.mime !== 'application/pdf') {
+    throw new BadRequestException({
+      type: 'validation_error',
+      code: 'INVALID_PDF_TYPE',
+      message: 'Only valid PDF files are allowed.',
+    });
+  }
+};
 
 const cvFileFilter = (
   _req: any,
@@ -95,6 +110,7 @@ export class ProfilesController {
   }
 
   @Post('me/send-cv-email')
+  @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FileInterceptor('pdf', {
       limits: { fileSize: CV_UPLOAD_MAX_SIZE },
@@ -120,19 +136,52 @@ export class ProfilesController {
         message: 'PDF is required.',
       });
     }
+
+    let resolvedPdfBuffer = pdf?.buffer;
+
+    if (!resolvedPdfBuffer && dto.pdfBase64) {
+      const normalizedBase64 = dto.pdfBase64.replace(/\s/g, '');
+      const padding = normalizedBase64.endsWith('==') ? 2 : normalizedBase64.endsWith('=') ? 1 : 0;
+      const decodedByteSize = Math.floor((normalizedBase64.length * 3) / 4) - padding;
+      if (decodedByteSize > CV_UPLOAD_MAX_SIZE) {
+        throw new PayloadTooLargeException({
+          type: 'validation_error',
+          code: 'PDF_TOO_LARGE',
+          message: `PDF must be smaller than ${Math.floor(CV_UPLOAD_MAX_SIZE / (1024 * 1024))}MB.`,
+        });
+      }
+
+      resolvedPdfBuffer = Buffer.from(normalizedBase64, 'base64');
+    }
+
+    if (resolvedPdfBuffer && resolvedPdfBuffer.byteLength > CV_UPLOAD_MAX_SIZE) {
+      throw new PayloadTooLargeException({
+        type: 'validation_error',
+        code: 'PDF_TOO_LARGE',
+        message: `PDF must be smaller than ${Math.floor(CV_UPLOAD_MAX_SIZE / (1024 * 1024))}MB.`,
+      });
+    }
+
+    if (resolvedPdfBuffer) {
+      await assertPdfMagicBytes(resolvedPdfBuffer);
+    }
+
     try {
       await this.profilesService.sendCvByEmail(
         req.user.userId,
         dto.email,
-        dto.pdfBase64,
-        pdf?.buffer,
+        resolvedPdfBuffer,
       );
       return { success: true, message: 'CV sent successfully' };
-    } catch (error: any) {
+    } catch (error) {
+      if (error instanceof PayloadTooLargeException) {
+        throw error;
+      }
+
       throw new InternalServerErrorException({
         type: 'server_error',
         code: 'SERVER_ERROR',
-        message: error?.message || 'Failed to send CV email',
+        message: error instanceof Error ? error.message : 'Failed to send CV email',
       });
     }
   }

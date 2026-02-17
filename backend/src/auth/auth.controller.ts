@@ -10,12 +10,17 @@ import {
   Query,
   Param,
   Logger,
+  Res,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { Public } from './public.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
+
+const DEFAULT_ACCESS_TOKEN_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 @Controller('auth')
 export class AuthController {
@@ -51,8 +56,9 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
-  async login(@Body() body: LoginDto) {
+  async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
     try {
       const valid = await this.authService.validateUser(body.email, body.password);
       if (!valid) {
@@ -62,7 +68,22 @@ export class AuthController {
           message: 'Invalid email or password.',
         });
       }
-      return this.authService.login(valid);
+
+      const loginResult = await this.authService.login(valid);
+      const maxAge = Number(process.env.ACCESS_TOKEN_COOKIE_MAX_AGE_MS);
+
+      res.cookie('access_token', loginResult.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge:
+          Number.isFinite(maxAge) && maxAge > 0
+            ? maxAge
+            : DEFAULT_ACCESS_TOKEN_COOKIE_MAX_AGE_MS,
+      });
+
+      return loginResult;
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
@@ -79,18 +100,21 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Throttle({ default: { limit: 3, ttl: 10 * 60_000 } })
   async register(@Body() body: RegisterDto) {
     return this.authService.register(body);
   }
 
   @Public()
   @Post('verify-code')
+  @Throttle({ default: { limit: 5, ttl: 10 * 60_000 } })
   async verifyCode(@Body() body: VerifyCodeDto) {
     return this.authService.verifyInvitationCode(body.code);
   }
 
   @Public()
   @Get('activate')
+  @Throttle({ default: { limit: 10, ttl: 10 * 60_000 } })
   async activateAccount(@Query('token') token: string) {
     return this.authService.activateAccount(token);
   }

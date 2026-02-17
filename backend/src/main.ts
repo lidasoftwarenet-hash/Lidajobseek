@@ -1,8 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { buildCorsOptions } from './security/cors.config';
+import cookieParser from 'cookie-parser';
 
 const envPath = (() => {
   const backendEnv = join(process.cwd(), 'backend', '.env');
@@ -27,18 +30,55 @@ async function bootstrap() {
 
   const { AppModule } = await import('./app.module.js');
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  app.use(
+    helmet({
+      hsts: process.env.NODE_ENV === 'production'
+        ? {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: true,
+        }
+        : false,
+      crossOriginResourcePolicy: false,
+    }),
+  );
+
+  const trustProxy = process.env.TRUST_PROXY?.trim();
+  if (trustProxy) {
+    const normalized = trustProxy.toLowerCase();
+    if (normalized === 'true') {
+      expressApp.set('trust proxy', 1);
+    } else if (normalized === 'false') {
+      expressApp.set('trust proxy', false);
+    } else if (!Number.isNaN(Number(normalized))) {
+      expressApp.set('trust proxy', Number(normalized));
+    } else {
+      expressApp.set('trust proxy', trustProxy);
+    }
+  } else if (process.env.NODE_ENV === 'production') {
+    // Required behind Render/NGINX so req.ip is derived from x-forwarded-for.
+    expressApp.set('trust proxy', 1);
+  }
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: false, // Temporarily disable to see if the request passes
+      forbidNonWhitelisted: true,
       transform: true,
-      enableDebugMessages: true, // Show more details in logs
+      enableDebugMessages: process.env.NODE_ENV !== 'production',
     }),
   );
   app.setGlobalPrefix('api');
-  app.enableCors({
-    origin: 'http://localhost:4200',
-  });
+  app.enableCors(
+    buildCorsOptions(
+      process.env.NODE_ENV,
+      process.env.CORS_ORIGINS,
+      process.env.CORS_CREDENTIALS,
+    ),
+  );
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

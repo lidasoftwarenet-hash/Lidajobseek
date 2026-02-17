@@ -272,19 +272,15 @@ Provide a helpful suggestion or example. Keep it concise and actionable.`;
   async sendCvByEmail(
     userId: number,
     email: string,
-    pdfBase64?: string,
     pdfBuffer?: Buffer,
   ): Promise<void> {
     const user = await this.usersService.findById(userId);
     const senderName = user?.name || user?.email || 'A user';
 
-    const resolvedPdfBuffer =
-      pdfBuffer ?? (pdfBase64 ? Buffer.from(pdfBase64, 'base64') : null);
-
-    if (!resolvedPdfBuffer) {
+    if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
       throw new Error('PDF content is required');
     }
 
-    await this.mailService.sendCvByEmail(email, resolvedPdfBuffer, senderName);
+    await this.mailService.sendCvByEmail(email, pdfBuffer, senderName);
   }
 }
