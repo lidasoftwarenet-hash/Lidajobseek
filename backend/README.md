@@ -44,6 +44,11 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+### Auth cookie env (migration P2-1)
+
+- `ACCESS_TOKEN_COOKIE_MAX_AGE_MS` (optional): max-age for `access_token` cookie in milliseconds.
+  - Default: `604800000` (7 days).
+
 ## Run tests
 
 ```bash

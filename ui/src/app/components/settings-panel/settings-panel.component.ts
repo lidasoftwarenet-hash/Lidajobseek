@@ -135,7 +135,7 @@ export class SettingsPanelComponent implements OnInit {
     if (confirm('Are you sure you want to clear the cache? This will not delete your settings.')) {
       try {
         // Clear any cached data (localStorage items that are not settings)
-        const keysToKeep = ['settings', 'auth_token'];
+        const keysToKeep = ['settings'];
         const allKeys = Object.keys(localStorage);
 
         allKeys.forEach(key => {

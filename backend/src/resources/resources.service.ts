@@ -31,7 +31,11 @@ export class ResourcesService {
 
     const resourceData: any = { ...data, user: userId };
     if (data.folderId) {
-      resourceData.folder = this.em.getReference(Folder, data.folderId);
+      const folder = await this.folderRepository.findOne({ id: data.folderId, user: userId });
+      if (!folder) {
+        throw new NotFoundException('Folder not found');
+      }
+      resourceData.folder = folder;
       delete resourceData.folderId;
     }
     const resource = this.resourceRepository.create(resourceData);
@@ -66,7 +70,11 @@ export class ResourcesService {
   async createFolder(name: string, userId: number, parentId?: number): Promise<Folder> {
     const data: any = { name, user: userId };
     if (parentId) {
-      data.parent = this.em.getReference(Folder, parentId);
+      const parentFolder = await this.folderRepository.findOne({ id: parentId, user: userId });
+      if (!parentFolder) {
+        throw new NotFoundException('Folder not found');
+      }
+      data.parent = parentFolder;
     }
     const folder = this.folderRepository.create(data);
     await this.em.persistAndFlush(folder);
@@ -98,7 +106,31 @@ export class ResourcesService {
     if (!resource) {
       return null;
     }
-    Object.assign(resource, data);
+
+    const updateData: any = { ...data };
+    if (Object.prototype.hasOwnProperty.call(updateData, 'folderId')) {
+      const rawFolderId = updateData.folderId;
+
+      if (rawFolderId === null || rawFolderId === undefined || rawFolderId === '') {
+        updateData.folder = null;
+        delete updateData.folderId;
+      } else {
+        const folderId = Number(rawFolderId);
+        if (!Number.isFinite(folderId) || folderId <= 0) {
+          throw new BadRequestException('Invalid folderId');
+        }
+
+        const folder = await this.folderRepository.findOne({ id: folderId, user: userId });
+        if (!folder) {
+          throw new NotFoundException('Folder not found');
+        }
+
+        updateData.folder = folder;
+        delete updateData.folderId;
+      }
+    }
+
+    Object.assign(resource, updateData);
     await this.em.flush();
     return resource;
   }

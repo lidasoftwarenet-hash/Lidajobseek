@@ -3,18 +3,26 @@ import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor, HttpErrorResponse
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) { }
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const token = this.authService.getToken();
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          'Authorization': `Bearer ${token}`
+    if (this.isApiRequest(request.url)) {
+      const setHeaders: Record<string, string> = {};
+
+      if (this.isMutatingMethod(request.method)) {
+        const csrfToken = this.getCsrfTokenFromCookie();
+        if (csrfToken) {
+          setHeaders['X-CSRF-Token'] = csrfToken;
         }
+      }
+
+      request = request.clone({
+        withCredentials: true,
+        ...(Object.keys(setHeaders).length ? { setHeaders } : {}),
       });
     }
 
@@ -33,5 +41,29 @@ export class AuthInterceptor implements HttpInterceptor {
         return throwError(() => error);
       })
     );
+  }
+
+  private isApiRequest(url: string): boolean {
+    const normalizedApiUrl = (environment.apiUrl || '').replace(/\/+$/, '');
+
+    if (normalizedApiUrl && (url === normalizedApiUrl || url.startsWith(`${normalizedApiUrl}/`))) {
+      return true;
+    }
+
+    return url.startsWith('/api') || url.startsWith('api/');
+  }
+
+  private isMutatingMethod(method: string): boolean {
+    const normalized = method.toUpperCase();
+    return normalized === 'POST' || normalized === 'PUT' || normalized === 'PATCH' || normalized === 'DELETE';
+  }
+
+  private getCsrfTokenFromCookie(): string | null {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+    return match?.[1] ? decodeURIComponent(match[1]) : null;
   }
 }
