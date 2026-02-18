@@ -71,7 +71,7 @@ import { ProfilesModule } from './profiles/profiles.module';
       },
       {
         rootPath: join(__dirname, 'client'),
-        exclude: ['/api{/*path}'],
+        exclude: ['/api*'],
       },
     ),
     ProcessesModule,
