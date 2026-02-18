@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ProcessesModule } from './processes/processes.module';
@@ -17,8 +17,6 @@ import config from './mikro-orm.config';
 import { Contact } from './contacts/contact.entity';
 import { Process } from './processes/process.entity';
 import { ProfilesModule } from './profiles/profiles.module';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -36,17 +34,6 @@ import { APP_GUARD } from '@nestjs/core';
         }
         return rootEnv;
       })(),
-    }),
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => [
-        {
-          name: 'default',
-          ttl: Number(configService.get('THROTTLE_TTL_MS') ?? 60_000),
-          limit: Number(configService.get('THROTTLE_LIMIT') ?? 120),
-        },
-      ],
     }),
     MikroOrmModule.forRoot(config),
     MikroOrmModule.forFeature([Contact, Process]),
@@ -84,7 +71,7 @@ import { APP_GUARD } from '@nestjs/core';
       },
       {
         rootPath: join(__dirname, 'client'),
-        exclude: ['/api/(.*)'],
+        exclude: ['/api*'],
       },
     ),
     ProcessesModule,
@@ -94,13 +81,6 @@ import { APP_GUARD } from '@nestjs/core';
     ProfilesModule,
   ],
   controllers: [AppController, ContactsController],
-  providers: [
-    AppService,
-    ContactsService,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-  ],
+  providers: [AppService, ContactsService],
 })
 export class AppModule {}

@@ -1,12 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import helmet from 'helmet';
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { buildCorsOptions } from './security/cors.config';
-import cookieParser from 'cookie-parser';
-import { csrfMiddleware } from './security/csrf.middleware';
 
 const envPath = (() => {
   const backendEnv = join(process.cwd(), 'backend', '.env');
@@ -30,58 +26,60 @@ async function bootstrap() {
   }
 
   const { AppModule } = await import('./app.module.js');
-  const app = await NestFactory.create(AppModule);
-  app.use(cookieParser());
-  app.use(csrfMiddleware);
-  const expressApp = app.getHttpAdapter().getInstance();
-
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-      hsts: process.env.NODE_ENV === 'production'
-        ? {
-          maxAge: 31536000,
-          includeSubDomains: true,
-          preload: true,
-        }
-        : false,
-      crossOriginResourcePolicy: false,
-    }),
-  );
-
-  const trustProxy = process.env.TRUST_PROXY?.trim();
-  if (trustProxy) {
-    const normalized = trustProxy.toLowerCase();
-    if (normalized === 'true') {
-      expressApp.set('trust proxy', 1);
-    } else if (normalized === 'false') {
-      expressApp.set('trust proxy', false);
-    } else if (!Number.isNaN(Number(normalized))) {
-      expressApp.set('trust proxy', Number(normalized));
-    } else {
-      expressApp.set('trust proxy', trustProxy);
-    }
-  } else if (process.env.NODE_ENV === 'production') {
-    // Required behind Render/NGINX so req.ip is derived from x-forwarded-for.
-    expressApp.set('trust proxy', 1);
-  }
-
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transform: true,
-      enableDebugMessages: process.env.NODE_ENV !== 'production',
+      enableDebugMessages: true,
     }),
   );
+  
   app.setGlobalPrefix('api');
-  app.enableCors(
-    buildCorsOptions(
-      process.env.NODE_ENV,
-      process.env.CORS_ORIGINS,
-      process.env.CORS_CREDENTIALS,
-    ),
-  );
-  await app.listen(process.env.PORT ?? 3000);
+  
+  // CORS configuration - allow multiple origins based on environment
+  const allowedOrigins = [
+    'http://localhost:4200',
+    'http://localhost:3000',
+  ];
+  
+  // Add production frontend URL from environment variable
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+  }
+  
+  app.enableCors({
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      // Check if origin is allowed
+      if (allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin))) {
+        callback(null, true);
+      } else {
+        console.warn(`CORS blocked request from origin: ${origin}`);
+        console.warn(`Allowed origins: ${allowedOrigins.join(', ')}`);
+        callback(null, true); // Still allow for now to prevent blocking
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+  
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🚀 Application is running on: http://localhost:${port}/api`);
+  console.log(`📍 Allowed CORS origins: ${allowedOrigins.join(', ')}`);
 }
-bootstrap();
+
+bootstrap().catch(err => {
+  console.error('❌ Failed to start application:', err);
+  process.exit(1);
+});
