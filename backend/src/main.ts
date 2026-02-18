@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'fs';
 import { join } from 'path';
@@ -29,7 +29,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
-  
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -38,27 +38,29 @@ async function bootstrap() {
       enableDebugMessages: true,
     }),
   );
-  
-  app.setGlobalPrefix('api');
-  
+
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: 'health', method: RequestMethod.GET }],
+  });
+
   // CORS configuration - allow multiple origins based on environment
   const allowedOrigins = [
     'http://localhost:4200',
     'http://localhost:3000',
   ];
-  
+
   // Add production frontend URL from environment variable
   if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
   }
-  
+
   app.enableCors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) {
         return callback(null, true);
       }
-      
+
       // Check if origin is allowed
       if (allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin))) {
         callback(null, true);
@@ -72,7 +74,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
-  
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}/api`);
