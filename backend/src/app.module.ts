@@ -38,42 +38,36 @@ import { ProfilesModule } from './profiles/profiles.module';
     MikroOrmModule.forRoot(config),
     MikroOrmModule.forFeature([Contact, Process]),
     AuthModule,
-    ServeStaticModule.forRoot(
-      {
-        rootPath: (() => {
-          const uploadsRoot = join(process.cwd(), 'uploads');
-          const uploadsParent = join(process.cwd(), '..', 'uploads');
-          return existsSync(uploadsRoot) ? uploadsRoot : uploadsParent;
-        })(),
-        serveRoot: '/uploads',
-        serveStaticOptions: {
-          setHeaders: (res, filePath) => {
-            const blockedExtensions = new Set([
-              '.html',
-              '.htm',
-              '.svg',
-              '.js',
-              '.mjs',
-              '.xml',
-            ]);
+    ServeStaticModule.forRoot({
+      rootPath: (() => {
+        const uploadsRoot = join(process.cwd(), 'uploads');
+        const uploadsParent = join(process.cwd(), '..', 'uploads');
+        return existsSync(uploadsRoot) ? uploadsRoot : uploadsParent;
+      })(),
+      serveRoot: '/uploads',
+      serveStaticOptions: {
+        setHeaders: (res, filePath) => {
+          const blockedExtensions = new Set([
+            '.html',
+            '.htm',
+            '.svg',
+            '.js',
+            '.mjs',
+            '.xml',
+          ]);
 
-            const fileExt = extname(filePath).toLowerCase();
-            if (blockedExtensions.has(fileExt)) {
-              res.setHeader('Content-Type', 'application/octet-stream');
-            }
+          const fileExt = extname(filePath).toLowerCase();
+          if (blockedExtensions.has(fileExt)) {
+            res.setHeader('Content-Type', 'application/octet-stream');
+          }
 
-            const safeFileName = basename(filePath).replace(/"/g, '');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
-            res.setHeader('X-Content-Type-Options', 'nosniff');
-            res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-          },
+          const safeFileName = basename(filePath).replace(/"/g, '');
+          res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
         },
       },
-      {
-        rootPath: join(__dirname, 'client'),
-        exclude: ['/api*'],
-      },
-    ),
+    }),
     ProcessesModule,
     InteractionsModule,
     ReviewsModule,
