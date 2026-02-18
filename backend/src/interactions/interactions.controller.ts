@@ -21,6 +21,7 @@ export class InteractionsController {
 
   @Post()
   create(@Body() dto: CreateInteractionDto, @Req() req: any) {
+    console.log('REQ.USER:', req.user);
     return this.interactionsService.create(dto, req.user.userId);
   }
 
