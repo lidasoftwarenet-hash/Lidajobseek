@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import { AppModule } from './app.module';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   // Warn if JWT_SECRET is missing but don't crash
@@ -11,6 +12,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'],
   });
+
+  // Enable cookie parser BEFORE any routes
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
