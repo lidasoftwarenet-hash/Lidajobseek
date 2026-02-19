@@ -102,7 +102,12 @@ export class ProcessesService {
       return null;
     }
 
-    const data: any = { ...dto };
+    // Keep PATCH semantics: only update fields that were actually provided.
+    // Class-transformer/DTO instances may include keys with `undefined` values,
+    // and passing them through can null-out non-null columns in DB.
+    const data: any = Object.fromEntries(
+      Object.entries(dto as Record<string, unknown>).filter(([, value]) => value !== undefined),
+    );
 
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {

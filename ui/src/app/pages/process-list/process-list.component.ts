@@ -60,7 +60,13 @@ export class ProcessListComponent implements OnInit {
     dateTo: string = '';
 
     // View mode
-    viewMode: 'grid' | 'table' = 'grid';
+    viewMode: 'grid' | 'table' | 'board' = 'grid';
+
+    // Kanban board
+    boardStages: string[] = [];
+    dragProcessId: number | null = null;
+    dragOverStage: string | null = null;
+    isSavingStageChange: boolean = false;
 
     // Focus states for search blur
     searchFocused: boolean = false;
@@ -166,9 +172,11 @@ export class ProcessListComponent implements OnInit {
 
         // Load saved view mode
         const savedViewMode = localStorage.getItem('processViewMode');
-        if (savedViewMode === 'grid' || savedViewMode === 'table') {
+        if (savedViewMode === 'grid' || savedViewMode === 'table' || savedViewMode === 'board') {
             this.viewMode = savedViewMode;
         }
+
+        this.boardStages = [...this.availableStages];
     }
 
     // Extract unique filter options from data
@@ -407,7 +415,19 @@ export class ProcessListComponent implements OnInit {
 
     // Toggle view mode
     toggleViewMode() {
-        this.viewMode = this.viewMode === 'grid' ? 'table' : 'grid';
+        if (this.viewMode === 'grid') {
+            this.viewMode = 'table';
+        } else if (this.viewMode === 'table') {
+            this.viewMode = 'board';
+        } else {
+            this.viewMode = 'grid';
+        }
+
+        localStorage.setItem('processViewMode', this.viewMode);
+    }
+
+    setViewMode(mode: 'grid' | 'table' | 'board') {
+        this.viewMode = mode;
         localStorage.setItem('processViewMode', this.viewMode);
     }
 
@@ -447,6 +467,75 @@ export class ProcessListComponent implements OnInit {
     getStatusClass(stage: string): string {
         if (!stage) return '';
         return 'status-' + stage.toLowerCase().replace(/\s+/g, '-');
+    }
+
+    getStageCount(stage: string): number {
+        return this.filteredProcesses.filter(p => p.currentStage === stage).length;
+    }
+
+    getBoardColumnProcesses(stage: string): any[] {
+        return this.filteredProcesses.filter(p => p.currentStage === stage);
+    }
+
+    onDragStart(event: DragEvent, process: any) {
+        this.dragProcessId = process.id;
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', String(process.id));
+        }
+    }
+
+    onDragEnd() {
+        this.dragProcessId = null;
+        this.dragOverStage = null;
+    }
+
+    onDragOver(event: DragEvent) {
+        event.preventDefault();
+    }
+
+    onDragEnter(stage: string) {
+        this.dragOverStage = stage;
+    }
+
+    onDrop(event: DragEvent, targetStage: string) {
+        event.preventDefault();
+
+        const rawId = event.dataTransfer?.getData('text/plain');
+        const processId = rawId ? Number(rawId) : this.dragProcessId;
+        if (!processId) {
+            this.onDragEnd();
+            return;
+        }
+
+        const process = this.processes.find(p => p.id === processId);
+        if (!process || process.currentStage === targetStage || this.isSavingStageChange) {
+            this.onDragEnd();
+            return;
+        }
+
+        const previousStage = process.currentStage;
+        process.currentStage = targetStage;
+        this.applyFilters();
+        this.findTasks();
+        this.isSavingStageChange = true;
+
+        this.processesService.update(processId, { currentStage: targetStage }).subscribe({
+            next: () => {
+                this.toastService.show(`Moved ${process.companyName} to "${targetStage}"`, 'success');
+                this.isSavingStageChange = false;
+            },
+            error: (err) => {
+                console.error('Failed to update process stage', err);
+                process.currentStage = previousStage;
+                this.applyFilters();
+                this.findTasks();
+                this.toastService.show('Failed to update stage. Please try again.', 'error');
+                this.isSavingStageChange = false;
+            }
+        });
+
+        this.onDragEnd();
     }
 
     // Sorting method

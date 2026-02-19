@@ -25,7 +25,7 @@
                     <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
                 </button>
                 <button class="btn-glass btn-icon-mobile" (click)="toggleViewMode()"
-                    [title]="viewMode === 'grid' ? 'Switch to Table View' : 'Switch to Grid View'">
+                    [title]="viewMode === 'grid' ? 'Switch to Table View' : viewMode === 'table' ? 'Switch to Board View' : 'Switch to Grid View'">
                     <svg *ngIf="viewMode === 'grid'" width="18" height="18" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2">
                         <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -42,7 +42,13 @@
                         <rect x="14" y="14" width="7" height="7"></rect>
                         <rect x="3" y="14" width="7" height="7"></rect>
                     </svg>
-                    <span class="hide-mobile">{{ viewMode === 'grid' ? 'Table' : 'Grid' }}</span>
+                    <svg *ngIf="viewMode === 'board'" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <line x1="9" y1="3" x2="9" y2="21"></line>
+                        <line x1="15" y1="3" x2="15" y2="21"></line>
+                    </svg>
+                    <span class="hide-mobile">{{ viewMode === 'grid' ? 'Table' : viewMode === 'table' ? 'Board' : 'Grid' }}</span>
                 </button>
                 <button class="btn-glass hide-mobile" (click)="exportData()" title="Export Data">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -286,6 +292,14 @@
                     <span class="results-subtitle" *ngIf="isFilterActive">Filtered from {{ processes.length }}
                         total</span>
                 </div>
+                <div class="view-switcher" aria-label="Process view selector">
+                    <button type="button" class="view-switch-btn" [class.active]="viewMode === 'grid'"
+                        (click)="setViewMode('grid')">Grid</button>
+                    <button type="button" class="view-switch-btn" [class.active]="viewMode === 'table'"
+                        (click)="setViewMode('table')">Table</button>
+                    <button type="button" class="view-switch-btn" [class.active]="viewMode === 'board'"
+                        (click)="setViewMode('board')">Board</button>
+                </div>
                 <div class="sort-controls">
                     <label class="sort-label">Sort by:</label>
                     <button class="sort-btn" [class.active]="isSorted('company')" (click)="sort('company')">
@@ -468,6 +482,52 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Board View -->
+            <div class="kanban-board" *ngIf="!isLoading && filteredProcesses.length > 0 && viewMode === 'board'">
+                <div class="kanban-saving" *ngIf="isSavingStageChange">
+                    Saving stage change...
+                </div>
+
+                <div class="kanban-column" *ngFor="let stage of boardStages"
+                    [class.drag-over]="dragOverStage === stage"
+                    (dragover)="onDragOver($event)"
+                    (dragenter)="onDragEnter(stage)"
+                    (drop)="onDrop($event, stage)">
+                    <div class="kanban-column-header">
+                        <span class="kanban-stage-name" [title]="stage">{{ stage }}</span>
+                        <span class="kanban-stage-count">{{ getStageCount(stage) }}</span>
+                    </div>
+
+                    <div class="kanban-list" [class.empty]="getBoardColumnProcesses(stage).length === 0">
+                        <div class="kanban-card" *ngFor="let p of getBoardColumnProcesses(stage)"
+                            [class.dragging]="dragProcessId === p.id"
+                            draggable="true"
+                            (dragstart)="onDragStart($event, p)"
+                            (dragend)="onDragEnd()">
+                            <div class="kanban-card-top">
+                                <div class="company-logo-small">{{ p.companyName.charAt(0).toUpperCase() }}</div>
+                                <span class="badge-stage" [ngClass]="getStatusClass(p.currentStage)">
+                                    {{ p.currentStage }}
+                                </span>
+                            </div>
+                            <h4 class="kanban-company">{{ p.companyName }}</h4>
+                            <p class="kanban-role">{{ p.roleTitle }}</p>
+                            <div class="kanban-card-meta">
+                                <span>{{ p.location || 'N/A' }}</span>
+                                <span>{{ p.workMode | titlecase }}</span>
+                            </div>
+                            <a class="kanban-open-link" [routerLink]="['/process', p.id]" (click)="$event.stopPropagation()">
+                                Open details
+                            </a>
+                        </div>
+
+                        <div class="kanban-empty" *ngIf="getBoardColumnProcesses(stage).length === 0">
+                            Drop process here
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Empty State -->
