@@ -61,7 +61,7 @@ function getUIPath(): string | null {
     ...(getUIPath() ? [
       ServeStaticModule.forRoot({
         rootPath: getUIPath()!,
-        exclude: ['/api*', '/health'],
+        exclude: ['/api/(.*)', '/health'],
       }),
     ] : []),
     ProcessesModule,
