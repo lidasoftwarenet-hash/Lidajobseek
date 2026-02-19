@@ -91,8 +91,8 @@ export class AuthController {
 
       res.cookie('access_token', loginResult.access_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        secure: true, // Always use secure cookies (Render uses HTTPS)
+        sameSite: 'strict',
         path: '/',
         maxAge:
           Number.isFinite(maxAge) && maxAge > 0
