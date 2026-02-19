@@ -21,7 +21,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 // Find UI build directory
 function getUIPath(): string | null {
   const paths = [
+    resolve(process.cwd(), 'dist', 'client'),
     resolve(process.cwd(), 'dist', 'public'),
+    resolve(__dirname, '..', '..', 'dist', 'client'),
     resolve(__dirname, '..', '..', 'dist', 'public'),
   ];
   
