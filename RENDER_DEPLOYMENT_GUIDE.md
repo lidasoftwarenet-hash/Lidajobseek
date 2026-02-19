@@ -26,20 +26,21 @@ exclude: ['/api*'],
 - Added better logging for debugging
 - Made CORS configurable via `FRONTEND_URL` environment variable
 
-## Render Configuration Steps
-
-### Step 1: Update Environment Variables on Render
-
-Go to your Render backend service dashboard and add the following environment variable:
-
+### Step 1: Update Build Command in Render
+In your Render dashboard, under **Settings**, set the **Build Command** to:
+```bash
+npm install && npm run build
 ```
-FRONTEND_URL=https://your-frontend-app.onrender.com
+*This will install all dependencies (backend & UI) and build both, moving the UI files to the correct location.*
+
+### Step 2: Update Start Command in Render
+Set the **Start Command** to:
+```bash
+node dist/src/main.js
 ```
+*Note: Depending on your build output, this might also be `node backend/dist/main.js` if you are running from the root.*
 
-**Replace `your-frontend-app.onrender.com` with your actual frontend URL on Render.**
-
-### Step 2: Verify Existing Environment Variables
-
+### Step 3: Verify Environment Variables
 Make sure these are set in your Render backend service:
 
 ```bash

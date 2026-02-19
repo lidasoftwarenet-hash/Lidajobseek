@@ -64,10 +64,23 @@ import { ProfilesModule } from './profiles/profiles.module';
       },
       {
         rootPath: (() => {
-          const uiRoot = join(process.cwd(), 'dist', 'public');
-          const uiParent = join(process.cwd(), '..', 'dist', 'public');
-          return existsSync(uiRoot) ? uiRoot : uiParent;
+          const possiblePaths = [
+            join(process.cwd(), 'dist', 'public'),
+            join(process.cwd(), '..', 'dist', 'public'),
+            join(__dirname, '..', 'public'),
+            join(__dirname, '..', '..', 'dist', 'public'),
+          ];
+          for (const p of possiblePaths) {
+            console.log(`[Static] Checking for UI static files in: ${p}`);
+            if (existsSync(p) && existsSync(join(p, 'index.html'))) {
+              console.log(`[Static] UI found at: ${p}`);
+              return p;
+            }
+          }
+          console.warn('[Static] Could not find UI static files (index.html) in any expected location');
+          return possiblePaths[0];
         })(),
+        renderPath: '*',
         exclude: ['/api*'],
       },
     ] as any),
