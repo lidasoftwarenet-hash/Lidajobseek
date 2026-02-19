@@ -8,7 +8,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ContactsService } from './contacts/contacts.service';
 import { ContactsController } from './contacts/contacts.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { basename, extname, join } from 'path';
+import { basename, extname, join, resolve } from 'path';
 import { existsSync } from 'fs';
 import { ResourcesModule } from './resources/resources.module';
 import { AuthModule } from './auth/auth.module';
@@ -17,6 +17,87 @@ import config from './mikro-orm.config';
 import { Contact } from './contacts/contact.entity';
 import { Process } from './processes/process.entity';
 import { ProfilesModule } from './profiles/profiles.module';
+
+// Helper function to find uploads directory
+function findUploadsPath(): string {
+  const possiblePaths = [
+    resolve(process.cwd(), 'uploads'),
+    resolve(process.cwd(), '..', 'uploads'),
+    resolve(__dirname, '..', '..', 'uploads'),
+  ];
+  
+  for (const p of possiblePaths) {
+    if (existsSync(p)) {
+      console.log(`[Static] Uploads directory found at: ${p}`);
+      return p;
+    }
+  }
+  
+  // Create default uploads directory if none exists
+  const defaultPath = possiblePaths[0];
+  console.log(`[Static] No uploads directory found, will use: ${defaultPath}`);
+  return defaultPath;
+}
+
+// Helper function to find UI static files
+function findUIStaticPath(): string | null {
+  const possiblePaths = [
+    resolve(process.cwd(), 'dist', 'public'),
+    resolve(process.cwd(), '..', 'dist', 'public'),
+    resolve(__dirname, '..', 'public'),
+    resolve(__dirname, '..', '..', 'dist', 'public'),
+    resolve(__dirname, '..', '..', '..', 'dist', 'public'),
+  ];
+  
+  for (const p of possiblePaths) {
+    console.log(`[Static] Checking for UI static files in: ${p}`);
+    if (existsSync(p) && existsSync(join(p, 'index.html'))) {
+      console.log(`[Static] ✓ UI found at: ${p}`);
+      return p;
+    }
+  }
+  
+  console.warn('[Static] ⚠ UI static files not found - frontend will not be served');
+  console.warn('[Static] This is normal if you are running backend-only or UI is deployed separately');
+  return null;
+}
+
+// Build ServeStaticModule configuration
+function buildServeStaticConfig() {
+  const configs: any[] = [
+    {
+      rootPath: findUploadsPath(),
+      serveRoot: '/uploads',
+      serveStaticOptions: {
+        setHeaders: (res: any, filePath: string) => {
+          const blockedExtensions = new Set(['.html', '.htm', '.svg', '.js', '.mjs', '.xml']);
+
+          const fileExt = extname(filePath).toLowerCase();
+          if (blockedExtensions.has(fileExt)) {
+            res.setHeader('Content-Type', 'application/octet-stream');
+          }
+
+          const safeFileName = basename(filePath).replace(/"/g, '');
+          res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+        },
+      },
+    },
+  ];
+
+  // Only add UI static serving if the directory exists
+  const uiPath = findUIStaticPath();
+  if (uiPath) {
+    configs.push({
+      rootPath: uiPath,
+      renderPath: '*',
+      exclude: ['/api*'],
+    });
+  }
+
+  return configs;
+}
 
 @Module({
   imports: [
@@ -38,52 +119,7 @@ import { ProfilesModule } from './profiles/profiles.module';
     MikroOrmModule.forRoot(config),
     MikroOrmModule.forFeature([Contact, Process]),
     AuthModule,
-    ServeStaticModule.forRoot([
-      {
-        rootPath: (() => {
-          const uploadsRoot = join(process.cwd(), 'uploads');
-          const uploadsParent = join(process.cwd(), '..', 'uploads');
-          return existsSync(uploadsRoot) ? uploadsRoot : uploadsParent;
-        })(),
-        serveRoot: '/uploads',
-        serveStaticOptions: {
-          setHeaders: (res: any, filePath: string) => {
-            const blockedExtensions = new Set(['.html', '.htm', '.svg', '.js', '.mjs', '.xml']);
-
-            const fileExt = extname(filePath).toLowerCase();
-            if (blockedExtensions.has(fileExt)) {
-              res.setHeader('Content-Type', 'application/octet-stream');
-            }
-
-            const safeFileName = basename(filePath).replace(/"/g, '');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
-            res.setHeader('X-Content-Type-Options', 'nosniff');
-            res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
-          },
-        },
-      },
-      {
-        rootPath: (() => {
-          const possiblePaths = [
-            join(process.cwd(), 'dist', 'public'),
-            join(process.cwd(), '..', 'dist', 'public'),
-            join(__dirname, '..', 'public'),
-            join(__dirname, '..', '..', 'dist', 'public'),
-          ];
-          for (const p of possiblePaths) {
-            console.log(`[Static] Checking for UI static files in: ${p}`);
-            if (existsSync(p) && existsSync(join(p, 'index.html'))) {
-              console.log(`[Static] UI found at: ${p}`);
-              return p;
-            }
-          }
-          console.warn('[Static] Could not find UI static files (index.html) in any expected location');
-          return possiblePaths[0];
-        })(),
-        renderPath: '*',
-        exclude: ['/api*'],
-      },
-    ] as any),
+    ServeStaticModule.forRoot(buildServeStaticConfig() as any),
     ProcessesModule,
     InteractionsModule,
     ReviewsModule,

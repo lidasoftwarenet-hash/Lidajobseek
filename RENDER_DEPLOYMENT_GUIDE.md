@@ -2,10 +2,11 @@
 
 ## Problem Summary
 
-Your application was experiencing 500 errors on Render when adding processes and interviews due to:
+Your application was experiencing errors on Render due to:
 
 1. **Invalid Path Pattern**: The ServeStaticModule was using an incompatible regex pattern `/api{/*path}` which caused `PathError` with the newer version of `path-to-regexp` library
 2. **CORS Configuration**: Hardcoded CORS to only allow `localhost:4200`, blocking production requests
+3. **Static File Path Error**: The error `TypeError: path must be absolute or specify root to res.sendFile` occurs when the UI static files directory doesn't exist, causing the ServeStaticModule to fail
 
 ## What Was Fixed
 
@@ -20,7 +21,23 @@ exclude: ['/api{/*path}'],
 exclude: ['/api*'],
 ```
 
-### 2. Improved CORS Configuration (main.ts)
+### 2. Fixed Static File Path Resolution (app.module.ts)
+**Problem:** When the UI static files directory didn't exist, the ServeStaticModule would still try to serve from a non-existent path, causing `path must be absolute or specify root to res.sendFile` errors.
+
+**Solution:** 
+- Made UI static serving conditional - only serves if the directory exists
+- Uses `path.resolve()` for absolute paths instead of `path.join()`
+- Added more possible path locations to check
+- Provides clear console logging for debugging
+- Backend will work without UI files (useful for separate deployments)
+
+**Benefits:**
+- ✅ No more `sendFile` errors when UI files are missing
+- ✅ Backend runs successfully even without frontend build
+- ✅ Better logging for troubleshooting deployment issues
+- ✅ More robust path resolution across different deployment environments
+
+### 3. Improved CORS Configuration (main.ts)
 - Added support for environment-based CORS origins
 - Added proper TypeScript typing
 - Added better logging for debugging
