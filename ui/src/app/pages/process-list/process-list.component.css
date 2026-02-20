@@ -170,7 +170,7 @@
 .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: #2c3e50;
+    color: #ffffff;
     line-height: 1;
     margin-bottom: 0.25rem;
 }
@@ -271,7 +271,7 @@
 
 .filters-header h3 {
     font-size: 1.2rem;
-    color: #2c3e50;
+    color: #feffff;
     margin: 0;
     display: flex;
     align-items: center;
@@ -292,7 +292,7 @@
 
 .clear-btn {
     border: 1px solid #e9ecef;
-    color: #6c757d;
+    color: #000000;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -351,7 +351,7 @@
     gap: 0.5rem;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #2c3e50;
+    color: #bfc7d0;
     margin-bottom: 0.5rem;
 }
 
@@ -476,7 +476,7 @@
 .toggle-label {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #2c3e50;
+    color: #e1e6eb;
     user-select: none;
 }
 
@@ -507,7 +507,7 @@
 
 .results-info h3 {
     font-size: 1.2rem;
-    color: #2c3e50;
+    color: #ffffff;
     margin: 0 0 0.25rem 0;
 }
 
@@ -578,7 +578,7 @@
 
 .sort-btn:hover {
     background: #e9ecef;
-    color: #495057;
+    color: #dde8f3;
 }
 
 .sort-btn.active {
@@ -1283,4 +1283,146 @@
     .stat-value {
         font-size: 1.5rem;
     }
+}
+
+/* ===== DARK MODE TUNING (Process List) ===== */
+body.dark-theme .stats-grid .stat-card,
+body.dark-theme .filter-presets,
+body.dark-theme .filters-panel,
+body.dark-theme .results-header,
+body.dark-theme .process-card,
+body.dark-theme .table-container,
+body.dark-theme .kanban-column,
+body.dark-theme .kanban-card,
+body.dark-theme .empty-state-modern {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+body.dark-theme .filters-header {
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .filters-header h3,
+body.dark-theme .results-info h3,
+body.dark-theme .card-title,
+body.dark-theme .kanban-company,
+body.dark-theme .toggle-label,
+body.dark-theme .sort-label {
+    color: var(--text-primary);
+}
+
+body.dark-theme .stat-value {
+    color: var(--text-primary);
+}
+
+body.dark-theme .stat-label,
+body.dark-theme .results-subtitle,
+body.dark-theme .card-role,
+body.dark-theme .meta-item,
+body.dark-theme .card-tech,
+body.dark-theme .interaction-badge,
+body.dark-theme .card-date,
+body.dark-theme .kanban-role,
+body.dark-theme .kanban-card-meta,
+body.dark-theme .empty-state-modern p,
+body.dark-theme .empty-illustration {
+    color: var(--text-secondary);
+}
+
+body.dark-theme .filter-label,
+body.dark-theme .filter-count {
+    color: var(--text-primary);
+}
+
+body.dark-theme .filter-select,
+body.dark-theme .filter-input,
+body.dark-theme .btn-clear-date,
+body.dark-theme .toggle-chip,
+body.dark-theme .sort-btn,
+body.dark-theme .view-switcher,
+body.dark-theme .clear-search,
+body.dark-theme .btn-secondary,
+body.dark-theme .date-filter-help {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-theme .filter-select:focus,
+body.dark-theme .filter-input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(0, 134, 240, 0.18);
+}
+
+body.dark-theme .toggle-chip:hover,
+body.dark-theme .sort-btn:hover,
+body.dark-theme .btn-secondary:hover,
+body.dark-theme .btn-clear-date:hover,
+body.dark-theme .view-switch-btn:hover,
+body.dark-theme .clear-search:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+body.dark-theme .preset-chip {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-theme .preset-chip:hover,
+body.dark-theme .view-switch-btn.active,
+body.dark-theme .sort-btn.active,
+body.dark-theme .btn-apply-filter {
+    color: #fff;
+}
+
+body.dark-theme .processes-table thead {
+    background: var(--bg-tertiary);
+}
+
+body.dark-theme .processes-table th {
+    color: var(--text-primary);
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .processes-table td {
+    color: var(--text-secondary);
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-theme .table-row:hover {
+    background: rgba(0, 134, 240, 0.12);
+}
+
+body.dark-theme .card-tech,
+body.dark-theme .card-footer {
+    border-top-color: var(--border-color);
+}
+
+body.dark-theme .kanban-column.drag-over {
+    background: var(--bg-secondary);
+    border-color: var(--border-focus);
+}
+
+body.dark-theme .kanban-stage-name {
+    color: var(--text-primary);
+}
+
+body.dark-theme .kanban-stage-count {
+    background: rgba(0, 134, 240, 0.16);
+    color: #8cc8ff;
+}
+
+body.dark-theme .kanban-empty {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+body.dark-theme .skeleton {
+    background: linear-gradient(90deg, #2a2a2a 25%, #333333 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
 }

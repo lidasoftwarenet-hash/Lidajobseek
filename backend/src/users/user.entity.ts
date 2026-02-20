@@ -26,6 +26,12 @@ export class User {
   @Property({ type: 'json', nullable: true })
   processStages?: string[];
 
+  @Property({ nullable: true, default: 'light' })
+  themePreference?: 'light' | 'dark' | 'auto';
+
+  @Property({ nullable: true, default: 14 })
+  fontSizePreference?: number;
+
   @Property({ default: false })
   isActive: boolean = false;
 

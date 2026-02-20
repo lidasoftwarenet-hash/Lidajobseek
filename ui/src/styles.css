@@ -67,15 +67,16 @@
   --space-2xl: 48px;
 
   /* Typography */
+  --base-font-size: 14px;
   --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
-  --font-size-xs: 11px;
-  --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  --font-size-3xl: 28px;
+  --font-size-xs: calc(var(--base-font-size) - 3px);
+  --font-size-sm: calc(var(--base-font-size) - 2px);
+  --font-size-base: var(--base-font-size);
+  --font-size-md: calc(var(--base-font-size) + 2px);
+  --font-size-lg: calc(var(--base-font-size) + 4px);
+  --font-size-xl: calc(var(--base-font-size) + 6px);
+  --font-size-2xl: calc(var(--base-font-size) + 10px);
+  --font-size-3xl: calc(var(--base-font-size) + 14px);
 
   /* Transitions */
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -94,7 +95,7 @@
 }
 
 html {
-  font-size: 14px;
+  font-size: var(--base-font-size);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -727,7 +728,7 @@ tbody td {
 }
 
 @media (max-width: 768px) {
-  html { font-size: 13px; }
+  html { font-size: calc(var(--base-font-size) - 1px); }
 
   .container { padding: 0 var(--space-md); }
   .page-wrapper { padding: var(--space-lg) 0; }
@@ -874,6 +875,62 @@ body.dark-theme .status-withdrawn {
 body.dark-theme .status-on-hold {
   background: rgba(255, 152, 0, 0.2);
   color: #ffb74d;
+}
+
+/* ===== DARK MODE LAYOUT NORMALIZATION (avoid bright white blocks) ===== */
+body.dark-theme .card,
+body.dark-theme .stat-card,
+body.dark-theme .process-card,
+body.dark-theme .table-container,
+body.dark-theme .settings-panel,
+body.dark-theme .settings-section,
+body.dark-theme .settings-footer,
+body.dark-theme .setting-item,
+body.dark-theme .template-card,
+body.dark-theme .reminder-card,
+body.dark-theme .search-box,
+body.dark-theme .instruction-card,
+body.dark-theme .feature-card,
+body.dark-theme .nav-card,
+body.dark-theme .rank-card,
+body.dark-theme .pricing-card,
+body.dark-theme .data-form,
+body.dark-theme .form-hero,
+body.dark-theme .contact-btn,
+body.dark-theme .empty-state,
+body.dark-theme .empty-state-modern {
+  background: var(--bg-primary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+body.dark-theme .filters-panel,
+body.dark-theme .filter-presets,
+body.dark-theme .results-header,
+body.dark-theme .theme-selector,
+body.dark-theme .setting-select,
+body.dark-theme .filter-input,
+body.dark-theme .filter-select,
+body.dark-theme .sort-btn,
+body.dark-theme .view-switcher,
+body.dark-theme .toggle-chip,
+body.dark-theme .date-filter-help,
+body.dark-theme .kanban-empty,
+body.dark-theme .kanban-column,
+body.dark-theme .kanban-card,
+body.dark-theme .search-input {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+body.dark-theme .table-row:hover,
+body.dark-theme .filter-preset-btn:hover,
+body.dark-theme .theme-option:hover,
+body.dark-theme .secondary-button:hover,
+body.dark-theme .sort-btn:hover,
+body.dark-theme .view-switch-btn:hover {
+  background: var(--bg-hover) !important;
 }
 
 /* ===== TOOLTIPS ===== */

@@ -158,14 +158,16 @@ export class SettingsPanelComponent implements OnInit {
 
   applyTheme(theme: string) {
     const body = document.body;
-    body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+    body.classList.remove('theme-light', 'theme-dark', 'theme-auto', 'dark-theme', 'light-theme');
 
     if (theme === 'auto') {
       // Check system preference
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+      body.classList.add(prefersDark ? 'dark-theme' : 'light-theme');
     } else {
       body.classList.add(`theme-${theme}`);
+      body.classList.add(theme === 'dark' ? 'dark-theme' : 'light-theme');
     }
   }
 

@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 export interface Settings {
   theme: 'light' | 'dark' | 'auto';
@@ -35,6 +38,13 @@ export interface Settings {
 })
 export class SettingsService {
   private readonly STORAGE_KEY = 'settings';
+  private readonly apiUrl = `${environment.apiUrl}/api/auth/preferences`;
+  private mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  private mediaQueryHandler = (e: MediaQueryListEvent) => {
+    if (this.getSettings().theme === 'auto') {
+      this.setThemeClass(e.matches ? 'dark' : 'light');
+    }
+  };
 
   private defaultSettings: Settings = {
     theme: 'light',
@@ -74,13 +84,17 @@ export class SettingsService {
   private activeFilterPresetSubject = new BehaviorSubject<string | null>(null);
   public activeFilterPreset$ = this.activeFilterPresetSubject.asObservable();
 
-  constructor() {
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+  ) {
     this.initializeSettings();
   }
 
   private initializeSettings() {
     const settings = this.loadSettings();
     this.applySettings(settings);
+    this.syncSettingsFromBackend();
   }
 
   private loadSettings(): Settings {
@@ -101,9 +115,54 @@ export class SettingsService {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
       this.settingsSubject.next(settings);
+
+      // Persist key user preferences in backend as well
+      this.persistPreferencesToBackend(settings);
     } catch (error) {
       console.error('Error saving settings:', error);
     }
+  }
+
+  private syncSettingsFromBackend() {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
+    this.http.get<{ theme?: 'light' | 'dark' | 'auto'; fontSize?: number }>(this.apiUrl).subscribe({
+      next: (prefs) => {
+        const current = this.getSettings();
+        const updated: Settings = {
+          ...current,
+          theme: prefs.theme ?? current.theme,
+          fontSize: typeof prefs.fontSize === 'number' ? prefs.fontSize : current.fontSize,
+        };
+
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
+        this.settingsSubject.next(updated);
+        this.applySettings(updated);
+      },
+      error: () => {
+        // Keep local settings when backend is unavailable or user is not authenticated.
+      }
+    });
+  }
+
+  private persistPreferencesToBackend(settings: Settings) {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+
+    this.http.post(this.apiUrl, {
+      theme: settings.theme,
+      fontSize: settings.fontSize,
+    }).subscribe({
+      next: () => {
+        // no-op
+      },
+      error: () => {
+        // Keep UX responsive; local settings still work.
+      }
+    });
   }
 
   private applySettings(settings: Settings) {
@@ -124,23 +183,24 @@ export class SettingsService {
   }
 
   private applyTheme(theme: 'light' | 'dark' | 'auto') {
-    const body = document.body;
-    body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+    this.mediaQuery.removeEventListener('change', this.mediaQueryHandler);
 
     if (theme === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
-
-      // Listen for system theme changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (this.getSettings().theme === 'auto') {
-          body.classList.remove('theme-light', 'theme-dark');
-          body.classList.add(e.matches ? 'theme-dark' : 'theme-light');
-        }
-      });
-    } else {
-      body.classList.add(`theme-${theme}`);
+      this.setThemeClass(this.mediaQuery.matches ? 'dark' : 'light');
+      this.mediaQuery.addEventListener('change', this.mediaQueryHandler);
+      return;
     }
+
+    this.setThemeClass(theme);
+  }
+
+  private setThemeClass(theme: 'light' | 'dark') {
+    const body = document.body;
+    body.classList.remove('theme-light', 'theme-dark', 'dark-theme', 'light-theme');
+
+    // Keep both naming conventions for compatibility across existing styles.
+    body.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+    body.classList.add(theme === 'dark' ? 'dark-theme' : 'light-theme');
   }
 
   getSettings(): Settings {

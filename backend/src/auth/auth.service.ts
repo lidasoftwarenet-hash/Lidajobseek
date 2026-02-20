@@ -11,6 +11,7 @@ import { randomBytes } from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { DEFAULT_PROCESS_STAGES } from '../processes/process-stages.constants';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +40,8 @@ export class AuthService {
         name: user.name,
         phone: user.phone,
         pricingPlan: user.pricingPlan || 'free',
+        themePreference: user.themePreference || 'light',
+        fontSizePreference: user.fontSizePreference || 14,
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -61,6 +64,8 @@ export class AuthService {
         name: user.name,
         phone: user.phone,
         pricingPlan: user.pricingPlan || 'free',
+        themePreference: user.themePreference || 'light',
+        fontSizePreference: user.fontSizePreference || 14,
         isActive: user.isActive,
       }
     };
@@ -110,6 +115,8 @@ export class AuthService {
       phone: phone || undefined,
       pricingPlan: 'free',
       processStages: [...DEFAULT_PROCESS_STAGES],
+      themePreference: 'light',
+      fontSizePreference: 14,
       isActive: false,
       activationToken,
       activationTokenExpiresAt,
@@ -179,6 +186,40 @@ export class AuthService {
       });
     }
     return { success: true };
+  }
+
+  async getPreferences(userId: number) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      theme: user.themePreference || 'light',
+      fontSize: user.fontSizePreference || 14,
+    };
+  }
+
+  async updatePreferences(userId: number, dto: UpdatePreferencesDto) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (dto.theme) {
+      user.themePreference = dto.theme;
+    }
+
+    if (typeof dto.fontSize === 'number') {
+      user.fontSizePreference = dto.fontSize;
+    }
+
+    await this.usersService.save(user);
+
+    return {
+      theme: user.themePreference || 'light',
+      fontSize: user.fontSizePreference || 14,
+    };
   }
 
   getSocialAuthStartConfig(provider: string, query: { state?: string; redirectUri?: string; intent?: string; clientId?: string }) {

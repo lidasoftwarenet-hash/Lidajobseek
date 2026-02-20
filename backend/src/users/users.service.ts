@@ -30,6 +30,8 @@ export class UsersService {
     phone?: string;
     pricingPlan?: string;
     processStages?: string[];
+    themePreference?: 'light' | 'dark' | 'auto';
+    fontSizePreference?: number;
     isActive?: boolean;
     activationToken?: string | null;
     activationTokenExpiresAt?: Date | null;

@@ -11,6 +11,7 @@ import {
   Param,
   Logger,
   Res,
+  Req,
 } from '@nestjs/common';
 import crypto from 'node:crypto';
 import { Throttle } from '@nestjs/throttler';
@@ -20,6 +21,7 @@ import { Public } from './public.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
+import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 
 const DEFAULT_ACCESS_TOKEN_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -134,5 +136,15 @@ export class AuthController {
   @Throttle({ default: { limit: 10, ttl: 10 * 60_000 } })
   async activateAccount(@Query('token') token: string) {
     return this.authService.activateAccount(token);
+  }
+
+  @Get('preferences')
+  getPreferences(@Req() req: any) {
+    return this.authService.getPreferences(req.user.userId);
+  }
+
+  @Post('preferences')
+  updatePreferences(@Req() req: any, @Body() body: UpdatePreferencesDto) {
+    return this.authService.updatePreferences(req.user.userId, body);
   }
 }

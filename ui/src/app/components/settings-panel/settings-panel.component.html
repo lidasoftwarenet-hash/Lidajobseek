@@ -96,6 +96,7 @@
       </div>
     </div>
 
+
     <!-- Process Stages Section -->
     <div class="settings-section">
       <div class="section-header">
@@ -110,14 +111,14 @@
       </div>
 
       <div class="setting-group">
-        <div class="setting-item">
-          <div class="setting-info">
+        <div class="setting-item stage-editor-item">
+          <div class="setting-info stage-editor-info">
             <label>Manage Stage List</label>
             <span class="setting-description">Removing a stage moves its existing processes to "Unknown".</span>
           </div>
           <div class="stage-settings-box">
             <div class="stage-add-row">
-              <input class="setting-select stage-input" type="text" [(ngModel)]="newProcessStage"
+              <input class="stage-input-field stage-input" type="text" [(ngModel)]="newProcessStage"
                 placeholder="Add custom stage" (keydown.enter)="addProcessStage()">
               <button class="secondary-button" (click)="addProcessStage()">Add</button>
               <button class="secondary-button" (click)="resetProcessStages()">Reset Defaults</button>
@@ -139,122 +140,8 @@
       </div>
     </div>
 
-    <!-- Accessibility Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-        <div class="section-title">
-          <h3>Accessibility</h3>
-          <p>Improve usability and comfort</p>
-        </div>
-      </div>
 
-      <div class="setting-group">
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="high-contrast">High Contrast Mode</label>
-            <span class="setting-description">Enhance visual clarity</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="high-contrast" [checked]="settings.highContrast"
-              (change)="updateSetting('highContrast', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
 
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="reduce-motion">Reduce Motion</label>
-            <span class="setting-description">Minimize animations</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="reduce-motion" [checked]="settings.reduceMotion"
-              (change)="updateSetting('reduceMotion', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="keyboard-nav">Enhanced Keyboard Navigation</label>
-            <span class="setting-description">Improve keyboard accessibility</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="keyboard-nav" [checked]="settings.keyboardNavigation"
-              (change)="updateSetting('keyboardNavigation', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notifications Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-        </svg>
-        <div class="section-title">
-          <h3>Notifications</h3>
-          <p>Manage alerts and reminders</p>
-        </div>
-      </div>
-
-      <div class="setting-group">
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="enable-notifications">Email Notifications</label>
-            <span class="setting-description">Receive updates via email</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="enable-notifications" [checked]="settings.notifications?.email"
-              (change)="updateSetting('notifications.email', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="desktop-notifications">Desktop Notifications</label>
-            <span class="setting-description">Show desktop notifications</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="desktop-notifications" [checked]="settings.notifications?.desktop"
-              (change)="updateSetting('notifications.desktop', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="followup-notifications">Follow-up Reminders</label>
-            <span class="setting-description">Get reminded about follow-ups</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="followup-notifications" [checked]="settings.notifications?.followUps"
-              (change)="updateSetting('notifications.followUps', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="interview-notifications">Interview Reminders</label>
-            <span class="setting-description">Get reminded about interviews</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="interview-notifications" [checked]="settings.notifications?.interviews"
-              (change)="updateSetting('notifications.interviews', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
 
     <!-- Regional Settings Section -->
     <div class="settings-section">
@@ -271,143 +158,59 @@
       </div>
 
       <div class="setting-group">
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="country-select">Country</label>
-            <span class="setting-description">Used for location suggestions in job processes</span>
+        <div class="setting-item regional-settings-item">
+          <div class="setting-info regional-settings-info">
+            <label>Region & Date</label>
+            <span class="setting-description">Control country and date format used across the app</span>
           </div>
-          <select id="country-select" class="setting-select" [value]="settings.country || ''"
-            (change)="updateSetting('country', $any($event.target).value)">
-            <option value="">Select a country</option>
-            <option value="Israel">🇮🇱 Israel</option>
-            <option value="United States">🇺🇸 United States</option>
-            <option value="United Kingdom">🇬🇧 United Kingdom</option>
-            <option value="Canada">🇨🇦 Canada</option>
-            <option value="Australia">🇦🇺 Australia</option>
-            <option value="Germany">🇩🇪 Germany</option>
-            <option value="France">🇫🇷 France</option>
-            <option value="Spain">🇪🇸 Spain</option>
-            <option value="Italy">🇮🇹 Italy</option>
-            <option value="Netherlands">🇳🇱 Netherlands</option>
-            <option value="Poland">🇵🇱 Poland</option>
-            <option value="India">🇮🇳 India</option>
-            <option value="China">🇨🇳 China</option>
-            <option value="Japan">🇯🇵 Japan</option>
-            <option value="Brazil">🇧🇷 Brazil</option>
-            <option value="Argentina">🇦🇷 Argentina</option>
-            <option value="Mexico">🇲🇽 Mexico</option>
-            <option value="South Africa">🇿🇦 South Africa</option>
-            <option value="Singapore">🇸🇬 Singapore</option>
-            <option value="Ireland">🇮🇪 Ireland</option>
-          </select>
-        </div>
-      </div>
-    </div>
 
-    <!-- Display Preferences Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-          <line x1="8" y1="21" x2="16" y2="21" />
-          <line x1="12" y1="17" x2="12" y2="21" />
-        </svg>
-        <div class="section-title">
-          <h3>Display Preferences</h3>
-          <p>Control what you see</p>
-        </div>
-      </div>
+          <div class="regional-grid">
+            <div class="regional-field">
+              <label class="regional-label" for="country-select">Country</label>
+              <select id="country-select" class="setting-select regional-select" [value]="settings.country || ''"
+                (change)="updateSetting('country', $any($event.target).value)">
+                <option value="">Select a country</option>
+                <option value="Israel">🇮🇱 Israel</option>
+                <option value="United States">🇺🇸 United States</option>
+                <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                <option value="Canada">🇨🇦 Canada</option>
+                <option value="Australia">🇦🇺 Australia</option>
+                <option value="Germany">🇩🇪 Germany</option>
+                <option value="France">🇫🇷 France</option>
+                <option value="Spain">🇪🇸 Spain</option>
+                <option value="Italy">🇮🇹 Italy</option>
+                <option value="Netherlands">🇳🇱 Netherlands</option>
+                <option value="Poland">🇵🇱 Poland</option>
+                <option value="India">🇮🇳 India</option>
+                <option value="China">🇨🇳 China</option>
+                <option value="Japan">🇯🇵 Japan</option>
+                <option value="Brazil">🇧🇷 Brazil</option>
+                <option value="Argentina">🇦🇷 Argentina</option>
+                <option value="Mexico">🇲🇽 Mexico</option>
+                <option value="South Africa">🇿🇦 South Africa</option>
+                <option value="Singapore">🇸🇬 Singapore</option>
+                <option value="Ireland">🇮🇪 Ireland</option>
+              </select>
+            </div>
 
-      <div class="setting-group">
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="compact-mode">Compact View</label>
-            <span class="setting-description">Show more content at once</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="compact-mode" [checked]="settings.compactMode"
-              (change)="updateSetting('compactMode', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="show-tooltips">Show Tooltips</label>
-            <span class="setting-description">Display helpful hints</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="show-tooltips" [checked]="settings.showTooltips"
-              (change)="updateSetting('showTooltips', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="auto-save">Auto-save</label>
-            <span class="setting-description">Automatically save your work</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="auto-save" [checked]="settings.autoSave"
-              (change)="updateSetting('autoSave', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Data & Privacy Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        <div class="section-title">
-          <h3>Data & Privacy</h3>
-          <p>Control your information</p>
-        </div>
-      </div>
-
-      <div class="setting-group">
-        <div class="setting-item">
-          <div class="setting-info">
-            <label for="analytics">Usage Analytics</label>
-            <span class="setting-description">Help us improve the app</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="analytics" [checked]="settings.analytics"
-              (change)="updateSetting('analytics', $any($event.target).checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <label>Data Management</label>
-            <span class="setting-description">Export or delete your data</span>
-          </div>
-          <div class="button-group">
-            <button class="secondary-button" (click)="exportData()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Export Data
-            </button>
-            <button class="secondary-button danger" (click)="clearData()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg>
-              Clear Cache
-            </button>
+            <div class="regional-field">
+              <label class="regional-label" for="date-format-select">Date format</label>
+              <select id="date-format-select" class="setting-select regional-select" [value]="settings.dateFormat"
+                (change)="updateSetting('dateFormat', $any($event.target).value)">
+                <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 24/12/2026)</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 12/24/2026)</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2026-12-24)</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+
+
+
+  
 
   </div>
 
