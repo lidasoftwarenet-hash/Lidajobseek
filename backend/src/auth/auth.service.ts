@@ -42,6 +42,9 @@ export class AuthService {
         pricingPlan: user.pricingPlan || 'free',
         themePreference: user.themePreference || 'light',
         fontSizePreference: user.fontSizePreference || 14,
+        countryPreference: user.countryPreference || '',
+        dateFormatPreference: user.dateFormatPreference || 'DD/MM/YYYY',
+        salaryCurrencyPreference: user.salaryCurrencyPreference || 'USD',
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -66,6 +69,9 @@ export class AuthService {
         pricingPlan: user.pricingPlan || 'free',
         themePreference: user.themePreference || 'light',
         fontSizePreference: user.fontSizePreference || 14,
+        countryPreference: user.countryPreference || '',
+        dateFormatPreference: user.dateFormatPreference || 'DD/MM/YYYY',
+        salaryCurrencyPreference: user.salaryCurrencyPreference || 'USD',
         isActive: user.isActive,
       }
     };
@@ -117,6 +123,9 @@ export class AuthService {
       processStages: [...DEFAULT_PROCESS_STAGES],
       themePreference: 'light',
       fontSizePreference: 14,
+      countryPreference: '',
+      dateFormatPreference: 'DD/MM/YYYY',
+      salaryCurrencyPreference: 'USD',
       isActive: false,
       activationToken,
       activationTokenExpiresAt,
@@ -197,6 +206,9 @@ export class AuthService {
     return {
       theme: user.themePreference || 'light',
       fontSize: user.fontSizePreference || 14,
+      country: user.countryPreference || '',
+      dateFormat: user.dateFormatPreference || 'DD/MM/YYYY',
+      salaryCurrency: user.salaryCurrencyPreference || 'USD',
     };
   }
 
@@ -214,11 +226,26 @@ export class AuthService {
       user.fontSizePreference = dto.fontSize;
     }
 
+    if (typeof dto.country === 'string') {
+      user.countryPreference = dto.country;
+    }
+
+    if (dto.dateFormat) {
+      user.dateFormatPreference = dto.dateFormat;
+    }
+
+    if (dto.salaryCurrency) {
+      user.salaryCurrencyPreference = dto.salaryCurrency;
+    }
+
     await this.usersService.save(user);
 
     return {
       theme: user.themePreference || 'light',
       fontSize: user.fontSizePreference || 14,
+      country: user.countryPreference || '',
+      dateFormat: user.dateFormatPreference || 'DD/MM/YYYY',
+      salaryCurrency: user.salaryCurrencyPreference || 'USD',
     };
   }
 

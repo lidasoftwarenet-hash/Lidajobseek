@@ -87,6 +87,10 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
                 this.locationSearch = '';
                 this.showLocationDropdown = false;
             }
+
+            if (this.process) {
+                this.process.salaryCurrency = updatedSettings.salaryCurrency || this.process.salaryCurrency || 'USD';
+            }
         });
     }
 
@@ -94,11 +98,16 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
         const id = Number(this.route.snapshot.paramMap.get('id'));
         this.processesService.getById(id).subscribe(data => {
             this.process = { ...data };
+            const settings = this.settingsService.getSettings();
             // Remove relation fields that shouldn't be sent in update
             delete this.process.interactions;
             delete this.process.reviews;
             delete this.process.contacts;
             delete this.process._count;
+
+            if (!this.process.salaryCurrency) {
+                this.process.salaryCurrency = settings.salaryCurrency || 'USD';
+            }
 
             this.locationSearch = this.process.location || '';
 

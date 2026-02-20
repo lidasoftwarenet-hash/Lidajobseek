@@ -41,7 +41,7 @@
                     <span class="meta-value">
                         <ng-container *ngIf="process.salaryExpectation; else noSalary">
                             {{ process.salaryExpectation | number }}
-                            <span class="currency">{{ process.salaryCurrency || 'ILS' }}</span>
+                            <span class="currency">{{ getCurrencyDisplay(process.salaryCurrency || 'USD') }}</span>
                             <span class="period" *ngIf="process.salaryPeriod">/ {{ process.salaryPeriod }}</span>
                         </ng-container>
                         <ng-template #noSalary>N/A</ng-template>

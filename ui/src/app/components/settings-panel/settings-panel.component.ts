@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../services/settings.service';
 import { ToastService } from '../../services/toast.service';
 import { StageOptionsService } from '../../services/stage-options.service';
+import countriesData from '../../../assets/countries.json';
 
 @Component({
   selector: 'app-settings-panel',
@@ -15,6 +16,7 @@ import { StageOptionsService } from '../../services/stage-options.service';
 export class SettingsPanelComponent implements OnInit {
   isOpen = false;
   settings: any = {};
+  countryOptions: string[] = [];
   processStages: string[] = [];
   newProcessStage = '';
   stagesLoading = false;
@@ -26,6 +28,7 @@ export class SettingsPanelComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.countryOptions = Object.keys(countriesData as Record<string, string[]>).sort((a, b) => a.localeCompare(b));
     this.loadSettings();
 
     // Subscribe to settings panel state
@@ -256,6 +259,7 @@ export class SettingsPanelComponent implements OnInit {
       });
 
       this.toastService.showSuccess('Settings saved successfully');
+      this.closePanel();
     } catch (error) {
       this.toastService.showError('Failed to save settings');
       console.error('Save settings error:', error);

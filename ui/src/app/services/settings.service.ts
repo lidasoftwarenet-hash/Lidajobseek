@@ -7,8 +7,18 @@ import { AuthService } from './auth.service';
 export interface Settings {
   theme: 'light' | 'dark' | 'auto';
   clockFormat: '12' | '24';
-  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  dateFormat:
+    | 'MM/DD/YYYY'
+    | 'DD/MM/YYYY'
+    | 'YYYY-MM-DD'
+    | 'YYYY/MM/DD'
+    | 'DD-MM-YYYY'
+    | 'MM-DD-YYYY'
+    | 'DD.MM.YYYY'
+    | 'MM.DD.YYYY'
+    | 'YYYY.MM.DD';
   country: string;
+  salaryCurrency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
   fontSize: number;
   highContrast: boolean;
   reduceMotion: boolean;
@@ -51,6 +61,7 @@ export class SettingsService {
     clockFormat: '24',
     dateFormat: 'DD/MM/YYYY',
     country: '',
+    salaryCurrency: 'USD',
     fontSize: 14,
     highContrast: false,
     reduceMotion: false,
@@ -128,13 +139,31 @@ export class SettingsService {
       return;
     }
 
-    this.http.get<{ theme?: 'light' | 'dark' | 'auto'; fontSize?: number }>(this.apiUrl).subscribe({
+    this.http.get<{
+      theme?: 'light' | 'dark' | 'auto';
+      fontSize?: number;
+      country?: string;
+      dateFormat?:
+        | 'MM/DD/YYYY'
+        | 'DD/MM/YYYY'
+        | 'YYYY-MM-DD'
+        | 'YYYY/MM/DD'
+        | 'DD-MM-YYYY'
+        | 'MM-DD-YYYY'
+        | 'DD.MM.YYYY'
+        | 'MM.DD.YYYY'
+        | 'YYYY.MM.DD';
+      salaryCurrency?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
+    }>(this.apiUrl).subscribe({
       next: (prefs) => {
         const current = this.getSettings();
         const updated: Settings = {
           ...current,
           theme: prefs.theme ?? current.theme,
           fontSize: typeof prefs.fontSize === 'number' ? prefs.fontSize : current.fontSize,
+          country: typeof prefs.country === 'string' ? prefs.country : current.country,
+          dateFormat: prefs.dateFormat ?? current.dateFormat,
+          salaryCurrency: prefs.salaryCurrency ?? current.salaryCurrency,
         };
 
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
@@ -155,6 +184,9 @@ export class SettingsService {
     this.http.post(this.apiUrl, {
       theme: settings.theme,
       fontSize: settings.fontSize,
+      country: settings.country,
+      dateFormat: settings.dateFormat,
+      salaryCurrency: settings.salaryCurrency,
     }).subscribe({
       next: () => {
         // no-op

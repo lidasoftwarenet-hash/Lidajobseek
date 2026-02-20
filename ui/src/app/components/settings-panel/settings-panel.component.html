@@ -160,46 +160,63 @@
       <div class="setting-group">
         <div class="setting-item regional-settings-item">
           <div class="setting-info regional-settings-info">
-            <label>Region & Date</label>
-            <span class="setting-description">Control country and date format used across the app</span>
+            <label>Regional preferences</label>
+            <span class="setting-description">Manage location and date display independently under one regional section</span>
           </div>
 
-          <div class="regional-grid">
-            <div class="regional-field">
-              <label class="regional-label" for="country-select">Country</label>
-              <select id="country-select" class="setting-select regional-select" [value]="settings.country || ''"
-                (change)="updateSetting('country', $any($event.target).value)">
-                <option value="">Select a country</option>
-                <option value="Israel">🇮🇱 Israel</option>
-                <option value="United States">🇺🇸 United States</option>
-                <option value="United Kingdom">🇬🇧 United Kingdom</option>
-                <option value="Canada">🇨🇦 Canada</option>
-                <option value="Australia">🇦🇺 Australia</option>
-                <option value="Germany">🇩🇪 Germany</option>
-                <option value="France">🇫🇷 France</option>
-                <option value="Spain">🇪🇸 Spain</option>
-                <option value="Italy">🇮🇹 Italy</option>
-                <option value="Netherlands">🇳🇱 Netherlands</option>
-                <option value="Poland">🇵🇱 Poland</option>
-                <option value="India">🇮🇳 India</option>
-                <option value="China">🇨🇳 China</option>
-                <option value="Japan">🇯🇵 Japan</option>
-                <option value="Brazil">🇧🇷 Brazil</option>
-                <option value="Argentina">🇦🇷 Argentina</option>
-                <option value="Mexico">🇲🇽 Mexico</option>
-                <option value="South Africa">🇿🇦 South Africa</option>
-                <option value="Singapore">🇸🇬 Singapore</option>
-                <option value="Ireland">🇮🇪 Ireland</option>
+          <div class="regional-stack">
+            <div class="regional-control">
+              <div class="regional-control-header">
+                <label class="regional-label" for="country-select">Country / Region</label>
+                <span class="regional-help">Used for location-specific preferences</span>
+              </div>
+              <select id="country-select" class="setting-select regional-select regional-select-country"
+                [value]="settings.country || ''" (change)="updateSetting('country', $any($event.target).value)">
+                <option value="">Select country or region</option>
+                <option *ngFor="let country of countryOptions" [value]="country">{{ country }}</option>
               </select>
             </div>
 
-            <div class="regional-field">
-              <label class="regional-label" for="date-format-select">Date format</label>
-              <select id="date-format-select" class="setting-select regional-select" [value]="settings.dateFormat"
+            <div class="regional-control">
+              <div class="regional-control-header">
+                <label class="regional-label" for="date-format-select">Date format</label>
+                <span class="regional-help">Choose how dates are displayed throughout the app</span>
+              </div>
+              <select id="date-format-select" class="setting-select regional-select regional-select-date" [value]="settings.dateFormat"
                 (change)="updateSetting('dateFormat', $any($event.target).value)">
-                <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 24/12/2026)</option>
-                <option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 12/24/2026)</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2026-12-24)</option>
+                <option value="DD/MM/YYYY">Day / Month / Year  24/12/2026</option>
+                <option value="MM/DD/YYYY">Month / Day / Year  12/24/2026</option>
+                <option value="YYYY-MM-DD">ISO (Year-Month-Day)  2026-12-24</option>
+                <option value="YYYY/MM/DD">Year / Month / Day  2026/12/24</option>
+                <option value="DD-MM-YYYY">Day-Month-Year  24-12-2026</option>
+                <option value="MM-DD-YYYY">Month-Day-Year  12-24-2026</option>
+                <option value="DD.MM.YYYY">Day.Month.Year  24.12.2026</option>
+                <option value="MM.DD.YYYY">Month.Day.Year  12.24.2026</option>
+                <option value="YYYY.MM.DD">Year.Month.Day  2026.12.24</option>
+              </select>
+            </div>
+
+            <div class="regional-control">
+              <div class="regional-control-header">
+                <label class="regional-label" for="currency-select">Default currency</label>
+                <span class="regional-help">Used as the default salary currency in process forms</span>
+              </div>
+              <select id="currency-select" class="setting-select regional-select regional-select-currency"
+                [value]="settings.salaryCurrency" (change)="updateSetting('salaryCurrency', $any($event.target).value)">
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="JPY">JPY — Japanese Yen</option>
+                <option value="CNY">CNY — Chinese Yuan</option>
+                <option value="AUD">AUD — Australian Dollar</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+                <option value="CHF">CHF — Swiss Franc</option>
+                <option value="HKD">HKD — Hong Kong Dollar</option>
+                <option value="SGD">SGD — Singapore Dollar</option>
+                <option value="INR">INR — Indian Rupee</option>
+                <option value="RUB">RUB — Russian Ruble</option>
+                <option value="ILS">ILS — Israeli Shekel</option>
+                <option value="RON">RON — Romanian Leu</option>
               </select>
             </div>
           </div>
@@ -216,13 +233,6 @@
 
   <!-- Footer -->
   <div class="settings-footer">
-    <div class="footer-info">
-      <span class="version">Version 2.0.0</span>
-      <span class="separator">•</span>
-      <a href="#" class="footer-link">Help</a>
-      <span class="separator">•</span>
-      <a href="#" class="footer-link">Privacy Policy</a>
-    </div>
     <div class="footer-actions">
       <button class="primary-button" (click)="saveSettings()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

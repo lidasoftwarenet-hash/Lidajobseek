@@ -411,7 +411,7 @@ select.input-field {
 
 .salary-inputs {
   display: grid;
-  grid-template-columns: 2fr 1fr 1.2fr;
+  grid-template-columns: 2fr auto 1.2fr;
   gap: var(--space-sm);
   align-items: stretch;
 }
@@ -422,6 +422,26 @@ select.input-field {
 
 .currency-select {
   grid-column: 2;
+}
+
+.currency-badge {
+  grid-column: 2;
+  min-width: 86px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
+.currency-setting-hint {
+  margin-top: 6px;
 }
 
 .period-select {

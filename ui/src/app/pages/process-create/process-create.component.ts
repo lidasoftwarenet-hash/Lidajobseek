@@ -95,6 +95,7 @@ export class ProcessCreateComponent implements HasUnsavedChanges {
 
         const settings = this.settingsService.getSettings();
         this.selectedCountry = settings.country;
+        this.process.salaryCurrency = settings.salaryCurrency || 'USD';
         this.locationOptions = this.getLocationsForCountry(settings.country);
 
         this.settingsService.settings$.subscribe(updatedSettings => {
@@ -105,6 +106,8 @@ export class ProcessCreateComponent implements HasUnsavedChanges {
                 this.locationSearch = '';
                 this.showLocationDropdown = false;
             }
+
+            this.process.salaryCurrency = updatedSettings.salaryCurrency || this.process.salaryCurrency || 'USD';
         });
     }
 

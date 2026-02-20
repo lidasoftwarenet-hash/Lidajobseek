@@ -32,6 +32,24 @@ export class User {
   @Property({ nullable: true, default: 14 })
   fontSizePreference?: number;
 
+  @Property({ nullable: true, default: '' })
+  countryPreference?: string;
+
+  @Property({ nullable: true, default: 'DD/MM/YYYY' })
+  dateFormatPreference?:
+    | 'MM/DD/YYYY'
+    | 'DD/MM/YYYY'
+    | 'YYYY-MM-DD'
+    | 'YYYY/MM/DD'
+    | 'DD-MM-YYYY'
+    | 'MM-DD-YYYY'
+    | 'DD.MM.YYYY'
+    | 'MM.DD.YYYY'
+    | 'YYYY.MM.DD';
+
+  @Property({ nullable: true, default: 'USD' })
+  salaryCurrencyPreference?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
+
   @Property({ default: false })
   isActive: boolean = false;
 

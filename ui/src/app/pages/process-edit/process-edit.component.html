@@ -125,24 +125,9 @@
                     <div class="salary-inputs">
                         <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
                             placeholder="Amount" class="input-field amount-input">
-
-                        <select name="salaryCurrency" [(ngModel)]="process.salaryCurrency"
-                            class="input-field currency-select">
-                            <option value="USD">$ (Dollar)</option>
-                            <option value="EUR">€ (Euro)</option>
-                            <option value="GBP">£ (GBP)</option>
-                            <option value="JPY">¥ (JPY)</option>
-                            <option value="CNY">¥ (CNY)</option>
-                            <option value="AUD">A$ (AUD)</option>
-                            <option value="CAD">C$ (CAD)</option>
-                            <option value="CHF">CHF</option>
-                            <option value="HKD">HK$ (HKD)</option>
-                            <option value="SGD">S$ (SGD)</option>
-                            <option value="INR">₹ (INR)</option>
-                            <option value="RUB">₽ (RUB)</option>
-                            <option value="ILS">₪ (Shekel)</option>
-                            <option value="RON">lei (RON)</option>
-                        </select>
+                        <span class="currency-badge" title="Change default currency in Settings → Regional Settings">
+                            {{ process.salaryCurrency || 'USD' }}
+                        </span>
 
                         <select name="salaryPeriod" [(ngModel)]="process.salaryPeriod"
                             class="input-field period-select">
@@ -154,6 +139,9 @@
                             <option value="Project">/ Project</option>
                         </select>
                     </div>
+                    <p class="field-hint currency-setting-hint">
+                        Currency is set in <strong>Settings → Regional Settings</strong>.
+                    </p>
                 </div>
             </section>
 

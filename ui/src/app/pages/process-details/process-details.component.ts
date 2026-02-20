@@ -46,6 +46,22 @@ export class ProcessDetailsComponent implements OnInit {
     selectedVariantId: string = 'v1';
     generatedFollowUpSubject: string = '';
     generatedFollowUpMessage: string = '';
+    private readonly currencyLabels: Record<string, string> = {
+        USD: 'USD — US Dollar',
+        EUR: 'EUR — Euro',
+        GBP: 'GBP — British Pound',
+        JPY: 'JPY — Japanese Yen',
+        CNY: 'CNY — Chinese Yuan',
+        AUD: 'AUD — Australian Dollar',
+        CAD: 'CAD — Canadian Dollar',
+        CHF: 'CHF — Swiss Franc',
+        HKD: 'HKD — Hong Kong Dollar',
+        SGD: 'SGD — Singapore Dollar',
+        INR: 'INR — Indian Rupee',
+        RUB: 'RUB — Russian Ruble',
+        ILS: 'ILS — Israeli Shekel',
+        RON: 'RON — Romanian Leu',
+    };
 
     constructor(
         private route: ActivatedRoute,
@@ -350,6 +366,11 @@ export class ProcessDetailsComponent implements OnInit {
     private getPrimaryContactName(): string {
         if (!this.process?.contacts?.length) return '';
         return this.process.contacts[0]?.name || '';
+    }
+
+    getCurrencyDisplay(currency?: string): string {
+        const code = (currency || 'USD').toUpperCase();
+        return this.currencyLabels[code] || `${code} — ${code}`;
     }
 
     async copyFollowUpDraft() {

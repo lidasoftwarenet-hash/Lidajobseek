@@ -82,7 +82,6 @@
 .close-button {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  width: 36px;
   height: 36px;
   border-radius: 8px;
   display: flex;
@@ -292,28 +291,62 @@
   width: 100%;
 }
 
-.regional-grid {
+.regional-stack {
   width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.regional-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 14px;
+}
+
+.regional-control {
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.regional-control-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .regional-label {
   font-size: 12px;
-  font-weight: 600;
-  color: #4b5563;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.regional-help {
+  font-size: 12px;
+  color: #6b7280;
 }
 
 .regional-select {
   width: 100%;
   min-width: 0;
+  min-height: 44px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.regional-select-country {
+  background-color: #ffffff;
+  border-color: #cfd8ea;
+}
+
+.regional-select-date {
+  background-color: #f8fafc;
+  border-color: #d5d9e4;
+}
+
+.regional-select-currency {
+  background-color: #f7fbff;
+  border-color: #bfd7f5;
 }
 
 .setting-item.disabled {
@@ -758,6 +791,12 @@
   text-decoration: underline;
 }
 
+.footer-actions {
+  display: grid;
+  align-items: center;
+  gap: 28px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .settings-panel {
@@ -805,6 +844,12 @@
     align-items: stretch;
   }
 
+  .footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .primary-button {
     width: 100%;
   }
@@ -813,8 +858,8 @@
     grid-template-columns: 1fr;
   }
 
-  .regional-grid {
-    grid-template-columns: 1fr;
+  .regional-control {
+    padding: 10px;
   }
 }
 
@@ -957,6 +1002,22 @@ body.dark-theme .stage-chip.locked {
 
 body.dark-theme .regional-label {
   color: var(--text-secondary);
+}
+
+body.dark-theme .regional-control {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+}
+
+body.dark-theme .regional-help {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .regional-select-country,
+body.dark-theme .regional-select-date,
+body.dark-theme .regional-select-currency {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
 }
 
 body.dark-theme .stage-chip-list {

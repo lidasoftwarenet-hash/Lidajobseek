@@ -32,6 +32,18 @@ export class UsersService {
     processStages?: string[];
     themePreference?: 'light' | 'dark' | 'auto';
     fontSizePreference?: number;
+    countryPreference?: string;
+    dateFormatPreference?:
+      | 'MM/DD/YYYY'
+      | 'DD/MM/YYYY'
+      | 'YYYY-MM-DD'
+      | 'YYYY/MM/DD'
+      | 'DD-MM-YYYY'
+      | 'MM-DD-YYYY'
+      | 'DD.MM.YYYY'
+      | 'MM.DD.YYYY'
+      | 'YYYY.MM.DD';
+    salaryCurrencyPreference?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
     isActive?: boolean;
     activationToken?: string | null;
     activationTokenExpiresAt?: Date | null;
