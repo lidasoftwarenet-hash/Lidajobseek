@@ -60,16 +60,38 @@
         </div>
 
         <div class="toolbar-right">
-            <div class="date-range">
-                <input type="date" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()" class="filter-input date-field">
-                <span class="range-divider">to</span>
-                <input type="date" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()" class="filter-input date-field">
+            <div class="time-mode-toggle" role="group" aria-label="Interview time range mode">
+                <button
+                    type="button"
+                    class="mode-btn"
+                    [class.active]="timeFilterMode === 'selectedDates'"
+                    (click)="setTimeFilterMode('selectedDates')">
+                    Selected dates
+                </button>
+                <button
+                    type="button"
+                    class="mode-btn"
+                    [class.active]="timeFilterMode === 'allTime'"
+                    (click)="setTimeFilterMode('allTime')">
+                    All time
+                </button>
             </div>
 
-            <label class="checkbox-filter">
-                <input type="checkbox" [(ngModel)]="showAllInterviews" (change)="onFilterChange()">
-                <span class="checkbox-text">Show all</span>
-            </label>
+            <div class="date-range">
+                <input
+                    type="date"
+                    [(ngModel)]="startDate"
+                    (ngModelChange)="onFilterChange()"
+                    class="filter-input date-field"
+                    [disabled]="timeFilterMode === 'allTime'">
+                <span class="range-divider">to</span>
+                <input
+                    type="date"
+                    [(ngModel)]="endDate"
+                    (ngModelChange)="onFilterChange()"
+                    class="filter-input date-field"
+                    [disabled]="timeFilterMode === 'allTime'">
+            </div>
 
             <button class="btn-refresh-elevated" (click)="loadInterviews()" aria-label="Refresh Interviews">
                 <svg class="refresh-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

@@ -637,9 +637,18 @@ export class ProcessListComponent implements OnInit {
     }
 
     getInterviewCount(): number {
-        return this.filteredProcesses.filter(p =>
-            ['Interview Scheduled', 'Technical Interview', 'Final Interview', 'Final HR Interview Scheduled'].includes(p.currentStage)
-        ).length;
+        return this.filteredProcesses.reduce((total, p) => {
+            const interactionsCount = p?._count?.interactions;
+            if (typeof interactionsCount === 'number') {
+                return total + interactionsCount;
+            }
+
+            if (Array.isArray(p?.interactions)) {
+                return total + p.interactions.length;
+            }
+
+            return total;
+        }, 0);
     }
 
     getOfferCount(): number {

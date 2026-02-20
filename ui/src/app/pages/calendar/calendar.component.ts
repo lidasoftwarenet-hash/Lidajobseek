@@ -25,7 +25,7 @@ export class CalendarComponent implements OnInit {
   processSearch: string = '';
   startDate: string = '';
   endDate: string = '';
-  showAllInterviews = false; // Default unchecked = show only upcoming
+  timeFilterMode: 'selectedDates' | 'allTime' = 'selectedDates';
 
   constructor(
     private interactionsService: InteractionsService,
@@ -70,26 +70,16 @@ export class CalendarComponent implements OnInit {
       params.processId = this.selectedProcessId;
     }
 
-    if (this.startDate) {
+    if (this.timeFilterMode === 'selectedDates' && this.startDate) {
       params.startDate = this.startDate + 'T00:00:00.000Z';
     }
 
-    if (this.endDate) {
+    if (this.timeFilterMode === 'selectedDates' && this.endDate) {
       params.endDate = this.endDate + 'T23:59:59.999Z';
     }
 
     this.interactionsService.getAll(params).subscribe({
       next: (interviews) => {
-        // Filter interviews based on showAllInterviews checkbox
-        if (!this.showAllInterviews) {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0); // Start of today (midnight)
-          interviews = interviews.filter((interview: any) => {
-            const interviewDate = new Date(interview.date);
-            interviewDate.setHours(0, 0, 0, 0); // Compare dates without time
-            return interviewDate >= today; // Show interviews from today onward
-          });
-        }
         this.interviews = interviews;
         this.loading = false;
       },
@@ -101,6 +91,11 @@ export class CalendarComponent implements OnInit {
   }
 
   onFilterChange() {
+    this.loadInterviews();
+  }
+
+  setTimeFilterMode(mode: 'selectedDates' | 'allTime') {
+    this.timeFilterMode = mode;
     this.loadInterviews();
   }
 

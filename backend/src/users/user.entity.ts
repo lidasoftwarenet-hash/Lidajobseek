@@ -23,6 +23,9 @@ export class User {
   @Property({ nullable: true, default: 'free' })
   pricingPlan?: string;
 
+  @Property({ type: 'json', nullable: true })
+  processStages?: string[];
+
   @Property({ default: false })
   isActive: boolean = false;
 

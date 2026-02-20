@@ -57,6 +57,7 @@
                         <select name="currentStage" [(ngModel)]="process.currentStage" required class="input-field">
                             <option *ngFor="let stage of stages" [value]="stage">{{stage}}</option>
                         </select>
+                        <p class="field-hint">Manage stages globally in Settings.</p>
                     </div>
                 </div>
             </section>

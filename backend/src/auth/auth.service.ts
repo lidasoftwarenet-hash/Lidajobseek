@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
+import { DEFAULT_PROCESS_STAGES } from '../processes/process-stages.constants';
 
 @Injectable()
 export class AuthService {
@@ -108,6 +109,7 @@ export class AuthService {
       name: username,
       phone: phone || undefined,
       pricingPlan: 'free',
+      processStages: [...DEFAULT_PROCESS_STAGES],
       isActive: false,
       activationToken,
       activationTokenExpiresAt,

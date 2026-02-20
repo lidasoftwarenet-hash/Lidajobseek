@@ -1,22 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SettingsService } from '../../services/settings.service';
 import { ToastService } from '../../services/toast.service';
+import { StageOptionsService } from '../../services/stage-options.service';
 
 @Component({
   selector: 'app-settings-panel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './settings-panel.component.html',
   styleUrl: './settings-panel.component.css'
 })
 export class SettingsPanelComponent implements OnInit {
   isOpen = false;
   settings: any = {};
+  processStages: string[] = [];
+  newProcessStage = '';
+  stagesLoading = false;
 
   constructor(
     private settingsService: SettingsService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    public stageOptionsService: StageOptionsService,
   ) {}
 
   ngOnInit() {
@@ -25,6 +31,81 @@ export class SettingsPanelComponent implements OnInit {
     // Subscribe to settings panel state
     this.settingsService.isSettingsPanelOpen$.subscribe(isOpen => {
       this.isOpen = isOpen;
+      if (isOpen) {
+        this.loadProcessStages();
+      }
+    });
+
+    this.stageOptionsService.stages$.subscribe(stages => {
+      this.processStages = stages?.length ? stages : [...this.stageOptionsService.defaultStages];
+    });
+  }
+
+  loadProcessStages() {
+    this.stagesLoading = true;
+    this.stageOptionsService.refreshStages().subscribe({
+      next: (res) => {
+        this.processStages = res.stages || [...this.stageOptionsService.defaultStages];
+        this.stagesLoading = false;
+      },
+      error: () => {
+        this.processStages = [...this.stageOptionsService.defaultStages];
+        this.stagesLoading = false;
+        this.toastService.showError('Could not load process stages');
+      }
+    });
+  }
+
+  addProcessStage() {
+    const value = this.newProcessStage.trim();
+    if (!value) return;
+    if (this.processStages.includes(value)) {
+      this.toastService.showWarning('Stage already exists');
+      return;
+    }
+
+    const next = [...this.processStages, value];
+    this.stageOptionsService.updateStages(next).subscribe({
+      next: (res) => {
+        this.processStages = res.stages;
+        this.newProcessStage = '';
+        this.toastService.showSuccess('Stage added');
+      },
+      error: () => this.toastService.showError('Failed to add stage')
+    });
+  }
+
+  removeProcessStage(stage: string) {
+    if (this.stageOptionsService.isLockedStage(stage)) {
+      this.toastService.showWarning(`'${this.stageOptionsService.lockedStage}' cannot be removed`);
+      return;
+    }
+
+    const next = this.processStages.filter(s => s !== stage);
+    this.stageOptionsService.updateStages(next).subscribe({
+      next: (res) => {
+        this.processStages = res.stages;
+        if (res.movedToUnknown > 0) {
+          this.toastService.showInfo(`${res.movedToUnknown} process(es) moved to ${res.lockedStage}`);
+        } else {
+          this.toastService.showSuccess('Stage removed');
+        }
+      },
+      error: () => this.toastService.showError('Failed to remove stage')
+    });
+  }
+
+  resetProcessStages() {
+    this.stageOptionsService.updateStages(this.stageOptionsService.defaultStages).subscribe({
+      next: (res) => {
+        this.processStages = res.stages;
+        if (res.movedToUnknown > 0) {
+          this.toastService.showInfo(`Reset done. ${res.movedToUnknown} process(es) moved to ${res.lockedStage}`);
+        } else {
+          this.toastService.showSuccess('Process stages reset to defaults');
+        }
+      },
+      error: () => this.toastService.showError('Failed to reset stages')
     });
   }
 

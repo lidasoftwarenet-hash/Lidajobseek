@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ProcessesService } from '../../services/processes.service';
 import { ToastService } from '../../services/toast.service';
 import { SettingsService } from '../../services/settings.service';
+import { StageOptionsService } from '../../services/stage-options.service';
 import countriesData from '../../../assets/countries.json';
 import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
 
@@ -46,19 +47,8 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
     hasUnsavedChanges(): boolean {
         return !this.submitted && this.processForm?.dirty === true;
     }
-    stages = [
-        'Initial Call Scheduled',
-        'Awaiting Next Interview (after Initial Call)',
-        'Interview Scheduled',
-        'Waiting for Interview Feedback',
-        'Home Task Assigned',
-        'References Requested',
-        'Final HR Interview Scheduled',
-        'Offer Received',
-        'Withdrawn',
-        'Rejected',
-        'No Response (14+ Days)'
-    ];
+    stages: string[] = [];
+    newStageName = '';
 
     locationOptions: string[] = [];
     selectedCountry = '';
@@ -68,8 +58,21 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
         private router: Router,
         private processesService: ProcessesService,
         private toastService: ToastService,
-        private settingsService: SettingsService
+        private settingsService: SettingsService,
+        private stageOptionsService: StageOptionsService
     ) {
+        this.stageOptionsService.refreshStages().subscribe({
+            next: (res) => {
+                this.stages = res.stages || [];
+                if (this.process && !this.stages.includes(this.process.currentStage)) {
+                    this.process.currentStage = this.stages[0] || this.stageOptionsService.lockedStage;
+                }
+            },
+            error: () => {
+                this.stages = this.stageOptionsService.defaultStages;
+            }
+        });
+
         const settings = this.settingsService.getSettings();
         this.selectedCountry = settings.country;
         this.locationOptions = this.getLocationsForCountry(settings.country);
@@ -98,6 +101,10 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
             delete this.process._count;
 
             this.locationSearch = this.process.location || '';
+
+            if (this.process.currentStage && !this.stages.includes(this.process.currentStage)) {
+                this.process.currentStage = this.stages[0] || this.stageOptionsService.lockedStage;
+            }
         });
     }
 
@@ -241,4 +248,5 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
             }
         });
     }
+
 }

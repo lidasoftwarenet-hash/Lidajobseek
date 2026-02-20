@@ -13,6 +13,7 @@ import { ProcessesService } from './processes.service';
 import { CreateProcessDto } from './dto/create-process.dto';
 import { UpdateProcessDto } from './dto/update-process.dto';
 import { ImportProcessesDto } from './dto/import-processes.dto';
+import { UpdateProcessStagesDto } from './dto/update-process-stages.dto';
 
 @Controller('processes')
 export class ProcessesController {
@@ -26,6 +27,16 @@ export class ProcessesController {
   @Get()
   findAll(@Req() req: any) {
     return this.processesService.findAll(req.user.userId);
+  }
+
+  @Get('stages')
+  getStages(@Req() req: any) {
+    return this.processesService.getProcessStages(req.user.userId);
+  }
+
+  @Patch('stages')
+  updateStages(@Body() dto: UpdateProcessStagesDto, @Req() req: any) {
+    return this.processesService.updateProcessStages(dto, req.user.userId);
   }
 
   @Get('export')

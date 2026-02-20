@@ -8,6 +8,8 @@ import { Contact } from '../contacts/contact.entity';
 import { User } from '../users/user.entity';
 import { CreateProcessDto } from './dto/create-process.dto';
 import { UpdateProcessDto } from './dto/update-process.dto';
+import { UpdateProcessStagesDto } from './dto/update-process-stages.dto';
+import { DEFAULT_PROCESS_STAGES, UNKNOWN_STAGE } from './process-stages.constants';
 
 @Injectable()
 export class ProcessesService {
@@ -25,8 +27,96 @@ export class ProcessesService {
     return parsed;
   }
 
+  private sanitizeStages(stages: string[]): string[] {
+    const cleaned = stages
+      .map((s) => (s || '').trim())
+      .filter(Boolean)
+      .filter((value, index, arr) => arr.indexOf(value) === index)
+      .filter((s) => s !== UNKNOWN_STAGE);
+
+    return [UNKNOWN_STAGE, ...cleaned];
+  }
+
+  private isMissingProcessStagesColumnError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error || '');
+    return message.includes('process_stages') && message.toLowerCase().includes('does not exist');
+  }
+
+  private async ensureUserStages(userId: number): Promise<string[]> {
+    const user = await this.em.findOne(User, { id: userId });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const current = Array.isArray(user.processStages) && user.processStages.length
+      ? user.processStages
+      : DEFAULT_PROCESS_STAGES;
+
+    const normalized = this.sanitizeStages(current);
+
+    // Backward compatibility: if DB is not migrated yet, avoid persisting this field
+    // so the rest of the app can continue to work with defaults.
+    if (Array.isArray(user.processStages) && JSON.stringify(current) !== JSON.stringify(normalized)) {
+      user.processStages = normalized;
+      try {
+        await this.em.flush();
+      } catch (error) {
+        if (!this.isMissingProcessStagesColumnError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    return normalized;
+  }
+
+  async getProcessStages(userId: number): Promise<{ stages: string[]; lockedStage: string }> {
+    const stages = await this.ensureUserStages(userId);
+    return { stages, lockedStage: UNKNOWN_STAGE };
+  }
+
+  async updateProcessStages(dto: UpdateProcessStagesDto, userId: number): Promise<{ stages: string[]; movedToUnknown: number; lockedStage: string }> {
+    const user = await this.em.findOne(User, { id: userId });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const previous = await this.ensureUserStages(userId);
+    const next = this.sanitizeStages(dto.stages || []);
+
+    const removedStages = previous.filter((stage) => stage !== UNKNOWN_STAGE && !next.includes(stage));
+
+    let movedToUnknown = 0;
+    if (removedStages.length) {
+      movedToUnknown = await this.processRepository.nativeUpdate(
+        { user: userId, currentStage: { $in: removedStages } },
+        { currentStage: UNKNOWN_STAGE }
+      );
+    }
+
+    user.processStages = next;
+    try {
+      await this.em.flush();
+    } catch (error) {
+      if (this.isMissingProcessStagesColumnError(error)) {
+        throw new BadRequestException('Database migration missing: please run backend/SQL_ADD_USER_PROCESS_STAGES.sql');
+      }
+      throw error;
+    }
+
+    return {
+      stages: next,
+      movedToUnknown,
+      lockedStage: UNKNOWN_STAGE,
+    };
+  }
+
   async create(dto: CreateProcessDto, userId: number): Promise<Process> {
     const data: any = { ...dto, user: this.em.getReference(User, userId) };
+    const stages = await this.ensureUserStages(userId);
+    if (!stages.includes(data.currentStage)) {
+      data.currentStage = UNKNOWN_STAGE;
+    }
 
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {
@@ -108,6 +198,13 @@ export class ProcessesService {
     const data: any = Object.fromEntries(
       Object.entries(dto as Record<string, unknown>).filter(([, value]) => value !== undefined),
     );
+
+    if (typeof data.currentStage === 'string') {
+      const stages = await this.ensureUserStages(userId);
+      if (!stages.includes(data.currentStage)) {
+        data.currentStage = UNKNOWN_STAGE;
+      }
+    }
 
     // Convert date strings to Date objects
     if (dto.initialInviteDate) {

@@ -58,6 +58,44 @@
             </div>
         </section>
 
+        <section class="info-card">
+            <div class="section-header">
+                <h2>✉️ Smart Follow-Up</h2>
+            </div>
+
+            <div class="follow-up-panel">
+                <div class="follow-up-top-row">
+                    <div class="follow-up-field">
+                        <label class="meta-label">Template</label>
+                        <select class="input-field no-arrow-select" [(ngModel)]="selectedTemplateId" (change)="onTemplateChange()">
+                            <option *ngFor="let template of followUpTemplates" [value]="template.id">{{ template.name }}</option>
+                        </select>
+                    </div>
+
+                    <div class="follow-up-field">
+                        <label class="meta-label">Message Style</label>
+                        <select class="input-field no-arrow-select" [(ngModel)]="selectedVariantId" (change)="onVariantChange()">
+                            <option *ngFor="let variant of selectedTemplate?.variants || []" [value]="variant.id">{{ variant.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="follow-up-field">
+                    <label class="meta-label">Subject</label>
+                    <input class="input-field" [(ngModel)]="generatedFollowUpSubject" placeholder="Email subject">
+                </div>
+
+                <div class="follow-up-field">
+                    <label class="meta-label">Message</label>
+                    <textarea class="input-field" rows="8" [(ngModel)]="generatedFollowUpMessage"
+                        placeholder="Generated follow-up message"></textarea>
+                </div>
+                <div class="follow-up-buttons">
+                    <button class="btn-primary btn-small" (click)="copyFollowUpDraft()">Copy Draft</button>
+                </div>
+            </div>
+        </section>
+
         <section class="timeline-section">
             <div class="section-header">
                 <h2>Interactions</h2>
@@ -616,4 +654,57 @@
     .invite-link:hover {
         text-decoration: underline;
     }
+
+    .follow-up-panel {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .follow-up-top-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .follow-up-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .follow-up-buttons {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .no-arrow-select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: none;
+        padding-right: 0.75rem;
+    }
+
+    .no-arrow-select::-ms-expand {
+        display: none;
+    }
+
+    select.no-arrow-select {
+  -webkit-appearance: menulist-button;
+  -moz-appearance: menulist-button;
+  appearance: menulist-button;
+  background-image: initial;
+}
+
+
 </style>

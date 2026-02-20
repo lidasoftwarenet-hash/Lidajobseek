@@ -29,6 +29,7 @@ export class UsersService {
     name?: string;
     phone?: string;
     pricingPlan?: string;
+    processStages?: string[];
     isActive?: boolean;
     activationToken?: string | null;
     activationTokenExpiresAt?: Date | null;

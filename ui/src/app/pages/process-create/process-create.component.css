@@ -95,6 +95,55 @@
   margin: 0;
 }
 
+.stage-manager {
+  margin-top: 10px;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.stage-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stage-add-row .input-field {
+  flex: 1;
+  min-width: 180px;
+}
+
+.stage-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.stage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.12);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.stage-chip-remove {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+
 /* ===== FORM GROUPS ===== */
 .form-group {
   display: flex;

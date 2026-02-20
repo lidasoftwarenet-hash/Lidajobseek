@@ -96,6 +96,49 @@
       </div>
     </div>
 
+    <!-- Process Stages Section -->
+    <div class="settings-section">
+      <div class="section-header">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+        <div class="section-title">
+          <h3>Process Stages</h3>
+          <p>Global stages for your whole app. "Unknown" is locked.</p>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-item">
+          <div class="setting-info">
+            <label>Manage Stage List</label>
+            <span class="setting-description">Removing a stage moves its existing processes to "Unknown".</span>
+          </div>
+          <div class="stage-settings-box">
+            <div class="stage-add-row">
+              <input class="setting-select stage-input" type="text" [(ngModel)]="newProcessStage"
+                placeholder="Add custom stage" (keydown.enter)="addProcessStage()">
+              <button class="secondary-button" (click)="addProcessStage()">Add</button>
+              <button class="secondary-button" (click)="resetProcessStages()">Reset Defaults</button>
+            </div>
+
+            <div class="stage-chip-list" *ngIf="!stagesLoading; else stageLoadingTpl">
+              <span class="stage-chip" *ngFor="let stage of processStages" [class.locked]="stageOptionsService.isLockedStage(stage)">
+                {{ stage }}
+                <button type="button" class="stage-chip-remove" *ngIf="!stageOptionsService.isLockedStage(stage)"
+                  (click)="removeProcessStage(stage)" [attr.aria-label]="'Remove ' + stage">×</button>
+              </span>
+            </div>
+
+            <ng-template #stageLoadingTpl>
+              <div class="stage-loading">Loading stages...</div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Accessibility Section -->
     <div class="settings-section">
       <div class="section-header">
