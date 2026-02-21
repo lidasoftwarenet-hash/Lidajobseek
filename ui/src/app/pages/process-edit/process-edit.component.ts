@@ -88,8 +88,10 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
                 this.showLocationDropdown = false;
             }
 
-            if (this.process) {
-                this.process.salaryCurrency = updatedSettings.salaryCurrency || this.process.salaryCurrency || 'USD';
+            if (this.process && !this.process.salaryCurrency) {
+                this.process.salaryCurrency =
+                    updatedSettings.salaryCurrency ||
+                    this.settingsService.getSettings().salaryCurrency;
             }
         });
     }
@@ -106,7 +108,9 @@ export class ProcessEditComponent implements OnInit, HasUnsavedChanges {
             delete this.process._count;
 
             if (!this.process.salaryCurrency) {
-                this.process.salaryCurrency = settings.salaryCurrency || 'USD';
+                this.process.salaryCurrency =
+                    settings.salaryCurrency ||
+                    this.settingsService.getSettings().salaryCurrency;
             }
 
             this.locationSearch = this.process.location || '';
