@@ -1,22 +1,24 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository, EntityManager, QueryOrder } from '@mikro-orm/postgresql';
+import { EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { Process } from './process.entity';
 import { Interaction } from '../interactions/interaction.entity';
 import { SelfReview } from '../reviews/self-review.entity';
 import { Contact } from '../contacts/contact.entity';
 import { User } from '../users/user.entity';
+import { UsersSettingsService } from '../users/users-settings.service';
 import { CreateProcessDto } from './dto/create-process.dto';
 import { UpdateProcessDto } from './dto/update-process.dto';
 import { UpdateProcessStagesDto } from './dto/update-process-stages.dto';
-import { DEFAULT_PROCESS_STAGES, UNKNOWN_STAGE } from './process-stages.constants';
+import { UNKNOWN_STAGE } from './process-stages.constants';
 
 @Injectable()
 export class ProcessesService {
   constructor(
     @InjectRepository(Process)
-    private readonly processRepository: EntityRepository<Process>,
+    private readonly processRepository: any,
     private readonly em: EntityManager,
+    private readonly usersSettingsService: UsersSettingsService,
   ) { }
 
   private parseDateOrThrow(value: string, fieldName: string): Date {
@@ -37,37 +39,9 @@ export class ProcessesService {
     return [UNKNOWN_STAGE, ...cleaned];
   }
 
-  private isMissingProcessStagesColumnError(error: unknown): boolean {
-    const message = error instanceof Error ? error.message : String(error || '');
-    return message.includes('process_stages') && message.toLowerCase().includes('does not exist');
-  }
-
   private async ensureUserStages(userId: number): Promise<string[]> {
-    const user = await this.em.findOne(User, { id: userId });
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    const current = Array.isArray(user.processStages) && user.processStages.length
-      ? user.processStages
-      : DEFAULT_PROCESS_STAGES;
-
-    const normalized = this.sanitizeStages(current);
-
-    // Backward compatibility: if DB is not migrated yet, avoid persisting this field
-    // so the rest of the app can continue to work with defaults.
-    if (Array.isArray(user.processStages) && JSON.stringify(current) !== JSON.stringify(normalized)) {
-      user.processStages = normalized;
-      try {
-        await this.em.flush();
-      } catch (error) {
-        if (!this.isMissingProcessStagesColumnError(error)) {
-          throw error;
-        }
-      }
-    }
-
-    return normalized;
+    const stages = await this.usersSettingsService.getProcessStages(userId);
+    return stages;
   }
 
   async getProcessStages(userId: number): Promise<{ stages: string[]; lockedStage: string }> {
@@ -76,11 +50,6 @@ export class ProcessesService {
   }
 
   async updateProcessStages(dto: UpdateProcessStagesDto, userId: number): Promise<{ stages: string[]; movedToUnknown: number; lockedStage: string }> {
-    const user = await this.em.findOne(User, { id: userId });
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
     const previous = await this.ensureUserStages(userId);
     const next = this.sanitizeStages(dto.stages || []);
 
@@ -94,15 +63,7 @@ export class ProcessesService {
       );
     }
 
-    user.processStages = next;
-    try {
-      await this.em.flush();
-    } catch (error) {
-      if (this.isMissingProcessStagesColumnError(error)) {
-        throw new BadRequestException('Database migration missing: please run backend/SQL_ADD_USER_PROCESS_STAGES.sql');
-      }
-      throw error;
-    }
+    await this.usersSettingsService.updateProcessStages(userId, next);
 
     return {
       stages: next,
@@ -118,7 +79,6 @@ export class ProcessesService {
       data.currentStage = UNKNOWN_STAGE;
     }
 
-    // Convert date strings to Date objects
     if (dto.initialInviteDate) {
       data.initialInviteDate = this.parseDateOrThrow(dto.initialInviteDate, 'initialInviteDate');
     }
@@ -126,7 +86,6 @@ export class ProcessesService {
       data.nextFollowUp = this.parseDateOrThrow(dto.nextFollowUp, 'nextFollowUp');
     }
 
-    // Convert empty strings to null for numeric fields
     if (data.salaryExpectation === '' || data.salaryExpectation === undefined) {
       data.salaryExpectation = null;
     }
@@ -152,7 +111,7 @@ export class ProcessesService {
   }
 
   async findAll(userId: number): Promise<any[]> {
-    const processes = await this.processRepository.find(
+    const processes: any[] = await this.processRepository.find(
       { user: userId },
       {
         populate: ['interactions', 'reviews', 'contacts'],
@@ -160,8 +119,7 @@ export class ProcessesService {
       },
     );
 
-    // Add interaction count manually
-    return processes.map(process => ({
+    return processes.map((process: any) => ({
       ...process,
       _count: {
         interactions: process.interactions.length,
@@ -178,9 +136,8 @@ export class ProcessesService {
     );
 
     if (process) {
-      // Sort interactions and reviews
-      process.interactions.getItems().sort((a, b) => b.date.getTime() - a.date.getTime());
-      process.reviews.getItems().sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      process.interactions.getItems().sort((a: any, b: any) => b.date.getTime() - a.date.getTime());
+      process.reviews.getItems().sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
     return process;
@@ -192,9 +149,6 @@ export class ProcessesService {
       return null;
     }
 
-    // Keep PATCH semantics: only update fields that were actually provided.
-    // Class-transformer/DTO instances may include keys with `undefined` values,
-    // and passing them through can null-out non-null columns in DB.
     const data: any = Object.fromEntries(
       Object.entries(dto as Record<string, unknown>).filter(([, value]) => value !== undefined),
     );
@@ -206,7 +160,6 @@ export class ProcessesService {
       }
     }
 
-    // Convert date strings to Date objects
     if (dto.initialInviteDate) {
       data.initialInviteDate = this.parseDateOrThrow(dto.initialInviteDate, 'initialInviteDate');
     }
@@ -217,7 +170,6 @@ export class ProcessesService {
       data.offerDeadline = this.parseDateOrThrow(dto.offerDeadline, 'offerDeadline');
     }
 
-    // Convert empty strings to null for numeric fields
     if (data.salaryExpectation === '') {
       data.salaryExpectation = null;
     }

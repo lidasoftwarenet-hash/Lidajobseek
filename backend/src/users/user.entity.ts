@@ -47,6 +47,9 @@ export class User {
     | 'MM.DD.YYYY'
     | 'YYYY.MM.DD';
 
+  @Property({ nullable: true, default: '24' })
+  timeFormatPreference?: '12' | '24';
+
   @Property({ nullable: true, default: 'USD' })
   salaryCurrencyPreference?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
 

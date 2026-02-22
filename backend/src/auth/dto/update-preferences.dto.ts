@@ -40,6 +40,10 @@ export class UpdatePreferencesDto {
     | 'YYYY.MM.DD';
 
   @IsOptional()
+  @IsIn(['12', '24'])
+  timeFormat?: '12' | '24';
+
+  @IsOptional()
   @IsIn(['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD', 'SGD', 'INR', 'RUB', 'ILS', 'RON'])
   salaryCurrency?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
 }

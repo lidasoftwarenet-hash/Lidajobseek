@@ -5,6 +5,8 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 
 import { User } from './users/user.entity';
+import { UserSettings } from './users/user-settings.entity';
+import { UserProcessStages } from './users/user-process-stages.entity';
 import { Process } from './processes/process.entity';
 import { Interaction } from './interactions/interaction.entity';
 import { Contact } from './contacts/contact.entity';
@@ -33,6 +35,8 @@ const config: MikroOrmModuleOptions = {
 
   entities: [
     User,
+    UserSettings,
+    UserProcessStages,
     Process,
     Interaction,
     Contact,

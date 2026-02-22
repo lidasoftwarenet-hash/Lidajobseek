@@ -198,6 +198,18 @@
 
             <div class="regional-control">
               <div class="regional-control-header">
+                <label class="regional-label" for="time-format-select">Time format</label>
+                <span class="regional-help">Choose how times are displayed throughout the app</span>
+              </div>
+              <select id="time-format-select" class="setting-select regional-select regional-select-time"
+                [value]="settings.clockFormat" (change)="updateSetting('clockFormat', $any($event.target).value)">
+                <option value="24">24-hour (14:30)</option>
+                <option value="12">12-hour (2:30 PM)</option>
+              </select>
+            </div>
+
+            <div class="regional-control">
+              <div class="regional-control-header">
                 <label class="regional-label" for="currency-select">Default currency</label>
                 <span class="regional-help">Used as the default salary currency in process forms</span>
               </div>

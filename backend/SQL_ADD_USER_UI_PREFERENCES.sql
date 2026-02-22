@@ -1,53 +1,4 @@
--- Add per-user UI preferences for theme + font size
--- Run this once in your PostgreSQL database
-
-ALTER TABLE app."user"
-  ADD COLUMN IF NOT EXISTS theme_preference VARCHAR(10),
-  ADD COLUMN IF NOT EXISTS font_size_preference INTEGER,
-  ADD COLUMN IF NOT EXISTS country_preference VARCHAR(100),
-  ADD COLUMN IF NOT EXISTS date_format_preference VARCHAR(10),
-  ADD COLUMN IF NOT EXISTS salary_currency_preference VARCHAR(10);
-
--- Defaults for new rows
-ALTER TABLE app."user"
-  ALTER COLUMN theme_preference SET DEFAULT 'light',
-  ALTER COLUMN font_size_preference SET DEFAULT 14,
-  ALTER COLUMN country_preference SET DEFAULT '',
-  ALTER COLUMN date_format_preference SET DEFAULT 'DD/MM/YYYY',
-  ALTER COLUMN salary_currency_preference SET DEFAULT 'USD';
-
--- Optional safety constraints
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'user_theme_preference_chk'
-      AND conrelid = 'app."user"'::regclass
-  ) THEN
-    ALTER TABLE app."user"
-      ADD CONSTRAINT user_theme_preference_chk
-      CHECK (theme_preference IN ('light', 'dark', 'auto') OR theme_preference IS NULL);
-  END IF;
-END $$;
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'user_font_size_preference_chk'
-      AND conrelid = 'app."user"'::regclass
-  ) THEN
-    ALTER TABLE app."user"
-      ADD CONSTRAINT user_font_size_preference_chk
-      CHECK (
-        (font_size_preference BETWEEN 12 AND 18)
-        OR font_size_preference IS NULL
-      );
-  END IF;
-END $$;
-
+no
 DO $$
 BEGIN
   IF EXISTS (
@@ -82,6 +33,20 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1
     FROM pg_constraint
+    WHERE conname = 'user_time_format_preference_chk'
+      AND conrelid = 'app."user"'::regclass
+  ) THEN
+    ALTER TABLE app."user"
+      ADD CONSTRAINT user_time_format_preference_chk
+      CHECK (time_format_preference IN ('12', '24') OR time_format_preference IS NULL);
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
     WHERE conname = 'user_salary_currency_preference_chk'
       AND conrelid = 'app."user"'::regclass
   ) THEN
@@ -103,9 +68,11 @@ SET
   font_size_preference = COALESCE(font_size_preference, 14),
   country_preference = COALESCE(country_preference, ''),
   date_format_preference = COALESCE(date_format_preference, 'DD/MM/YYYY'),
+  time_format_preference = COALESCE(time_format_preference, '24'),
   salary_currency_preference = COALESCE(salary_currency_preference, 'USD')
 WHERE theme_preference IS NULL
    OR font_size_preference IS NULL
    OR country_preference IS NULL
    OR date_format_preference IS NULL
+   OR time_format_preference IS NULL
    OR salary_currency_preference IS NULL;

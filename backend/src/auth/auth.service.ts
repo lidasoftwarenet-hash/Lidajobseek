@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
+import { UsersSettingsService } from '../users/users-settings.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
@@ -17,6 +18,7 @@ import { UpdatePreferencesDto } from './dto/update-preferences.dto';
 export class AuthService {
   constructor(
     private usersService: UsersService,
+    private usersSettingsService: UsersSettingsService,
     private jwtService: JwtService,
     private mailService: MailService,
   ) { }
@@ -33,6 +35,9 @@ export class AuthService {
         });
       }
 
+      // Get user settings from user_settings table
+      const settings = await this.usersSettingsService.getOrCreateSettings(user.id);
+
       // Convert MikroORM entity to plain object
       return {
         id: user.id,
@@ -40,11 +45,12 @@ export class AuthService {
         name: user.name,
         phone: user.phone,
         pricingPlan: user.pricingPlan || 'free',
-        themePreference: user.themePreference || 'light',
-        fontSizePreference: user.fontSizePreference || 14,
-        countryPreference: user.countryPreference || '',
-        dateFormatPreference: user.dateFormatPreference || 'DD/MM/YYYY',
-        salaryCurrencyPreference: user.salaryCurrencyPreference || 'USD',
+        themePreference: settings.themePreference || 'light',
+        fontSizePreference: settings.fontSizePreference || 14,
+        countryPreference: settings.countryPreference || '',
+        dateFormatPreference: settings.dateFormatPreference || 'DD/MM/YYYY',
+        timeFormatPreference: settings.timeFormatPreference || '24',
+        salaryCurrencyPreference: settings.salaryCurrencyPreference || 'USD',
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -71,6 +77,7 @@ export class AuthService {
         fontSizePreference: user.fontSizePreference || 14,
         countryPreference: user.countryPreference || '',
         dateFormatPreference: user.dateFormatPreference || 'DD/MM/YYYY',
+        timeFormatPreference: user.timeFormatPreference || '24',
         salaryCurrencyPreference: user.salaryCurrencyPreference || 'USD',
         isActive: user.isActive,
       }
@@ -114,6 +121,8 @@ export class AuthService {
     const activationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user first
     const user = await this.usersService.create({
       email: normalizedEmail,
       password: hashedPassword,
@@ -125,11 +134,18 @@ export class AuthService {
       fontSizePreference: 14,
       countryPreference: '',
       dateFormatPreference: 'DD/MM/YYYY',
+      timeFormatPreference: '24',
       salaryCurrencyPreference: 'USD',
       isActive: false,
       activationToken,
       activationTokenExpiresAt,
     });
+
+    // Create user settings in user_settings table
+    await this.usersSettingsService.getOrCreateSettings(user.id);
+
+    // Create default process stages in user_process_stages table
+    await this.usersSettingsService.getOrCreateProcessStages(user.id);
 
     const frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:4200';
     const activationLink = `${frontendBaseUrl}/activate-account?token=${activationToken}`;
@@ -198,54 +214,47 @@ export class AuthService {
   }
 
   async getPreferences(userId: number) {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    return {
-      theme: user.themePreference || 'light',
-      fontSize: user.fontSizePreference || 14,
-      country: user.countryPreference || '',
-      dateFormat: user.dateFormatPreference || 'DD/MM/YYYY',
-      salaryCurrency: user.salaryCurrencyPreference || 'USD',
-    };
+    // Get preferences from user_settings table
+    return this.usersSettingsService.getPreferences(userId);
   }
 
   async updatePreferences(userId: number, dto: UpdatePreferencesDto) {
-    const user = await this.usersService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
+    // Update settings in user_settings table
+    const updateData: any = {};
+    
     if (dto.theme) {
-      user.themePreference = dto.theme;
+      updateData.themePreference = dto.theme;
     }
 
     if (typeof dto.fontSize === 'number') {
-      user.fontSizePreference = dto.fontSize;
+      updateData.fontSizePreference = dto.fontSize;
     }
 
     if (typeof dto.country === 'string') {
-      user.countryPreference = dto.country;
+      updateData.countryPreference = dto.country;
     }
 
     if (dto.dateFormat) {
-      user.dateFormatPreference = dto.dateFormat;
+      updateData.dateFormatPreference = dto.dateFormat;
+    }
+
+    if (dto.timeFormat) {
+      updateData.timeFormatPreference = dto.timeFormat;
     }
 
     if (dto.salaryCurrency) {
-      user.salaryCurrencyPreference = dto.salaryCurrency;
+      updateData.salaryCurrencyPreference = dto.salaryCurrency;
     }
 
-    await this.usersService.save(user);
+    const settings = await this.usersSettingsService.updateSettings(userId, updateData);
 
     return {
-      theme: user.themePreference || 'light',
-      fontSize: user.fontSizePreference || 14,
-      country: user.countryPreference || '',
-      dateFormat: user.dateFormatPreference || 'DD/MM/YYYY',
-      salaryCurrency: user.salaryCurrencyPreference || 'USD',
+      theme: settings.themePreference || 'light',
+      fontSize: settings.fontSizePreference || 14,
+      country: settings.countryPreference || '',
+      dateFormat: settings.dateFormatPreference || 'DD/MM/YYYY',
+      timeFormat: settings.timeFormatPreference || '24',
+      salaryCurrency: settings.salaryCurrencyPreference || 'USD',
     };
   }
 

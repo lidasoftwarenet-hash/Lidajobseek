@@ -153,6 +153,7 @@ export class SettingsService {
         | 'DD.MM.YYYY'
         | 'MM.DD.YYYY'
         | 'YYYY.MM.DD';
+      timeFormat?: '12' | '24';
       salaryCurrency?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
     }>(this.apiUrl).subscribe({
       next: (prefs) => {
@@ -163,6 +164,7 @@ export class SettingsService {
           fontSize: typeof prefs.fontSize === 'number' ? prefs.fontSize : current.fontSize,
           country: typeof prefs.country === 'string' ? prefs.country : current.country,
           dateFormat: prefs.dateFormat ?? current.dateFormat,
+          clockFormat: prefs.timeFormat ? (prefs.timeFormat === '12' ? '12' : '24') : current.clockFormat,
           salaryCurrency: prefs.salaryCurrency ?? current.salaryCurrency,
         };
 
@@ -186,6 +188,7 @@ export class SettingsService {
       fontSize: settings.fontSize,
       country: settings.country,
       dateFormat: settings.dateFormat,
+      timeFormat: settings.clockFormat,
       salaryCurrency: settings.salaryCurrency,
     }).subscribe({
       next: () => {

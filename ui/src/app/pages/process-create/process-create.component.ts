@@ -8,11 +8,12 @@ import { SettingsService } from '../../services/settings.service';
 import { StageOptionsService } from '../../services/stage-options.service';
 import countriesData from '../../../assets/countries.json';
 import { HasUnsavedChanges } from '../../guards/unsaved-changes.guard';
+import { DateFormatPipe } from '../../pipes/date-format.pipe';
 
 @Component({
     selector: 'app-process-create',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
+    imports: [CommonModule, FormsModule, RouterModule, DateFormatPipe],
     templateUrl: './process-create.component.html',
     styleUrls: ['./process-create.component.css']
 })

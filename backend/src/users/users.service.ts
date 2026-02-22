@@ -43,6 +43,7 @@ export class UsersService {
       | 'DD.MM.YYYY'
       | 'MM.DD.YYYY'
       | 'YYYY.MM.DD';
+    timeFormatPreference?: '12' | '24';
     salaryCurrencyPreference?: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CNY' | 'AUD' | 'CAD' | 'CHF' | 'HKD' | 'SGD' | 'INR' | 'RUB' | 'ILS' | 'RON';
     isActive?: boolean;
     activationToken?: string | null;
