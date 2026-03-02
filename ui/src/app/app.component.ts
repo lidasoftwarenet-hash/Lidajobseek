@@ -5,6 +5,7 @@ import { ToastComponent } from './components/toast/toast.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { SettingsPanelComponent } from './components/settings-panel/settings-panel.component';
 import { ScrollToTopComponent } from './components/scroll-to-top/scroll-to-top.component';
+import { HeaderComponent } from './components/header/header.component';
 import { AuthService } from './services/auth.service';
 import { SettingsService } from './services/settings.service';
 import { ToastService } from './services/toast.service';
@@ -12,7 +13,7 @@ import { ToastService } from './services/toast.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterModule, ToastComponent, ConfirmDialogComponent, SettingsPanelComponent, ScrollToTopComponent],
+  imports: [CommonModule, RouterOutlet, RouterModule, ToastComponent, ConfirmDialogComponent, SettingsPanelComponent, ScrollToTopComponent, HeaderComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
