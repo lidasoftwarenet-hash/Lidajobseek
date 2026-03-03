@@ -156,6 +156,16 @@
   color: var(--text-tertiary);
 }
 
+.profile-fields {
+  margin-top: var(--space-md);
+  display: grid;
+  gap: var(--space-md);
+}
+
+.profile-field .setting-label {
+  margin-bottom: 4px;
+}
+
 /* ===== SETTING ITEMS ===== */
 .setting-item {
   margin-bottom: var(--space-lg);

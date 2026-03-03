@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProcessesService } from '../../services/processes.service';
-import { ToastService } from '../../services/toast.service';
+import { ToastService } from '../../services.toast.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { SettingsService, UserSettings } from '../../services/settings.service';
+import { AuthService } from '../../services/auth.service';
 import { DateFormatPipe } from '../../pipes/date-format.pipe';
 
 @Component({
@@ -48,13 +50,23 @@ export class ProcessListComponent implements OnInit {
 
     availableWorkModes: string[] = ['remote', 'hybrid', 'onsite'];
 
+    userDisplayName: string = 'Your Job Search';
+
     constructor(
         private processesService: ProcessesService,
         private toastService: ToastService,
-        private confirmService: ConfirmService
+        private confirmService: ConfirmService,
+        private settingsService: SettingsService,
+        private authService: AuthService,
     ) { }
 
     ngOnInit() {
+        const initialSettings = this.settingsService.getSettings();
+        this.userDisplayName = this.getDisplayName(initialSettings);
+        this.settingsService.settings$.subscribe((s) => {
+            this.userDisplayName = this.getDisplayName(s);
+        });
+
         this.isLoading = true;
         this.processesService.getAll().subscribe({
             next: (data) => {
@@ -70,6 +82,21 @@ export class ProcessListComponent implements OnInit {
                 this.isLoading = false;
             }
         });
+    }
+
+    private getDisplayName(settings: UserSettings): string {
+        const profileName = settings.profile?.displayName?.trim();
+        if (profileName) {
+            return profileName;
+        }
+        const user = this.authService.getUser();
+        if (user?.name) {
+            return user.name;
+        }
+        if (user?.email) {
+            return user.email.split('@')[0];
+        }
+        return 'Your Job Search';
     }
 
     findTasks() {
