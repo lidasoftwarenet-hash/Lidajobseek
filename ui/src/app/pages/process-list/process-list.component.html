@@ -78,39 +78,67 @@
     <div class="process-layout">
         <aside class="filters-panel">
             <div class="filters-header">
-                <h3>Filters</h3>
+                <div class="filters-heading">
+                    <h3>Refine board</h3>
+                    <p class="filters-subtitle">Narrow down by stage, work mode, and status.</p>
+                </div>
                 <button class="clear-btn" (click)="clearFilters()" [disabled]="!isFilterActive">Clear</button>
             </div>
-            <div class="search-box">
-                <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" [(ngModel)]="searchText" (ngModelChange)="applyFilters()"
-                    placeholder="Search companies, roles, locations..." class="search-input" />
-            </div>
 
-            <div class="filter-group">
-                <label class="filter-label">Stage</label>
-                <select [(ngModel)]="selectedStage" (change)="onStageChange($event)" class="filter-chip">
-                    <option value="">All Stages</option>
-                    <option *ngFor="let stage of availableStages" [value]="stage">{{ stage }}</option>
-                </select>
-            </div>
+            <div class="filters-body">
+                <div class="search-box">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" [(ngModel)]="searchText" (ngModelChange)="applyFilters()"
+                        placeholder="Search company, role, or location" class="search-input" />
+                </div>
 
-            <div class="filter-group">
-                <label class="filter-label">Work Mode</label>
-                <select [(ngModel)]="selectedWorkMode" (change)="onWorkModeChange($event)" class="filter-chip">
-                    <option value="">All Work Modes</option>
-                    <option *ngFor="let mode of availableWorkModes" [value]="mode">{{ mode | titlecase }}</option>
-                </select>
-            </div>
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <span class="filter-section-label">Pipeline</span>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            Stage
+                        </label>
+                        <select [(ngModel)]="selectedStage" (change)="onStageChange($event)" class="filter-chip">
+                            <option value="">All stages</option>
+                            <option *ngFor="let stage of availableStages" [value]="stage">{{ stage }}</option>
+                        </select>
+                    </div>
+                </div>
 
-            <label class="toggle-chip">
-                <input type="checkbox" [(ngModel)]="showAllProcesses" (change)="applyFilters()">
-                <span class="toggle-label">Show Closed</span>
-            </label>
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <span class="filter-section-label">Work style</span>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            Work mode
+                        </label>
+                        <select [(ngModel)]="selectedWorkMode" (change)="onWorkModeChange($event)" class="filter-chip">
+                            <option value="">All modes</option>
+                            <option *ngFor="let mode of availableWorkModes" [value]="mode">{{ mode | titlecase }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <span class="filter-section-label">Status</span>
+                    </div>
+                    <label class="toggle-chip">
+                        <input type="checkbox" [(ngModel)]="showAllProcesses" (change)="applyFilters()">
+                        <span class="toggle-label">
+                            <span class="toggle-dot"></span>
+                            Show closed processes
+                        </span>
+                    </label>
+                </div>
+            </div>
         </aside>
 
         <section class="process-content">

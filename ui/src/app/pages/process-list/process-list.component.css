@@ -279,12 +279,12 @@
 
 .filters-panel {
     background: var(--bg-card);
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    padding: 18px 18px 20px 18px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
     position: sticky;
     top: 120px;
     box-shadow: var(--shadow-md);
@@ -297,11 +297,23 @@
     gap: 12px;
 }
 
+.filters-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .filters-header h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--text-primary);
+}
+
+.filters-subtitle {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-tertiary);
 }
 
 .clear-btn {
@@ -319,8 +331,8 @@
 }
 
 .clear-btn:hover:not(:disabled) {
-    border-color: #667eea;
-    color: #667eea;
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
 }
 
 .clear-btn:disabled {
@@ -330,7 +342,7 @@
 
 .search-box {
     position: relative;
-    width: 70%;
+    width: 100%;
 }
 
 .search-icon {
@@ -376,11 +388,39 @@
 }
 
 .filter-label {
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.8px;
     color: var(--text-secondary);
+}
+
+.filters-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.filter-section {
+    padding: 10px 10px 12px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.filter-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.filter-section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+    font-weight: 700;
 }
 
 .filter-chip {
@@ -390,7 +430,7 @@
     border-radius: var(--radius-md);
     background: var(--bg-card);
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -398,14 +438,14 @@
 }
 
 .filter-chip:hover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.05);
+    border-color: var(--primary-blue);
+    background: rgba(0, 120, 212, 0.04);
 }
 
 .filter-chip:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.12);
 }
 
 .toggle-chip {
@@ -413,7 +453,7 @@
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: var(--bg-card);
     cursor: pointer;
@@ -478,8 +518,8 @@
 }
 
 .toggle-chip:hover {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.05);
+    border-color: var(--primary-blue);
+    background: rgba(0, 120, 212, 0.04);
 }
 
 .toggle-chip input {
@@ -490,10 +530,23 @@
 }
 
 .toggle-label {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-primary);
     user-select: none;
+}
+
+.toggle-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    margin-right: 6px;
+    background: var(--gray-400);
+}
+
+.toggle-chip input:checked + .toggle-label .toggle-dot {
+    background: var(--primary-blue);
 }
 
 /* Process Cards Grid */
