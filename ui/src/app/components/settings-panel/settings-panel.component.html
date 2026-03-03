@@ -15,11 +15,44 @@
     <div class="settings-section" *ngIf="currentUser">
       <div class="profile-card">
         <div class="profile-avatar">
-          {{ currentUser.email?.charAt(0).toUpperCase() || 'U' }}
+          {{ (settings.profile?.displayName || currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase() }}
         </div>
         <div class="profile-info">
-          <div class="profile-name">{{ currentUser.email }}</div>
-          <div class="profile-role">Job Seeker</div>
+          <div class="profile-name">
+            {{ settings.profile?.displayName || currentUser.name || 'Your job search' }}
+          </div>
+          <div class="profile-role">
+            {{ settings.profile?.contactEmail || currentUser.email }}
+          </div>
+        </div>
+      </div>
+      <div class="profile-fields">
+        <div class="profile-field">
+          <label class="setting-label">Name</label>
+          <input
+            class="input-field"
+            type="text"
+            [(ngModel)]="settings.profile!.displayName"
+            (ngModelChange)="onProfileChange('displayName', $event)"
+            placeholder="How should we call you?" />
+        </div>
+        <div class="profile-field">
+          <label class="setting-label">Email</label>
+          <input
+            class="input-field"
+            type="email"
+            [(ngModel)]="settings.profile!.contactEmail"
+            (ngModelChange)="onProfileChange('contactEmail', $event)"
+            placeholder="Contact email" />
+        </div>
+        <div class="profile-field">
+          <label class="setting-label">Phone (optional)</label>
+          <input
+            class="input-field"
+            type="tel"
+            [(ngModel)]="settings.profile!.phoneNumber"
+            (ngModelChange)="onProfileChange('phoneNumber', $event)"
+            placeholder="+1 555 123 4567" />
         </div>
       </div>
     </div>

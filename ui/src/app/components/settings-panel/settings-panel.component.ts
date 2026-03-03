@@ -51,6 +51,16 @@ export class SettingsPanelComponent implements OnInit {
         console.error('Failed to parse user', e);
       }
     }
+
+    if (!this.settings.profile) {
+      this.settingsService.updateSettings({
+        profile: {
+          displayName: this.currentUser?.name || '',
+          contactEmail: this.currentUser?.email || '',
+          phoneNumber: '',
+        }
+      } as Partial<UserSettings>);
+    }
   }
 
   onThemeChange(theme: 'light' | 'dark' | 'auto') {
@@ -118,6 +128,17 @@ export class SettingsPanelComponent implements OnInit {
 
   onDashboardChange(key: keyof UserSettings['dashboard'], value: any) {
     this.settingsService.updateDashboardSetting(key, value);
+  }
+
+  onProfileChange(key: keyof NonNullable<UserSettings['profile']>, value: string) {
+    const current = this.settingsService.getSettings();
+    const profile = current.profile ?? { displayName: '', contactEmail: '', phoneNumber: '' };
+    this.settingsService.updateSettings({
+      profile: {
+        ...profile,
+        [key]: value,
+      },
+    } as Partial<UserSettings>);
   }
 
   async resetSettings() {

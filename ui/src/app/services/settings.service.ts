@@ -7,6 +7,11 @@ export interface UserSettings {
   clockFormat: TimeFormatPreference;
   dateFormat: DateFormatPreference;
   country: string;
+  profile?: {
+    displayName: string;
+    contactEmail: string;
+    phoneNumber: string;
+  };
   notifications: {
     email: boolean;
     desktop: boolean;
@@ -25,6 +30,11 @@ const DEFAULT_SETTINGS: UserSettings = {
   clockFormat: '24',
   dateFormat: 'DD/MM/YYYY',
   country: '',
+  profile: {
+    displayName: '',
+    contactEmail: '',
+    phoneNumber: '',
+  },
   notifications: {
     email: true,
     desktop: true,
@@ -168,6 +178,16 @@ export class SettingsService {
     if (user.timeFormatPreference) {
       patch.clockFormat = user.timeFormatPreference as TimeFormatPreference;
     }
+
+    const existingProfile = this.settingsSubject.value.profile ?? DEFAULT_SETTINGS.profile;
+    const displayName = (existingProfile?.displayName || user.name || '').trim();
+    const contactEmail = (existingProfile?.contactEmail || user.email || '').trim();
+
+    patch.profile = {
+      displayName,
+      contactEmail,
+      phoneNumber: existingProfile?.phoneNumber || '',
+    };
 
     if (Object.keys(patch).length === 0) {
       return;
