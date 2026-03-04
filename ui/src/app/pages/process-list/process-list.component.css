@@ -2,7 +2,7 @@
 .dashboard-container {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 24px;
     width: 100%;
     padding-bottom: 40px;
 }
@@ -11,6 +11,14 @@
 .hero-header {
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+    padding: 28px;
+    background:
+        radial-gradient(circle at top right, rgba(79, 70, 229, 0.20), transparent 40%),
+        radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.14), transparent 35%),
+        linear-gradient(150deg, var(--bg-card), var(--bg-subtle));
+    box-shadow: var(--shadow-md);
 }
 
 .hero-header::before {
@@ -34,16 +42,17 @@
 }
 
 .hero-title {
-    font-size: 36px;
+    font-size: clamp(30px, 3.4vw, 42px);
     font-weight: 800;
     margin: 0 0 8px 0;
     display: flex;
     align-items: center;
     gap: 12px;
+    letter-spacing: -0.02em;
 }
 
 .gradient-text {
-    background: linear-gradient(to right, #9e22c1, #9e22c1);
+    background: linear-gradient(110deg, #4f46e5 0%, #7c3aed 45%, #0ea5e9 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -82,7 +91,7 @@
 
 .hero-subtitle {
     margin: 0;
-    font-size: 19px;
+    font-size: 17px;
     opacity: 0.95;
     font-weight: 400;
 }
@@ -91,6 +100,7 @@
     margin: 6px 0 0 0;
     font-size: 14px;
     color: var(--text-secondary);
+    max-width: 680px;
 }
 
 .hero-actions {
@@ -104,20 +114,20 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(79, 70, 229, 0.10);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(79, 70, 229, 0.22);
     border-radius: var(--radius-md);
-    color: white;
+    color: var(--text-primary);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-glass:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(79, 70, 229, 0.14);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-glass:active {
@@ -135,7 +145,7 @@
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: linear-gradient(135deg, #9f6b72 0%, #8a5a60 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
     border: none;
     border-radius: var(--radius-md);
     color: white;
@@ -143,7 +153,7 @@
     font-size: 15px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(159, 107, 114, 0.35);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.32);
     position: relative;
     overflow: hidden;
 }
@@ -162,7 +172,7 @@
 
 .btn-primary-gradient:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(159, 107, 114, 0.45);
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.42);
 }
 
 .btn-primary-gradient:hover::before {
@@ -213,7 +223,7 @@
 
 .stat-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
     border-color: var(--stat-color);
 }
 
@@ -355,11 +365,11 @@
 }
 
 .search-input {
-    width: 70%;
-    padding: 4px 20px 4px 48px;
+    width: 100%;
+    padding: 11px 14px 11px 42px;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-lg);
-    font-size: 11px;
+    font-size: 13px;
     background: var(--bg-card);
     color: var(--text-primary);
     transition: all 0.2s ease;
@@ -370,8 +380,8 @@
 }
 
 .search-input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
     outline: none;
     background: var(--bg-primary);
 }
@@ -523,7 +533,7 @@
 }
 
 .toggle-chip input {
-    accent-color: #667eea;
+    accent-color: var(--accent-color);
     width: 18px;
     height: 18px;
     cursor: pointer;
@@ -558,7 +568,7 @@
 
 .process-card {
     background: var(--bg-card);
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 24px;
     cursor: pointer;
@@ -574,7 +584,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;
@@ -582,8 +592,8 @@
 
 .process-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
-    border-color: #667eea;
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-color);
 }
 
 .process-card:hover::before {
@@ -591,7 +601,7 @@
 }
 
 .process-card:focus-visible {
-    outline: 2px solid #667eea;
+    outline: 2px solid var(--accent-color);
     outline-offset: 2px;
 }
 
@@ -619,14 +629,14 @@
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     font-weight: 700;
     color: white;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
 }
 
 .card-status {

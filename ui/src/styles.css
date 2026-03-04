@@ -1,10 +1,12 @@
 /* ===== PROFESSIONAL CORPORATE DESIGN SYSTEM (Microsoft 365 Inspired) ===== */
 :root {
-  /* Primary Color Palette - Subtle Blues */
-  --primary-blue: #0078d4;
-  --primary-blue-hover: #106ebe;
-  --primary-blue-light: #e1f5fe;
-  --primary-blue-dark: #005a9e;
+  /* Enterprise Primary Palette */
+  --primary-blue: #4f46e5;
+  --primary-blue-hover: #4338ca;
+  --primary-blue-light: #eef2ff;
+  --primary-blue-dark: #3730a3;
+  --accent-color: var(--primary-blue);
+  --accent-light: var(--primary-blue-light);
 
   /* Neutral Grays */
   --gray-50: #fafafa;
@@ -20,20 +22,23 @@
 
   /* Background Colors */
   --bg-primary: #ffffff;
-  --bg-secondary: #fafafa;
-  --bg-tertiary: #f5f5f5;
-  --bg-hover: #f0f0f0;
+  --bg-secondary: #f4f7fb;
+  --bg-tertiary: #edf2f7;
+  --bg-hover: #e9edf5;
+  --bg-card: var(--bg-primary);
+  --bg-subtle: #f8fafc;
 
   /* Text Colors */
-  --text-primary: #323130;
-  --text-secondary: #605e5c;
-  --text-tertiary: #8a8886;
-  --text-disabled: #c8c6c4;
+  --text-primary: #111827;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-disabled: #a0aec0;
+  --text-muted: var(--text-tertiary);
 
   /* Border Colors */
-  --border-color: #edebe9;
-  --border-dark: #d2d0ce;
-  --border-focus: #0078d4;
+  --border-color: #dbe3ef;
+  --border-dark: #c2cede;
+  --border-focus: var(--primary-blue);
 
   /* Status Colors */
   --success: #107c10;
@@ -46,17 +51,17 @@
   --info-light: #e1f5fe;
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.10);
-  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 4px 10px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.10);
+  --shadow-lg: 0 18px 38px rgba(15, 23, 42, 0.14);
+  --shadow-xl: 0 24px 54px rgba(15, 23, 42, 0.20);
 
   /* Border Radius */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
-  --radius-xl: 8px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
 
   /* Spacing */
   --space-xs: 4px;
@@ -67,7 +72,7 @@
   --space-2xl: 48px;
 
   /* Typography */
-  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+  --font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
   --font-size-xs: 11px;
   --font-size-sm: 12px;
   --font-size-base: 14px;
@@ -100,7 +105,10 @@ html {
 
 body {
   font-family: var(--font-family);
-  background: var(--bg-secondary);
+  background:
+    radial-gradient(circle at top right, rgba(79, 70, 229, 0.08), transparent 34%),
+    radial-gradient(circle at top left, rgba(6, 182, 212, 0.06), transparent 32%),
+    var(--bg-secondary);
   color: var(--text-primary);
   line-height: 1.5;
   font-size: var(--font-size-base);
@@ -194,16 +202,16 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 
 /* Primary Button */
 .btn-primary {
-  background: var(--primary-blue);
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   color: #ffffff;
-  border-color: var(--primary-blue);
-  box-shadow: 0 2px 4px rgba(0, 120, 212, 0.2);
+  border-color: #4338ca;
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.28);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-blue-hover);
-  border-color: var(--primary-blue-hover);
-  box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3);
+  background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+  border-color: #3730a3;
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.34);
   transform: translateY(-1px);
 }
 
@@ -218,7 +226,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   background: var(--bg-primary);
   color: var(--text-primary);
   border-color: var(--border-dark);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -426,7 +434,7 @@ label {
 
 /* ===== CARDS ===== */
 .card {
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -767,12 +775,15 @@ body.dark-theme {
   --bg-secondary: #252525;
   --bg-tertiary: #2d2d2d;
   --bg-hover: #3a3a3a;
+  --bg-card: #1f2633;
+  --bg-subtle: #273140;
 
   /* Text Colors */
   --text-primary: #e8e8e8;
   --text-secondary: #b8b8b8;
   --text-tertiary: #8a8a8a;
   --text-disabled: #5a5a5a;
+  --text-muted: var(--text-tertiary);
 
   /* Border Colors */
   --border-color: #3a3a3a;
@@ -783,6 +794,8 @@ body.dark-theme {
   --primary-blue: #0086f0;
   --primary-blue-hover: #1a96ff;
   --primary-blue-light: rgba(0, 134, 240, 0.15);
+  --accent-color: var(--primary-blue);
+  --accent-light: var(--primary-blue-light);
 
   /* Status Colors (adjusted for dark mode) */
   --success: #13a10e;

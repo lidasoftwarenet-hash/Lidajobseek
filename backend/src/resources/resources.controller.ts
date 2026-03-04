@@ -1,4 +1,6 @@
 import {
+  ArgumentsHost,
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -10,36 +12,43 @@ import {
   UseInterceptors,
   UploadedFile,
   Req,
+  Catch,
+  ExceptionFilter,
+  UseFilters,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ResourcesService } from './resources.service';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage, MulterError } from 'multer';
+
+const MAX_UPLOAD_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+
+@Catch(MulterError)
+class MulterBadRequestFilter implements ExceptionFilter {
+  catch(exception: MulterError, host: ArgumentsHost) {
+    if (exception.code === 'LIMIT_FILE_SIZE') {
+      throw new BadRequestException('File too large. Maximum allowed size is 5MB.');
+    }
+
+    throw new BadRequestException(exception.message);
+  }
+}
 
 @Controller('resources')
 export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) { }
 
   @Post()
+  @UseFilters(MulterBadRequestFilter)
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
+      limits: {
+        fileSize: MAX_UPLOAD_FILE_SIZE_BYTES,
+      },
     }),
   )
   create(@Body() body: any, @UploadedFile() file: Express.Multer.File, @Req() req: any) {
-    if (file) {
-      body.content = `/uploads/${file.filename}`;
-      // Allow overriding title if not provided
-      if (!body.title) body.title = file.originalname;
-    }
-    return this.resourcesService.create(body, req.user.userId);
+    return this.resourcesService.create(body, req.user.userId, file);
   }
 
   @Get()
