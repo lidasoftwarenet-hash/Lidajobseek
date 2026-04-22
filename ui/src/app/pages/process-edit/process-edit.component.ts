@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { SettingsService } from '../../services/settings.service';
 import countriesData from '../../../assets/countries.json';
 import { DateFormatPipe } from '../../pipes/date-format.pipe';
 import { PROCESS_STAGES } from '../../shared/process-stages';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-process-edit',
@@ -16,7 +17,7 @@ import { PROCESS_STAGES } from '../../shared/process-stages';
     templateUrl: './process-edit.component.html',
     styleUrls: ['./process-edit.component.css']
 })
-export class ProcessEditComponent implements OnInit {
+export class ProcessEditComponent implements OnInit, OnDestroy {
     @ViewChild('processForm') processForm!: NgForm;
     process: any;
     locationSearch = '';
@@ -24,30 +25,45 @@ export class ProcessEditComponent implements OnInit {
     formSubmitted = false;
     isSubmitting = false;
     stages = PROCESS_STAGES;
+    private settingsSub!: Subscription;
 
     locationOptions: string[] = [];
     selectedCountry = '';
 
     get completionPercent(): number {
         if (!this.process) return 0;
-        const requiredFields: Array<keyof typeof this.process> = [
+        const fieldsToCheck: Array<keyof typeof this.process> = [
             'companyName',
             'roleTitle',
             'techStack',
-            'currentStage',
+            'source',
+            'salaryExpectation',
+            'dataFromThePhoneCall',
+            'initialInviteDate',
+            'initialInviteMethod',
+            'initialInviteContent'
         ];
 
-        const baseFilled = requiredFields.filter((key) => {
-            const value = this.process?.[key];
-            return typeof value === 'string' ? value.trim().length > 0 : value !== null && value !== undefined;
+        let filled = fieldsToCheck.filter(key => {
+            const value = this.process[key];
+            if (typeof value === 'string') return value.trim().length > 0;
+            return value !== null && value !== undefined && value !== '';
         }).length;
 
-        const locationRequired = this.process.workMode !== 'remote';
-        const total = requiredFields.length + (locationRequired ? 1 : 0);
-        const locationFilled = locationRequired ? (this.process.location?.trim?.().length ? 1 : 0) : 0;
+        let totalFields = fieldsToCheck.length;
 
-        if (total === 0) return 0;
-        return Math.round(((baseFilled + locationFilled) / total) * 100);
+        if (this.process.workMode !== 'remote') {
+            totalFields++;
+            if (this.process.location?.trim()) filled++;
+        }
+
+        if (this.process.workMode === 'hybrid') {
+            totalFields++;
+            if (this.process.daysFromOffice !== null && this.process.daysFromOffice > 0) filled++;
+        }
+
+        if (totalFields === 0) return 0;
+        return Math.round((filled / totalFields) * 100);
     }
 
     constructor(
@@ -61,7 +77,7 @@ export class ProcessEditComponent implements OnInit {
         this.selectedCountry = settings.country;
         this.locationOptions = this.getLocationsForCountry(settings.country);
 
-        this.settingsService.settings$.subscribe(updatedSettings => {
+        this.settingsSub = this.settingsService.settings$.subscribe(updatedSettings => {
             if (updatedSettings.country !== this.selectedCountry) {
                 this.selectedCountry = updatedSettings.country;
                 this.locationOptions = this.getLocationsForCountry(updatedSettings.country);
@@ -72,6 +88,12 @@ export class ProcessEditComponent implements OnInit {
                 this.showLocationDropdown = false;
             }
         });
+    }
+
+    ngOnDestroy() {
+        if (this.settingsSub) {
+            this.settingsSub.unsubscribe();
+        }
     }
 
     ngOnInit() {
