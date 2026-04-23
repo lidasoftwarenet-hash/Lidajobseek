@@ -46,3 +46,54 @@ jobs:
 
       - name: Run unit tests
         run: npm run test -w ui -- --watch=false --browsers=ChromeHeadless
+
+  test-docker-startup:
+    name: Docker Startup Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create network
+        run: docker network create test-net
+
+      - name: Run infrastructure (Postgres)
+        run: |
+          docker run -d \
+            --name db-test \
+            --network test-net \
+            -e POSTGRES_DB=jobtracker \
+            -e POSTGRES_USER=jobtracker \
+            -e POSTGRES_PASSWORD=jobtracker \
+            postgres:16
+
+      - name: Build Docker image
+        run: docker build -t lidajobseek:test .
+
+      - name: Run Application
+        run: |
+          docker run -d \
+            --name app-check \
+            --network test-net \
+            -e DB_HOST=db-test \
+            -e DB_PORT=5432 \
+            -e DB_NAME=jobtracker \
+            -e DB_USER=jobtracker \
+            -e DB_PASS=jobtracker \
+            -e JWT_SECRET=test_secret \
+            -p 3000:3000 \
+            lidajobseek:test
+
+      - name: Wait for API to be ready
+        run: |
+          # The app might take a few seconds to start and connect to DB
+          sleep 10
+          timeout 60s sh -c 'until curl --silent --fail http://localhost:3000/api/health; do echo "Waiting for app..."; sleep 5; done' || (docker logs app-check && exit 1)
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop app-check db-test || true
+          docker rm app-check db-test || true
+          docker network rm test-net || true
