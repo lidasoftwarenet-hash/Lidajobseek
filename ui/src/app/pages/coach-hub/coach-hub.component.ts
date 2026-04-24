@@ -131,13 +131,19 @@ export class CoachHubComponent implements OnInit {
             payload = this.newResource;
         }
 
-        this.resourcesService.create(payload).subscribe(() => {
-            this.loadResources();
-            this.showForm = false;
-            this.selectedFileName = '';
-            this.selectedFile = null;
-            this.newResource = { title: '', type: this.selectedCategory, content: '', tags: '' };
-            this.toastService.show('Resource added successfully', 'success');
+        this.resourcesService.create(payload).subscribe({
+            next: () => {
+                this.loadResources();
+                this.showForm = false;
+                this.selectedFileName = '';
+                this.selectedFile = null;
+                this.newResource = { title: '', type: this.selectedCategory, content: '', tags: '' };
+                this.toastService.show('Resource added successfully', 'success');
+            },
+            error: (err) => {
+                const message = err.error?.message || 'Failed to add resource';
+                this.toastService.show(message, 'error');
+            }
         });
     }
 
