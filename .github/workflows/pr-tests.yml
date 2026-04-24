@@ -86,7 +86,7 @@ jobs:
         run: |
           # The app might take a few seconds to start and connect to DB
           sleep 10
-          timeout 60s sh -c 'until curl --silent --fail http://localhost:3000/api/health; do echo "Waiting for app..."; sleep 5; done' || (docker logs app-check && exit 1)
+          timeout 60s sh -c 'until curl --silent --fail http://127.0.0.1:3000/api/health; do echo "Waiting for app..."; sleep 5; done' || (docker ps && docker logs app-check && curl -v http://127.0.0.1:3000/api/health && exit 1)
 
       - name: Cleanup
         if: always()
