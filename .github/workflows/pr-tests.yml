@@ -88,6 +88,13 @@ jobs:
           sleep 10
           timeout 60s sh -c 'until curl --silent --fail http://127.0.0.1:3000/api/health; do echo "Waiting for app..."; sleep 5; done' || (docker ps && docker logs app-check && curl -v http://127.0.0.1:3000/api/health && exit 1)
 
+      - name: Smoke and Security Tests
+        run: |
+          chmod +x scripts/docker-smoke-test.sh
+          ./scripts/docker-smoke-test.sh
+        env:
+          REGISTER: ${{ secrets.REGISTER || 'LIDA2026' }}
+
       - name: Cleanup
         if: always()
         run: |
