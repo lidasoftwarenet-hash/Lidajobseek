@@ -1,0 +1,96 @@
+name: Pull Request Tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test -w backend
+
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test -w ui -- --watch=false --browsers=ChromeHeadless
+
+  test-docker-startup:
+    name: Docker Startup Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create network
+        run: docker network create test-net
+
+      - name: Run infrastructure (Postgres)
+        run: |
+          docker run -d \
+            --name db-test \
+            --network test-net \
+            -e POSTGRES_DB=jobtracker \
+            -e POSTGRES_USER=jobtracker \
+            -e POSTGRES_PASSWORD=jobtracker \
+            postgres:16
+
+      - name: Build Docker image
+        run: docker build -t lidajobseek:test .
+
+      - name: Run Application
+        run: |
+          docker run -d \
+            --name app-check \
+            --network test-net \
+            -e DATABASE_URL="postgresql://jobtracker:jobtracker@db-test:5432/jobtracker" \
+            -e JWT_SECRET=${{ secrets.JWT_SECRET || 'test_secret' }} \
+            -e REGISTER=${{ secrets.REGISTER || 'LIDA2026' }} \
+            -p 3000:3000 \
+            lidajobseek:test
+
+      - name: Wait for API to be ready
+        run: |
+          # The app might take a few seconds to start and connect to DB
+          sleep 10
+          timeout 60s sh -c 'until curl --silent --fail http://127.0.0.1:3000/api/health; do echo "Waiting for app..."; sleep 5; done' || (docker ps && docker logs app-check && curl -v http://127.0.0.1:3000/api/health && exit 1)
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop app-check db-test || true
+          docker rm app-check db-test || true
+          docker network rm test-net || true
