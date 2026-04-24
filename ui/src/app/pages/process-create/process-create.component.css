@@ -150,7 +150,6 @@
 
 .aside-tip {
   margin-top: var(--space-sm);
-  background: rgba(255, 255, 255, 0.55);
   border: 1px dashed rgba(148, 163, 184, 0.35);
   border-radius: 14px;
   padding: var(--space-md);

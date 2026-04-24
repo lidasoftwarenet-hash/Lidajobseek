@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Req,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ResourcesService } from './resources.service';
@@ -28,9 +29,20 @@ export class ResourcesController {
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+          cb(null, `${uniqueSuffix}${extname(file.originalname).toLowerCase()}`);
         },
       }),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+      fileFilter: (req, file, cb) => {
+        const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx'];
+        const ext = extname(file.originalname).toLowerCase();
+        if (!allowedExtensions.includes(ext)) {
+          return cb(new BadRequestException('Unsupported file type. Allowed: PDF, Word, Excel.'), false);
+        }
+        cb(null, true);
+      },
     }),
   )
   create(@Body() body: any, @UploadedFile() file: Express.Multer.File, @Req() req: any) {

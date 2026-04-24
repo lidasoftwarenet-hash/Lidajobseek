@@ -34,7 +34,12 @@ export class UsersService {
       return null;
     }
 
-    Object.assign(user, data);
+    // Explicitly map allowed preference fields to ensure strict mass assignment protection
+    if (data.themePreference !== undefined) user.themePreference = data.themePreference;
+    if (data.countryPreference !== undefined) user.countryPreference = data.countryPreference || '';
+    if (data.dateFormatPreference !== undefined) user.dateFormatPreference = data.dateFormatPreference;
+    if (data.timeFormatPreference !== undefined) user.timeFormatPreference = data.timeFormatPreference;
+
     await this.em.flush();
     return user;
   }

@@ -31,7 +31,14 @@ export class ContactsService {
     if (!contact) {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
-    Object.assign(contact, data);
+
+    // Explicitly mapping only editable fields to prevent mass assignment
+    if (data.name !== undefined) contact.name = data.name;
+    if (data.role !== undefined) contact.role = data.role;
+    if (data.linkedIn !== undefined) contact.linkedIn = data.linkedIn;
+    if (data.socialHooks !== undefined) contact.socialHooks = data.socialHooks;
+    if (data.email !== undefined) contact.email = data.email;
+
     await this.em.flush();
     return contact;
   }
