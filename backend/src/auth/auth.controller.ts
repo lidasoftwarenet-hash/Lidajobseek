@@ -11,11 +11,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './public.decorator';
-import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
-import { UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
-@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(private authService: AuthService) { }
 

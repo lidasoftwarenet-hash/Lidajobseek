@@ -23,9 +23,12 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Trust proxy for accurate rate limiting (essential for cloud deployments like Render/Heroku)
-  const httpAdapter = app.getHttpAdapter();
-  if (httpAdapter && typeof httpAdapter.getInstance === 'function') {
-    httpAdapter.getInstance().set('trust proxy', 1);
+  // Only enable if explicitly configured to avoid spoofing in direct deployments
+  if (process.env.TRUST_PROXY === 'true') {
+    const httpAdapter = app.getHttpAdapter();
+    if (httpAdapter && typeof httpAdapter.getInstance === 'function') {
+      httpAdapter.getInstance().set('trust proxy', 1);
+    }
   }
 
   // Ensure database schema exists (only in CI or when explicitly requested)
