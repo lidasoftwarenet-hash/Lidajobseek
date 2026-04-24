@@ -79,6 +79,7 @@ jobs:
             -e DATABASE_URL="postgresql://jobtracker:jobtracker@db-test:5432/jobtracker" \
             -e JWT_SECRET=${{ secrets.JWT_SECRET || 'test_secret' }} \
             -e REGISTER=${{ secrets.REGISTER || 'LIDA2026' }} \
+            -e CI=true \
             -p 3000:3000 \
             lidajobseek:test
 
