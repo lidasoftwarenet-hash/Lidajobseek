@@ -14,6 +14,12 @@ success() {
   echo "✅ PASSED: $1"
 }
 
+# 0. Check dependencies
+if ! command -v jq >/dev/null 2>&1; then
+  fail "jq is required but not installed."
+  exit 1
+fi
+
 expect_status() {
   local method=$1
   local path=$2
@@ -83,21 +89,28 @@ else
 fi
 
 # 5. Login
-echo "Logging in..."
-LOGIN_RESPONSE=$(post_json "/api/auth/login" "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}")
+echo "Logging in and saving response to /tmp/login.json..."
+curl -s -X POST "$BASE_URL/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}" \
+  -o /tmp/login.json
 
-# Validate JSON and extract token
-if echo "$LOGIN_RESPONSE" | jq -e . >/dev/null 2>&1; then
-  TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.access_token // empty')
-  
-  if [ -n "$TOKEN" ] && [ "$TOKEN" != "null" ]; then
-    success "User login (token received)"
-  else
-    fail "User login failed: Token not found in response. Raw response: $LOGIN_RESPONSE"
-    exit 1
-  fi
+echo "Raw Login Response:"
+cat /tmp/login.json
+echo "" # newline
+
+# Validate JSON
+if ! jq empty /tmp/login.json >/dev/null 2>&1; then
+  fail "User login failed: Invalid JSON response."
+  exit 1
+fi
+
+TOKEN=$(jq -r '.access_token // empty' /tmp/login.json)
+
+if [ -n "$TOKEN" ] && [ "$TOKEN" != "null" ]; then
+  success "User login (token received)"
 else
-  fail "User login failed: Invalid JSON response. Raw response: $LOGIN_RESPONSE"
+  fail "User login failed: Token not found in response."
   exit 1
 fi
 
