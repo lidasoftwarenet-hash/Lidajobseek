@@ -111,32 +111,63 @@ export class ProcessesService {
       throw new NotFoundException(`Process with ID ${id} not found`);
     }
 
-    const data: any = { ...dto };
-    
-    // Convert date strings to Date objects
-    if (dto.initialInviteDate) {
-      data.initialInviteDate = new Date(dto.initialInviteDate);
-    }
-    if (dto.nextFollowUp) {
-      data.nextFollowUp = new Date(dto.nextFollowUp);
-    }
-    if (dto.offerDeadline) {
-      data.offerDeadline = new Date(dto.offerDeadline);
-    }
+    // Explicitly destructure allowed fields to prevent mass assignment
+    const {
+      companyName,
+      roleTitle,
+      techStack,
+      location,
+      workMode,
+      daysFromOffice,
+      source,
+      salaryExpectation,
+      salaryCurrency,
+      salaryPeriod,
+      currentStage,
+      dataFromThePhoneCall,
+      initialInviteDate,
+      initialInviteMethod,
+      initialInviteContent,
+      baseSalary,
+      equity,
+      bonus,
+      signingBonus,
+      benefits,
+      offerDeadline,
+      nextFollowUp,
+      scoreTech,
+      scoreWLB,
+      scoreGrowth,
+      scoreVibe,
+    } = dto;
 
-    // Convert empty strings to null for numeric fields
-    if (data.salaryExpectation === '') {
-      data.salaryExpectation = null;
-    }
-    if (data.daysFromOffice === '') {
-      data.daysFromOffice = null;
-    }
-    if (data.baseSalary === '') {
-      data.baseSalary = null;
-    }
-    if (data.signingBonus === '') {
-      data.signingBonus = null;
-    }
+    const data: any = {};
+    if (companyName !== undefined) data.companyName = companyName;
+    if (roleTitle !== undefined) data.roleTitle = roleTitle;
+    if (techStack !== undefined) data.techStack = techStack;
+    if (location !== undefined) data.location = location;
+    if (workMode !== undefined) data.workMode = workMode;
+    if (daysFromOffice !== undefined) data.daysFromOffice = daysFromOffice === '' ? null : daysFromOffice;
+    if (source !== undefined) data.source = source;
+    if (salaryExpectation !== undefined) data.salaryExpectation = salaryExpectation === '' ? null : salaryExpectation;
+    if (salaryCurrency !== undefined) data.salaryCurrency = salaryCurrency;
+    if (salaryPeriod !== undefined) data.salaryPeriod = salaryPeriod;
+    if (currentStage !== undefined) data.currentStage = currentStage;
+    if (dataFromThePhoneCall !== undefined) data.dataFromThePhoneCall = dataFromThePhoneCall;
+    if (initialInviteDate !== undefined) data.initialInviteDate = initialInviteDate ? new Date(initialInviteDate) : null;
+    if (initialInviteMethod !== undefined) data.initialInviteMethod = initialInviteMethod;
+    if (initialInviteContent !== undefined) data.initialInviteContent = initialInviteContent;
+    if (baseSalary !== undefined) data.baseSalary = baseSalary === '' ? null : baseSalary;
+    if (equity !== undefined) data.equity = equity;
+    if (bonus !== undefined) data.bonus = bonus;
+    if (signingBonus !== undefined) data.signingBonus = signingBonus === '' ? null : signingBonus;
+    if (benefits !== undefined) data.benefits = benefits;
+    if (offerDeadline !== undefined) data.offerDeadline = offerDeadline ? new Date(offerDeadline) : null;
+    if (nextFollowUp !== undefined) data.nextFollowUp = nextFollowUp ? new Date(nextFollowUp) : null;
+    if (scoreTech !== undefined) data.scoreTech = scoreTech;
+    if (scoreWLB !== undefined) data.scoreWLB = scoreWLB;
+    if (scoreGrowth !== undefined) data.scoreGrowth = scoreGrowth;
+    if (scoreVibe !== undefined) data.scoreVibe = scoreVibe;
 
     Object.assign(process, data);
     await this.em.flush();

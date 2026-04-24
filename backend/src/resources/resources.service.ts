@@ -37,7 +37,11 @@ export class ResourcesService {
     if (!resource) {
       throw new NotFoundException(`Resource with ID ${id} not found`);
     }
-    Object.assign(resource, data);
+    
+    // Explicitly map allowed fields
+    if (data.title !== undefined) resource.title = data.title;
+    if (data.tags !== undefined) resource.tags = data.tags;
+
     await this.em.flush();
     return resource;
   }
