@@ -41,7 +41,8 @@ describe('SettingsPanelComponent', () => {
           phoneNumber: '+11234567890'
         }
       }),
-      updateSettings: jasmine.createSpy('updateSettings')
+      updateSettings: jasmine.createSpy('updateSettings'),
+      resetSettings: jasmine.createSpy('resetSettings')
     };
 
     authServiceMock = {
@@ -131,6 +132,7 @@ describe('SettingsPanelComponent', () => {
   it('should reset settings when confirmed', async () => {
     await component.resetSettings();
     expect(confirmServiceMock.confirm).toHaveBeenCalled();
+    expect(settingsServiceMock.resetSettings).toHaveBeenCalled();
     expect(settingsServiceMock.updateSettings).not.toHaveBeenCalled(); // reset uses its own method
     expect(toastServiceMock.show).toHaveBeenCalledWith(jasmine.any(String), 'info');
   });
