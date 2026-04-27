@@ -24,6 +24,7 @@ describe('ProcessesService', () => {
     flush: jest.fn(),
     removeAndFlush: jest.fn(),
     create: jest.fn(),
+    findOne: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -61,7 +62,12 @@ describe('ProcessesService', () => {
         initialInviteDate: '2026-04-01',
       };
       mockEm.getReference.mockReturnValue({});
-      mockRepo.create.mockImplementation(data => data);
+      mockRepo.create.mockImplementation(data => ({
+        ...data,
+        interactions: { add: jest.fn() },
+        contacts: { add: jest.fn() },
+        reviews: { add: jest.fn() }
+      }));
 
       await service.create(dto as any, 1);
 
