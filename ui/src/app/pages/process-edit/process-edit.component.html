@@ -11,18 +11,14 @@
         </nav>
 
         <header class="form-hero">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div class="hero-top">
                 <div>
                     <span class="form-badge">Edit Process</span>
                     <h1>Edit Process</h1>
                     <p class="subtitle">Modify details for {{ process.companyName }}.</p>
                 </div>
-                <div class="hero-actions" style="display: flex; gap: 12px;">
-                    <button type="button" class="btn-secondary" [routerLink]="['/process', process.id]">Cancel Edit</button>
-                </div>
             </div>
-            
-            <div class="form-meta" style="margin-top: 12px;">Required fields are marked with <span class="required">*</span></div>
+            <div class="form-meta">Required fields are marked with <span class="required">*</span></div>
             <div class="hero-progress" aria-label="Completion progress">
                 <div class="progress" role="progressbar" [attr.aria-valuenow]="completionPercent" aria-valuemin="0" aria-valuemax="100">
                     <div class="progress-bar" [style.width.%]="completionPercent"></div>
@@ -113,7 +109,7 @@
                                         (input)="onLocationSearchChange()"
                                         (focus)="onLocationSearchChange()"
                                         (blur)="onFieldBlur('locationSearch')"
-                                        [placeholder]="process.workMode === 'remote' ? 'Location is optional for remote mode' : (selectedCountry ? 'Select town' : 'Select a country in settings')">
+                                        [placeholder]="process.workMode === 'remote' ? 'Optional for remote' : (selectedCountry ? 'Search or pick a city' : 'Set country in settings first')">
                                     <button
                                         type="button"
                                         class="location-toggle country-toggle"
@@ -146,14 +142,12 @@
                                     <option value="hybrid">Hybrid</option>
                                     <option value="onsite">On-site</option>
                                 </select>
+                                <div class="form-group days-inline" *ngIf="process.workMode === 'hybrid'">
+                                    <label>Days/week in office</label>
+                                    <input type="number" name="daysFromOffice" [(ngModel)]="process.daysFromOffice" min="1" max="5"
+                                        placeholder="e.g. 2" class="input-field">
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="form-group" *ngIf="process.workMode === 'hybrid'">
-                            <label>Days from Office per Week</label>
-                            <input type="number" name="daysFromOffice" [(ngModel)]="process.daysFromOffice" min="1" max="5"
-                                placeholder="e.g. 2" class="input-field">
-                            <p class="muted-hint">How many days per week are required in the office?</p>
                         </div>
                     </section>
 

@@ -474,11 +474,21 @@ select.input-field {
 }
 
 .location-work-row {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
 }
 
 .location-work-row .workmode-group {
   align-self: start;
+}
+
+.days-inline {
+  margin-top: var(--space-sm);
+}
+
+.hero-top {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .invitation-row {

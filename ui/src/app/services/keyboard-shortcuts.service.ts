@@ -55,6 +55,13 @@ export class KeyboardShortcutsService {
     });
 
     this.registerShortcut({
+      key: 'b',
+      ctrl: true,
+      description: 'Go to pipeline board',
+      action: () => this.router.navigate(['/pipeline'])
+    });
+
+    this.registerShortcut({
       key: 'k',
       ctrl: true,
       description: 'Go to coach hub',

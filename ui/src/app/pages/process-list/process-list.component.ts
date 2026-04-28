@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +10,34 @@ import { AuthService } from '../../services/auth.service';
 import { DateFormatPipe } from '../../pipes/date-format.pipe';
 import { PROCESS_STAGES } from '../../shared/process-stages';
 import { Subscription } from 'rxjs';
+import Chart from 'chart.js/auto';
+
+const ACTIVE_STAGES = new Set([
+    'Application Submitted', 'Resume Under Review',
+    'Initial Call Scheduled', 'Initial Call Completed',
+    'Interview Scheduled', 'Waiting for Interview Feedback', 'Awaiting Next Interview',
+    'Home Task Assigned', 'Home Task Submitted (Under Review)',
+    'Final Interview Scheduled', 'References Requested', 'Background Check in Progress',
+    'Offer Received', 'Offer in Negotiation',
+]);
+
+const INTERVIEW_STAGES = new Set([
+    'Initial Call Scheduled', 'Initial Call Completed',
+    'Interview Scheduled', 'Waiting for Interview Feedback', 'Awaiting Next Interview',
+    'Final Interview Scheduled',
+]);
+
+const OFFER_STAGES = new Set([
+    'Offer Received', 'Offer in Negotiation', 'Offer Accepted',
+]);
+
+const CLOSED_STAGES = new Set([
+    'Withdrawn', 'Rejected', 'Position Put On Hold', 'Ghosted / No Response', 'Offer Declined',
+]);
+
+const RESPONDED_STAGES = new Set([
+    'Application Submitted', 'Resume Under Review',
+]);
 
 @Component({
     selector: 'app-process-list',
@@ -19,6 +47,9 @@ import { Subscription } from 'rxjs';
     styleUrls: ['./process-list.component.css']
 })
 export class ProcessListComponent implements OnInit, OnDestroy {
+    @ViewChild('dashTimelineChart') timelineRef!: ElementRef;
+    @ViewChild('dashStageChart') stageRef!: ElementRef;
+
     processes: any[] = [];
     processesOnActioin: any[] = [];
     filteredProcesses: any[] = [];
@@ -37,12 +68,12 @@ export class ProcessListComponent implements OnInit, OnDestroy {
 
     // Available options for filters
     availableStages: string[] = PROCESS_STAGES;
-
     availableWorkModes: string[] = ['remote', 'hybrid', 'onsite'];
 
     userDisplayName: string = 'Your Job Search';
     settings!: UserSettings;
     private settingsSub!: Subscription;
+    private dashCharts: { [key: string]: any } = {};
 
     constructor(
         private processesService: ProcessesService,
@@ -74,9 +105,10 @@ export class ProcessListComponent implements OnInit, OnDestroy {
             next: (data) => {
                 this.processes = data;
                 this.processesOnActioin = data.filter((p: any) => !this.isClosedProcess(p));
-                this.applyFilters(); // Apply filters on initial load
+                this.applyFilters();
                 this.findTasks();
                 this.isLoading = false;
+                setTimeout(() => this.initDashCharts(), 0);
             },
             error: (err) => {
                 console.error('Failed to load processes', err);
@@ -87,10 +119,115 @@ export class ProcessListComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        if (this.settingsSub) {
-            this.settingsSub.unsubscribe();
-        }
+        if (this.settingsSub) this.settingsSub.unsubscribe();
+        Object.values(this.dashCharts).forEach(c => c?.destroy());
     }
+
+    // ─── Dashboard Charts ─────────────────────────────────────────────────────
+
+    private initDashCharts() {
+        if (!this.timelineRef?.nativeElement || !this.stageRef?.nativeElement) return;
+        this.buildTimelineChart();
+        this.buildStageChart();
+    }
+
+    private chartTextColor(): string {
+        return document.body.classList.contains('dark-theme') ? '#94a3b8' : '#64748b';
+    }
+
+    private buildTimelineChart() {
+        if (this.dashCharts['timeline']) this.dashCharts['timeline'].destroy();
+        const months: string[] = [];
+        const data: number[] = [];
+        const today = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+            months.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
+            data.push(this.processes.filter(p => {
+                const pd = new Date(p.createdAt);
+                return pd.getMonth() === d.getMonth() && pd.getFullYear() === d.getFullYear();
+            }).length);
+        }
+        const color = this.chartTextColor();
+        this.dashCharts['timeline'] = new Chart(this.timelineRef.nativeElement, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [{ label: 'Applications', data, backgroundColor: 'rgba(59,130,246,0.7)', borderRadius: 5, barThickness: 18 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color }, grid: { color: 'rgba(148,163,184,0.15)' } },
+                    x: { ticks: { color }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    private buildStageChart() {
+        if (this.dashCharts['stage']) this.dashCharts['stage'].destroy();
+        const counts: Record<string, number> = {};
+        this.processes.forEach(p => { counts[p.currentStage] = (counts[p.currentStage] || 0) + 1; });
+        const labels = Object.keys(counts);
+        const data = Object.values(counts);
+        const color = this.chartTextColor();
+        this.dashCharts['stage'] = new Chart(this.stageRef.nativeElement, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{ data, backgroundColor: ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#64748b','#ec4899'], borderWidth: 0 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '72%',
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, color, usePointStyle: true, padding: 10 } } }
+            }
+        });
+    }
+
+    // ─── KPI Stats ────────────────────────────────────────────────────────────
+
+    getRejectionRate(): number {
+        if (!this.processes.length) return 0;
+        const rejected = this.processes.filter(p => p.currentStage === 'Rejected').length;
+        return Math.round((rejected / this.processes.length) * 100);
+    }
+
+    getResponseRate(): number {
+        if (!this.processes.length) return 0;
+        const responded = this.processes.filter(p => !RESPONDED_STAGES.has(p.currentStage)).length;
+        return Math.round((responded / this.processes.length) * 100);
+    }
+
+    // ─── Insight Panels ───────────────────────────────────────────────────────
+
+    getInterviewsThisWeek(): any[] {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 7);
+        return this.processes
+            .filter(p => INTERVIEW_STAGES.has(p.currentStage) && new Date(p.updatedAt) >= cutoff)
+            .slice(0, 4);
+    }
+
+    getTopScored(): any[] {
+        return this.processes
+            .filter(p => !CLOSED_STAGES.has(p.currentStage) && this.avgScore(p) > 0)
+            .sort((a, b) => this.avgScore(b) - this.avgScore(a))
+            .slice(0, 3);
+    }
+
+    avgScore(p: any): number {
+        const scores = [p.scoreTech, p.scoreWLB, p.scoreGrowth, p.scoreVibe].filter((s: number) => s > 0);
+        return scores.length ? Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length) : 0;
+    }
+
+    scoreClass(score: number): string {
+        if (score >= 8) return 'score-high';
+        if (score >= 5) return 'score-mid';
+        return 'score-low';
+    }
+
 
     getAvatarUrl(): string {
         const seed = this.settings?.profile?.contactEmail || this.authService.getUser()?.email || 'default';
@@ -335,20 +472,14 @@ export class ProcessListComponent implements OnInit, OnDestroy {
 
     // Stats helper methods
     getActiveCount(): number {
-        return this.filteredProcesses.filter(p =>
-            !this.isClosedProcess(p) && !['Offer', 'Signed'].includes(p.currentStage)
-        ).length;
+        return this.processes.filter(p => ACTIVE_STAGES.has(p.currentStage)).length;
     }
 
     getInterviewCount(): number {
-        return this.filteredProcesses.filter(p =>
-            ['Interview Scheduled', 'Technical Interview', 'Final Interview', 'Final HR Interview Scheduled'].includes(p.currentStage)
-        ).length;
+        return this.processes.filter(p => INTERVIEW_STAGES.has(p.currentStage)).length;
     }
 
     getOfferCount(): number {
-        return this.filteredProcesses.filter(p =>
-            ['Offer', 'Signed'].includes(p.currentStage)
-        ).length;
+        return this.processes.filter(p => OFFER_STAGES.has(p.currentStage)).length;
     }
 }

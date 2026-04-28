@@ -34,9 +34,8 @@
                                 <label>Company Name <span class="required">*</span></label>
                                 <input type="text" name="companyName" [(ngModel)]="process.companyName" required
                                     placeholder="e.g. Google" class="input-field" (blur)="onFieldBlur('companyName')"
-                                    [class.error]="isFieldInvalid('companyName')">
+                                    [class.error]="isFieldInvalid('companyName')" autofocus>
                                 <p *ngIf="isFieldInvalid('companyName')" class="error-message">Company name is required</p>
-                                <p class="field-hint">Use the official company name for easy reporting later.</p>
                             </div>
 
                             <div class="form-group">
@@ -91,7 +90,6 @@
                                     Location
                                     <span class="required" *ngIf="process.workMode !== 'remote'">*</span>
                                 </label>
-                                <p class="field-hint">Can’t find your city? You can type free text and choose the <strong>Other</strong> option.</p>
                                 <div class="location-combobox country-combobox" [class.open]="showLocationDropdown">
                                     <input
                                         class="input-field"
@@ -104,7 +102,7 @@
                                         (input)="onLocationSearchChange()"
                                         (focus)="onLocationSearchChange()"
                                         (blur)="onFieldBlur('locationSearch')"
-                                        [placeholder]="process.workMode === 'remote' ? 'Location is optional for remote mode' : (selectedCountry ? 'Select town from your country list' : 'Type location or set country in settings')"
+                                        [placeholder]="process.workMode === 'remote' ? 'Optional for remote' : (selectedCountry ? 'Search or pick a city' : 'Set country in settings first')"
                                         [class.error]="isFieldInvalid('locationSearch')">
                                     <p *ngIf="isFieldInvalid('locationSearch')" class="error-message">Location is required</p>
                                     <button
@@ -146,16 +144,12 @@
                                     <option value="hybrid">Hybrid</option>
                                     <option value="onsite">On-site</option>
                                 </select>
+                                <div class="form-group days-inline" *ngIf="process.workMode === 'hybrid'">
+                                    <label>Days/week in office</label>
+                                    <input type="number" name="daysFromOffice" [(ngModel)]="process.daysFromOffice" min="1" max="5"
+                                        placeholder="e.g. 2" class="input-field">
+                                </div>
                             </div>
-                        </div>
-
-                
-
-                        <div class="form-group" *ngIf="process.workMode === 'hybrid'">
-                            <label>Days from Office per Week</label>
-                            <input type="number" name="daysFromOffice" [(ngModel)]="process.daysFromOffice" min="1" max="5"
-                                placeholder="e.g. 2" class="input-field">
-                            <p class="muted-hint">How many days per week are required in the office?</p>
                         </div>
                     </section>
 
@@ -223,24 +217,24 @@
                         <div class="aside-kpis">
                             <div class="kpi">
                                 <div class="kpi-label">Company</div>
-                                <div class="kpi-value">{{ process.companyName || '—' }}</div>
+                                <div class="kpi-value">{{ process.companyName || '&#8212;' }}</div>
                             </div>
                             <div class="kpi">
                                 <div class="kpi-label">Role</div>
-                                <div class="kpi-value">{{ process.roleTitle || '—' }}</div>
+                                <div class="kpi-value">{{ process.roleTitle || '&#8212;' }}</div>
                             </div>
                             <div class="kpi">
                                 <div class="kpi-label">Stage</div>
-                                <div class="kpi-value">{{ process.currentStage || '—' }}</div>
+                                <div class="kpi-value">{{ process.currentStage || '&#8212;' }}</div>
                             </div>
                             <div class="kpi">
                                 <div class="kpi-label">Work mode</div>
-                                <div class="kpi-value">{{ process.workMode || '—' }}</div>
+                                <div class="kpi-value">{{ process.workMode || '&#8212;' }}</div>
                             </div>
                         </div>
                         <div class="aside-tip">
                             <div class="tip-badge">Tip</div>
-                            <div class="tip-text">Keep the summary short and specific — it makes prep effortless later.</div>
+                            <div class="tip-text">Keep the summary short and specific &#8212; it makes prep effortless later.</div>
                         </div>
                     </div>
                 </aside>
