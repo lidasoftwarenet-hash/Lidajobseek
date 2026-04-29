@@ -204,6 +204,7 @@ body:not(.dark-theme) .nav-item.active .nav-icon-wrap { background: rgba(37,99,2
   gap: 8px;
   justify-self: end;
   flex-shrink: 0;
+  margin-right: 36px;
 }
 
 .action-btn {
