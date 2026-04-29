@@ -57,6 +57,9 @@ export class ProcessListComponent implements OnInit, OnDestroy, AfterViewChecked
     tasks: any[] = [];
     isLoading: boolean = true;
 
+    // View mode
+    viewMode: 'grid' | 'list' = 'grid';
+
     // Sorting properties
     sortColumn: string = '';
     sortDirection: 'asc' | 'desc' = 'asc';

@@ -354,6 +354,32 @@
                     Use the filters on the left to focus on active conversations, upcoming interviews, or offers.
                 </p>
             </div>
+            <div class="view-toggle" role="group" aria-label="View mode">
+                <button
+                    class="view-toggle-btn"
+                    [class.view-toggle-btn--active]="viewMode === 'grid'"
+                    (click)="viewMode = 'grid'"
+                    title="Grid view"
+                    aria-label="Grid view"
+                >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                </button>
+                <button
+                    class="view-toggle-btn"
+                    [class.view-toggle-btn--active]="viewMode === 'list'"
+                    (click)="viewMode = 'list'"
+                    title="List view"
+                    aria-label="List view"
+                >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- Loading Skeleton -->
@@ -379,7 +405,7 @@
     </div>
 
     <!-- Process Cards Grid -->
-        <div class="processes-grid" *ngIf="!isLoading && filteredProcesses.length > 0; else noData">
+        <div class="processes-grid" *ngIf="!isLoading && filteredProcesses.length > 0 && viewMode === 'grid'; else listOrEmpty">
         <div *ngFor="let p of filteredProcesses" class="process-card"
             [class.card-closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'"
             [routerLink]="['/process', p.id]">
@@ -436,9 +462,94 @@
         </div>
     </div>
 
-            <!-- Empty State -->
-            <ng-template #noData>
-                <div class="empty-state-modern">
+    <!-- List view / empty fallback -->
+    <ng-template #listOrEmpty>
+        <!-- Process List View -->
+        <div class="processes-list" *ngIf="!isLoading && filteredProcesses.length > 0 && viewMode === 'list'">
+            <!-- List header -->
+            <div class="list-header-row">
+                <div class="list-col list-col-company">
+                    <button class="list-sort-btn" (click)="sort('company')">
+                        Company
+                        <svg *ngIf="isSorted('company')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline *ngIf="getSortDirection('company') === 'asc'" points="18 15 12 9 6 15"/>
+                            <polyline *ngIf="getSortDirection('company') === 'desc'" points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="list-col list-col-role">Role</div>
+                <div class="list-col list-col-stage">
+                    <button class="list-sort-btn" (click)="sort('stage')">
+                        Stage
+                        <svg *ngIf="isSorted('stage')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline *ngIf="getSortDirection('stage') === 'asc'" points="18 15 12 9 6 15"/>
+                            <polyline *ngIf="getSortDirection('stage') === 'desc'" points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="list-col list-col-mode">Mode</div>
+                <div class="list-col list-col-interactions">
+                    <button class="list-sort-btn" (click)="sort('interactions')">
+                        Sessions
+                        <svg *ngIf="isSorted('interactions')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline *ngIf="getSortDirection('interactions') === 'asc'" points="18 15 12 9 6 15"/>
+                            <polyline *ngIf="getSortDirection('interactions') === 'desc'" points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="list-col list-col-updated">
+                    <button class="list-sort-btn" (click)="sort('updated')">
+                        Updated
+                        <svg *ngIf="isSorted('updated')" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline *ngIf="getSortDirection('updated') === 'asc'" points="18 15 12 9 6 15"/>
+                            <polyline *ngIf="getSortDirection('updated') === 'desc'" points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- List rows -->
+            <a
+                class="list-row"
+                *ngFor="let p of filteredProcesses"
+                [routerLink]="['/process', p.id]"
+                [class.list-row--closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'"
+            >
+                <div class="list-col list-col-company">
+                    <div class="list-avatar">{{ p.companyName.charAt(0).toUpperCase() }}</div>
+                    <div class="list-company-wrap">
+                        <span class="list-company-name">{{ p.companyName }}</span>
+                        <span class="list-location" *ngIf="p.location">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ p.location }}
+                        </span>
+                    </div>
+                </div>
+                <div class="list-col list-col-role">
+                    <span class="list-role-text">{{ p.roleTitle }}</span>
+                </div>
+                <div class="list-col list-col-stage">
+                    <span class="badge-stage" [ngClass]="getStatusClass(p.currentStage)">{{ p.currentStage }}</span>
+                </div>
+                <div class="list-col list-col-mode">
+                    <span class="list-mode-badge" *ngIf="p.workMode" [attr.data-mode]="p.workMode">{{ p.workMode | titlecase }}</span>
+                    <span *ngIf="!p.workMode" class="list-empty-cell">—</span>
+                </div>
+                <div class="list-col list-col-interactions">
+                    <span class="list-sessions" *ngIf="p._count?.interactions">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        {{ p._count.interactions }}
+                    </span>
+                    <span *ngIf="!p._count?.interactions" class="list-empty-cell">—</span>
+                </div>
+                <div class="list-col list-col-updated">
+                    <span class="list-date">{{ p.updatedAt | dateFormat:'date' }}</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state-modern" *ngIf="!isLoading && filteredProcesses.length === 0">
                     <div class="empty-illustration">
                         <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -460,7 +571,7 @@
                         </button>
                     </div>
                 </div>
-            </ng-template>
+        </ng-template>
         </section>
     </div>
 </div>
