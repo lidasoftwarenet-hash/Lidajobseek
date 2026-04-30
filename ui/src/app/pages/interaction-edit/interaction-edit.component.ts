@@ -10,7 +10,7 @@ import { INTERVIEW_TYPES, getGroupedInterviewTypes, normalizeInterviewType } fro
 @Component({
     selector: 'app-interaction-edit',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, DateFormatPipe],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './interaction-edit.component.html',
     styleUrl: './interaction-edit.component.css'
 })

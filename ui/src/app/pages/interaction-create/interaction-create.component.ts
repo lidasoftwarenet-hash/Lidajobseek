@@ -10,7 +10,7 @@ import { DEFAULT_INTERVIEW_TYPE_ID, INTERVIEW_TYPES, getGroupedInterviewTypes, n
 @Component({
     selector: 'app-interaction-create',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, DateFormatPipe],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './interaction-create.component.html',
     styleUrl: './interaction-create.component.css'
 })

@@ -75,6 +75,14 @@ export class SettingsService {
 
     this.authService.getPreferences().subscribe({
       next: (prefs) => {
+        if (prefs.pricingPlan) {
+          const user = this.authService.getUser();
+          if (user && user.pricingPlan !== prefs.pricingPlan) {
+            user.pricingPlan = prefs.pricingPlan;
+            this.authService.setUser(user);
+          }
+        }
+
         const merged = {
           ...this.settingsSubject.value,
           theme: prefs.theme,

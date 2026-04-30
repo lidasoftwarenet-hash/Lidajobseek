@@ -25,7 +25,10 @@ const QUICK_PROMPTS = [
 export class CareerChatPanelComponent implements OnInit {
   @Output() closed = new EventEmitter<void>();
 
-  isPremium = false;
+  get isPremium(): boolean {
+    return this.authService.isPremiumUser();
+  }
+
   isLoading = false;
   message = '';
   result: CareerChatResponse | null = null;
@@ -38,9 +41,7 @@ export class CareerChatPanelComponent implements OnInit {
     private router: Router,
   ) {}
 
-  ngOnInit() {
-    this.isPremium = this.authService.isPremiumUser();
-  }
+  ngOnInit() {}
 
   close() {
     this.closed.emit();

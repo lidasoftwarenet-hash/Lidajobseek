@@ -131,6 +131,7 @@ export class AuthService {
       timeFormat: user.timeFormatPreference || '24',
       avatarStyle: user.avatarStylePreference || 'avataaars',
       hasSeenOnboarding: user.hasSeenOnboarding ?? true,
+      pricingPlan: user.pricingPlan || 'free',
     };
   }
 

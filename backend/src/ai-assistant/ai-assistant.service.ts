@@ -67,9 +67,9 @@ export class AiAssistantService {
     @InjectRepository(Interaction)
     private readonly interactionRepository: EntityRepository<Interaction>,
   ) {
-    this.apiKey = this.configService.get<string>('AI_ASSISTANT_API_KEY');
+    this.apiKey = this.configService.get<string>('DEEPSEEK_API_KEY');
     this.apiUrl =
-      this.configService.get<string>('AI_ASSISTANT_API_URL') ??
+      this.configService.get<string>('DEEPSEEK_API_URL') ??
       'https://api.deepseek.com';
   }
 
