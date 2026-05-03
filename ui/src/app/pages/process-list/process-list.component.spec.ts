@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ElementRef } from '@angular/core';
 import { ProcessListComponent } from './process-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +11,19 @@ import { ToastService } from '../../services/toast.service';
 import { ConfirmService } from '../../services/confirm.service';
 import { of, BehaviorSubject } from 'rxjs';
 
-import { LucideAngularModule, Plus, Search, Filter, Grid, List, Download, Upload, RefreshCw, Trash2, Edit, Eye, MoreVertical, Info, LayoutGrid } from 'lucide-angular';
+import { LucideAngularModule } from 'lucide-angular';
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'lucide-icon',
+  template: '',
+  standalone: true
+})
+class MockLucideIconComponent {
+  @Input() name: any;
+  @Input() size: any;
+  @Input() strokeWidth: any;
+}
 
 describe('ProcessListComponent', () => { 
   let component: ProcessListComponent;
@@ -52,8 +65,7 @@ describe('ProcessListComponent', () => {
         ProcessListComponent, 
         HttpClientTestingModule, 
         FormsModule, 
-        RouterTestingModule,
-        LucideAngularModule.pick({ Plus, Search, Filter, Grid, List, Download, Upload, RefreshCw, Trash2, Edit, Eye, MoreVertical, Info, LayoutGrid })
+        RouterTestingModule
       ],
       providers: [
         { provide: ProcessesService, useValue: processesServiceMock },
@@ -62,7 +74,12 @@ describe('ProcessListComponent', () => {
         { provide: ToastService, useValue: { show: jasmine.createSpy('show') } },
         { provide: ConfirmService, useValue: { custom: jasmine.createSpy('custom') } }
       ]
-    }).compileComponents();
+    })
+    .overrideComponent(ProcessListComponent, {
+      remove: { imports: [LucideAngularModule] },
+      add: { imports: [MockLucideIconComponent] }
+    })
+    .compileComponents();
 
     fixture = TestBed.createComponent(ProcessListComponent);
     component = fixture.componentInstance;
@@ -165,8 +182,8 @@ describe('ProcessListComponent', () => {
 
   it('should initialize charts when loading completes and view is ready', () => {
     // Mock ElementRefs with real canvas elements for Chart.js
-    component.timelineRef = { nativeElement: document.createElement('canvas') } as any;
-    component.stageRef = { nativeElement: document.createElement('canvas') } as any;
+    component.timelineRef = new ElementRef(document.createElement('canvas'));
+    component.stageRef = new ElementRef(document.createElement('canvas'));
     
     // Spy on initDashCharts (private, so cast to any)
     spyOn(component as any, 'initDashCharts').and.callThrough();
