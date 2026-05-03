@@ -31,7 +31,7 @@ describe('ProcessListComponent', () => {
 
   const settingsSubject = new BehaviorSubject(mockSettings);
 
-  beforeEach(fakeAsync(() => {
+  beforeEach(async () => {
     processesServiceMock = {
       getAll: jasmine.createSpy('getAll').and.returnValue(of([])),
       exportData: jasmine.createSpy('exportData'),
@@ -47,7 +47,7 @@ describe('ProcessListComponent', () => {
       getUser: jasmine.createSpy('getUser').and.returnValue({ email: 'shepard@n7.com' })
     };
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       imports: [
         ProcessListComponent, 
         HttpClientTestingModule, 
@@ -67,8 +67,8 @@ describe('ProcessListComponent', () => {
     fixture = TestBed.createComponent(ProcessListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    tick(); // Handle setTimeout in ngOnInit
-  }));
+    await fixture.whenStable();
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
