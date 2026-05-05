@@ -162,8 +162,11 @@
           >
             <!-- Card header -->
             <div class="pb-card-head">
-              <div class="pb-card-avatar" [attr.data-letter]="(p.companyName || '?')[0].toUpperCase()">
-                {{ (p.companyName || '?')[0].toUpperCase() }}
+              <div class="pb-card-avatar-wrapper">
+                <div class="pb-card-avatar" [class.has-logo]="p.companyLogoUrl" [attr.data-letter]="(p.companyName || '?')[0].toUpperCase()">
+                  <img *ngIf="p.companyLogoUrl" [src]="p.companyLogoUrl" class="pb-card-logo" (error)="p.companyLogoUrl = null">
+                  <span *ngIf="!p.companyLogoUrl">{{ (p.companyName || '?')[0].toUpperCase() }}</span>
+                </div>
               </div>
               <div class="pb-card-identity">
                 <div class="pb-card-company">{{ p.companyName }}</div>

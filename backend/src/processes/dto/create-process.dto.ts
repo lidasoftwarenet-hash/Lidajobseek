@@ -1,5 +1,7 @@
 export class CreateProcessDto {
   companyName: string;
+  companyWebsite?: string;
+  companyLogoUrl?: string;
   roleTitle: string;
   techStack: string;
   location: string;

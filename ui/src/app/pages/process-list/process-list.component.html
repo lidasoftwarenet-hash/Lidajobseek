@@ -355,7 +355,8 @@
             [routerLink]="['/process', p.id]">
             <div class="card-header">
                 <div class="company-logo">
-                    {{ p.companyName.charAt(0).toUpperCase() }}
+                    <img *ngIf="p.companyLogoUrl" [src]="p.companyLogoUrl" class="logo-img" (error)="p.companyLogoUrl = null">
+                    <span *ngIf="!p.companyLogoUrl">{{ p.companyName.charAt(0).toUpperCase() }}</span>
                 </div>
                 <div class="card-status">
                     <span class="status-dot" [ngClass]="getStatusClass(p.currentStage)"></span>
@@ -460,7 +461,10 @@
                 [class.list-row--closed]="p.currentStage === 'Rejected' || p.currentStage === 'Withdrawn'"
             >
                 <div class="list-col list-col-company">
-                    <div class="list-avatar">{{ p.companyName.charAt(0).toUpperCase() }}</div>
+                    <div class="list-avatar">
+                        <img *ngIf="p.companyLogoUrl" [src]="p.companyLogoUrl" class="logo-img" (error)="p.companyLogoUrl = null">
+                        <span *ngIf="!p.companyLogoUrl">{{ p.companyName.charAt(0).toUpperCase() }}</span>
+                    </div>
                     <div class="list-company-wrap">
                         <span class="list-company-name">{{ p.companyName }}</span>
                         <span class="list-location" *ngIf="p.location">
