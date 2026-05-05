@@ -160,8 +160,14 @@
                 <div class="form-group salary-group">
                     <label>Salary Expectation</label>
                     <div class="salary-inputs">
-                        <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
-                            placeholder="Amount" class="input-field amount-input">
+                        <div class="custom-number-input">
+                            <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
+                                placeholder="Amount" class="input-field amount-input">
+                            <div class="custom-arrows">
+                                <button type="button" class="arrow-up" (click)="adjustSalary(1000)" tabindex="-1">▲</button>
+                                <button type="button" class="arrow-down" (click)="adjustSalary(-1000)" tabindex="-1">▼</button>
+                            </div>
+                        </div>
 
                         <select name="salaryCurrency" [(ngModel)]="process.salaryCurrency"
                             class="input-field currency-select">

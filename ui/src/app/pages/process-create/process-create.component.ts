@@ -214,6 +214,13 @@ export class ProcessCreateComponent implements OnInit, OnDestroy {
         }
     }
 
+    adjustSalary(amount: number) {
+        const current = Number(this.process.salaryExpectation) || 0;
+        const next = Math.max(0, current + amount);
+        this.process.salaryExpectation = next;
+        this.cdr.detectChanges();
+    }
+
     isFieldInvalid(fieldName: string): boolean {
         const field = this.processForm?.form?.get(fieldName);
         return !!(field && field.invalid && (field.dirty || field.touched || this.formSubmitted));

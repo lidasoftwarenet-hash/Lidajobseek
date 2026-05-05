@@ -554,8 +554,69 @@ select.input-field {
   align-items: stretch;
 }
 
-.amount-input {
+.custom-number-input {
   grid-column: 1;
+  position: relative;
+}
+
+/* Hide Native Spin Buttons */
+.custom-number-input input[type="number"]::-webkit-outer-spin-button,
+.custom-number-input input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-number-input input[type="number"] {
+  -moz-appearance: textfield;
+  padding-right: 36px !important; /* Make room for custom arrows */
+}
+
+.custom-arrows {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 5;
+  background: rgba(148, 163, 184, 0.05);
+  border-radius: 6px;
+  padding: 1px;
+}
+
+.custom-arrows button {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 8px;
+  width: 24px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.arrow-down {
+  margin-top: -4px;
+}
+
+.custom-arrows button:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary-blue);
+}
+
+body.dark-theme .custom-arrows {
+  background: rgba(15, 23, 42, 0.3);
+}
+
+body.dark-theme .custom-arrows button:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
 }
 
 .currency-select {

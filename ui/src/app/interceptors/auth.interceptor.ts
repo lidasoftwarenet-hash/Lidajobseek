@@ -10,7 +10,9 @@ export class AuthInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     const token = this.authService.getToken();
-    if (token) {
+    const isPublicPath = request.url.includes('/login') || request.url.includes('/register') || request.url.includes('/verify-code');
+
+    if (token && !isPublicPath) {
       request = request.clone({
         withCredentials: true,
         setHeaders: {
@@ -22,6 +24,10 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
+          // Allow login requests to handle their own 401 errors
+          if (request.url.includes('/login')) {
+            return throwError(() => error);
+          }
           // Token is invalid or expired, logout and redirect to login
           this.authService.logout();
           return EMPTY;

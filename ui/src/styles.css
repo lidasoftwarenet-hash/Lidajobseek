@@ -1553,3 +1553,9 @@ kbd {
   color: white;
   transform: rotate(90deg);
 }
+
+/* ===== GLOBAL DARK MODE NATIVE CONTROLS FIX ===== */
+body.dark-theme {
+  color-scheme: dark !important;
+}
+

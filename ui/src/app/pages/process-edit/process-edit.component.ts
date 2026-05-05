@@ -182,6 +182,13 @@ export class ProcessEditComponent implements OnInit, OnDestroy {
         }
     }
 
+    adjustSalary(amount: number) {
+        const current = Number(this.process.salaryExpectation) || 0;
+        const next = Math.max(0, current + amount);
+        this.process.salaryExpectation = next;
+        this.cdr.detectChanges();
+    }
+
     onStageChange() {
         // Auto-populate initial interaction fields if section is shown and empty
         if (this.shouldShowInteractionSection) {
