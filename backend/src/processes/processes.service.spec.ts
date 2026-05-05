@@ -116,6 +116,89 @@ describe('ProcessesService', () => {
       expect(mockEm.persist).not.toHaveBeenCalled(); // Should NOT persist a new one, just update the existing
       expect(mockEm.flush).toHaveBeenCalled();
     });
+
+    it('should persist companyWebsite and companyLogoUrl when provided', async () => {
+      const dto = {
+        companyName: 'Varonis',
+        companyWebsite: 'varonis.com',
+        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=varonis.com&sz=128',
+      };
+      mockEm.getReference.mockReturnValue({});
+      mockRepo.create.mockImplementation(data => ({
+        ...data,
+        interactions: { add: jest.fn() },
+        contacts: { add: jest.fn() },
+        reviews: { add: jest.fn() }
+      }));
+
+      await service.create(dto as any, 1);
+
+      expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+        companyWebsite: 'varonis.com',
+        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=varonis.com&sz=128',
+      }));
+    });
+
+    it('should create process without companyWebsite when not provided', async () => {
+      const dto = { companyName: 'NoBrand Corp' };
+      mockEm.getReference.mockReturnValue({});
+      mockRepo.create.mockImplementation(data => ({
+        ...data,
+        interactions: { add: jest.fn() },
+        contacts: { add: jest.fn() },
+        reviews: { add: jest.fn() }
+      }));
+
+      await service.create(dto as any, 1);
+
+      const callArg = mockRepo.create.mock.calls[0][0];
+      expect(callArg.companyName).toBe('NoBrand Corp');
+      expect(callArg.companyWebsite).toBeUndefined();
+    });
+  });
+
+  describe('update', () => {
+    it('should update companyWebsite and companyLogoUrl on an existing process', async () => {
+      const existingProcess: any = {
+        id: 1,
+        companyName: 'Old Corp',
+        companyWebsite: '',
+        companyLogoUrl: '',
+        interactions: { add: jest.fn() },
+      };
+      mockRepo.findOne.mockResolvedValue(existingProcess);
+
+      const updateDto = {
+        companyWebsite: 'google.com',
+        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=google.com&sz=128',
+      };
+
+      await service.update(1, updateDto, 1);
+
+      expect(existingProcess.companyWebsite).toBe('google.com');
+      expect(existingProcess.companyLogoUrl).toBe('https://www.google.com/s2/favicons?domain=google.com&sz=128');
+      expect(mockEm.flush).toHaveBeenCalled();
+    });
+
+    it('should NOT update companyWebsite if not provided in the dto', async () => {
+      const existingProcess: any = {
+        id: 1,
+        companyName: 'Old Corp',
+        companyWebsite: 'oldcorp.com',
+        companyLogoUrl: 'https://old-logo.com',
+      };
+      mockRepo.findOne.mockResolvedValue(existingProcess);
+
+      await service.update(1, { roleTitle: 'New Title' }, 1);
+
+      expect(existingProcess.companyWebsite).toBe('oldcorp.com'); // unchanged
+      expect(existingProcess.companyLogoUrl).toBe('https://old-logo.com'); // unchanged
+    });
+
+    it('should throw NotFoundException when updating a non-existent process', async () => {
+      mockRepo.findOne.mockResolvedValue(null);
+      await expect(service.update(999, {}, 1)).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('findAll', () => {
