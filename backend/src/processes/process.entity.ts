@@ -12,6 +12,12 @@ export class Process {
   @Property()
   companyName!: string;
 
+  @Property({ nullable: true })
+  companyWebsite?: string;
+
+  @Property({ nullable: true })
+  companyLogoUrl?: string;
+
   @Property()
   roleTitle!: string;
 

@@ -41,7 +41,9 @@ export class ProcessCreateComponent implements OnInit, OnDestroy {
         initialInviteMethod: '',
         initiatedBy: '',
         firstContactChannel: '',
-        initialInviteContent: ''
+        initialInviteContent: '',
+        companyWebsite: '',
+        companyLogoUrl: ''
     };
 
     locationSearch = '';
@@ -214,6 +216,13 @@ export class ProcessCreateComponent implements OnInit, OnDestroy {
         }
     }
 
+    adjustSalary(amount: number) {
+        const current = Number(this.process.salaryExpectation) || 0;
+        const next = Math.max(0, current + amount);
+        this.process.salaryExpectation = next;
+        this.cdr.detectChanges();
+    }
+
     isFieldInvalid(fieldName: string): boolean {
         const field = this.processForm?.form?.get(fieldName);
         return !!(field && field.invalid && (field.dirty || field.touched || this.formSubmitted));
@@ -224,6 +233,47 @@ export class ProcessCreateComponent implements OnInit, OnDestroy {
         if (field) field.markAsTouched();
     }
 
+    onWebsiteBlur() {
+        this.fetchLogo();
+    }
+
+    fetchLogo() {
+        if (!this.process.companyWebsite) {
+            this.process.companyLogoUrl = '';
+            return;
+        }
+
+        let url = this.process.companyWebsite.trim();
+        let domain = '';
+        
+        try {
+            // Remove protocol and paths for domain extraction
+            let cleanUrl = url;
+            if (cleanUrl.includes('://')) {
+                const urlObj = new URL(cleanUrl);
+                domain = urlObj.hostname;
+            } else {
+                domain = cleanUrl.split('/')[0].split('?')[0];
+            }
+            
+            // Remove www.
+            domain = domain.replace(/^www\./i, '');
+        } catch (e) {
+            domain = url.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0].split('?')[0];
+        }
+        
+        if (domain && domain.includes('.') && domain.length > 3) {
+            // Using Google Favicon API as requested by the user
+            const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+            
+            if (this.process.companyLogoUrl !== faviconUrl) {
+                this.process.companyLogoUrl = faviconUrl;
+                console.log('Logo grabbed successfully:', this.process.companyLogoUrl);
+                this.cdr.detectChanges();
+            }
+        }
+    }
+
     get shouldShowInteractionSection(): boolean {
         if (!this.process || !this.process.currentStage) return false;
         const current = this.process.currentStage;
@@ -232,6 +282,12 @@ export class ProcessCreateComponent implements OnInit, OnDestroy {
 
     onSubmit() {
         this.formSubmitted = true;
+        
+        // Ensure logo is fetched if website was just typed
+        if (this.process.companyWebsite && !this.process.companyLogoUrl) {
+            this.onWebsiteBlur();
+        }
+
         if (!this.processForm.valid) {
             this.toastService.show('Please fill in all required fields.', 'warning');
             const firstInvalidControl = document.querySelector('.input-field.ng-invalid');

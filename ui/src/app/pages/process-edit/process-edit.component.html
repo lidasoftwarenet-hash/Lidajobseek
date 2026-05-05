@@ -37,11 +37,21 @@
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group">
+                            <div class="form-group company-name-group">
                                 <label>Company Name <span class="required">*</span></label>
-                                <input type="text" name="companyName" [(ngModel)]="process.companyName" required
-                                    placeholder="e.g. Acme Corp" class="input-field" [class.error]="isFieldInvalid('companyName')"
-                                    (blur)="onFieldBlur('companyName')">
+                                <div class="company-input-wrapper">
+                                    <div class="company-logo-preview" *ngIf="process.companyLogoUrl; else initialsLogo">
+                                        <img [src]="process.companyLogoUrl" alt="Company Logo" (error)="process.companyLogoUrl = null">
+                                    </div>
+                                    <ng-template #initialsLogo>
+                                        <div class="company-logo-preview initials">
+                                            {{ (process.companyName?.charAt(0) || '?').toUpperCase() }}
+                                        </div>
+                                    </ng-template>
+                                    <input type="text" name="companyName" [(ngModel)]="process.companyName" required
+                                        placeholder="e.g. Acme Corp" class="input-field" [class.error]="isFieldInvalid('companyName')"
+                                        (blur)="onFieldBlur('companyName')">
+                                </div>
                                 <p *ngIf="isFieldInvalid('companyName')" class="error-message">Company name is required</p>
                                 <p class="field-hint">Use the official company name for easy reporting later.</p>
                             </div>
@@ -53,6 +63,16 @@
                                     (blur)="onFieldBlur('roleTitle')">
                                 <p *ngIf="isFieldInvalid('roleTitle')" class="error-message">Role title is required</p>
                             </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Company Website</label>
+                            <input type="text" name="companyWebsite" [(ngModel)]="process.companyWebsite"
+                                placeholder="e.g. acme.com" class="input-field" (blur)="onWebsiteBlur()">
+                            <button type="button" class="btn-grab-logo-simple" (click)="fetchLogo()" style="margin-top: 4px; width: fit-content;">
+                                Grab Icon
+                            </button>
+                            <p class="field-hint">Paste the URL to automatically grab the company logo.</p>
                         </div>
 
                         <div class="form-group">
@@ -160,8 +180,14 @@
                 <div class="form-group salary-group">
                     <label>Salary Expectation</label>
                     <div class="salary-inputs">
-                        <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
-                            placeholder="Amount" class="input-field amount-input">
+                        <div class="custom-number-input">
+                            <input type="number" name="salaryExpectation" [(ngModel)]="process.salaryExpectation"
+                                placeholder="Amount" class="input-field amount-input">
+                            <div class="custom-arrows">
+                                <button type="button" class="arrow-up" (click)="adjustSalary(1000)" tabindex="-1">▲</button>
+                                <button type="button" class="arrow-down" (click)="adjustSalary(-1000)" tabindex="-1">▼</button>
+                            </div>
+                        </div>
 
                         <select name="salaryCurrency" [(ngModel)]="process.salaryCurrency"
                             class="input-field currency-select">

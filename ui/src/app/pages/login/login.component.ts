@@ -129,8 +129,15 @@ export class LoginComponent {
           this.settingsService.syncWithServer();
           this.router.navigate(['/']);
         },
-        error: () => {
-          this.error = 'Invalid credentials';
+        error: (err) => {
+          if (err.status === 429) {
+            this.error = 'Security Alert: Too many login attempts detected. Please wait a moment before trying again to protect your account.';
+          } else if (err.status === 401) {
+            this.error = 'Authentication Failed: The email address or password provided is incorrect. Please verify your credentials and try again.';
+          } else {
+            this.error = 'Connection Error: We are unable to reach the server. Please check your internet connection and try again.';
+          }
+          this.toastService.show(this.error, 'error');
         }
       });
     }

@@ -353,20 +353,25 @@
 .country-toggle {
   position: absolute;
   right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 6px;
+  bottom: 6px;
   width: 32px;
-  height: 32px;
   border: none;
   border-radius: 8px;
   background: rgba(148, 163, 184, 0.1);
   color: var(--text-secondary);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  display: grid;
+  place-items: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
   font-size: 14px;
+}
+
+.location-toggle span,
+.country-toggle span {
+  display: block;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .location-toggle:hover,
@@ -385,7 +390,11 @@
 .country-combobox.open .country-toggle {
   background: rgba(59, 130, 246, 0.2);
   color: var(--primary-blue);
-  transform: translateY(-50%) rotate(180deg);
+}
+
+.location-combobox.open .location-toggle span,
+.country-combobox.open .country-toggle span {
+  transform: scaleY(-1);
 }
 
 .location-dropdown,
@@ -547,8 +556,66 @@ select.input-field {
   align-items: stretch;
 }
 
-.amount-input {
+.custom-number-input {
   grid-column: 1;
+  position: relative;
+}
+
+/* Hide Native Spin Buttons */
+.custom-number-input input[type="number"]::-webkit-outer-spin-button,
+.custom-number-input input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-number-input input[type="number"] {
+  -moz-appearance: textfield;
+  padding-right: 36px !important; /* Make room for custom arrows */
+}
+
+.custom-arrows {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  z-index: 5;
+  border-radius: 6px;
+  padding: 1px;
+}
+
+.custom-arrows button {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 8px;
+  width: 24px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.arrow-down {
+  margin-top: -4px;
+}
+
+.custom-arrows button:hover {
+  color: var(--primary-blue);
+}
+
+body.dark-theme .custom-arrows {
+  background: transparent;
+}
+
+body.dark-theme .custom-arrows button:hover {
+  color: #60a5fa;
 }
 
 .currency-select {
@@ -948,4 +1015,56 @@ input,
 select,
 textarea {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.company-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.company-logo-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.company-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.company-logo-preview.initials {
+  background: linear-gradient(135deg, var(--primary-blue), #7c3aed);
+  color: white;
+  font-size: 20px;
+  font-weight: 800;
+  border: none;
+}
+
+.btn-grab-logo-simple {
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary-blue);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-grab-logo-simple:hover {
+  background: var(--primary-blue);
+  color: white;
 }

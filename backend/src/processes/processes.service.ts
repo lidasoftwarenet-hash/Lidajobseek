@@ -162,6 +162,8 @@ export class ProcessesService {
     // Explicitly destructure allowed fields to prevent mass assignment
     const {
       companyName,
+      companyWebsite,
+      companyLogoUrl,
       roleTitle,
       techStack,
       location,
@@ -193,6 +195,8 @@ export class ProcessesService {
 
     const data: any = {};
     if (companyName !== undefined) data.companyName = companyName;
+    if (companyWebsite !== undefined) data.companyWebsite = companyWebsite;
+    if (companyLogoUrl !== undefined) data.companyLogoUrl = companyLogoUrl;
     if (roleTitle !== undefined) data.roleTitle = roleTitle;
     if (techStack !== undefined) data.techStack = techStack;
     if (location !== undefined) data.location = location;
