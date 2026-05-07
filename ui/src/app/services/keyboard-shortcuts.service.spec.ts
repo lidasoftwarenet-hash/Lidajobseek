@@ -24,6 +24,10 @@ describe('KeyboardShortcutsService', () => {
     toastServiceSpy = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
   });
 
+  afterEach(() => {
+    service.ngOnDestroy();
+  });
+
   it('should be created', () => {
     expect(service).toBeTruthy();
   });

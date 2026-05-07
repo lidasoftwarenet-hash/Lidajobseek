@@ -30,10 +30,12 @@ export class ProcessesService {
         // Convert date strings from <input type="date"> (YYYY-MM-DD) to ISO
         const dateFields = ['initialInviteDate', 'nextFollowUp', 'offerDeadline'];
         dateFields.forEach(field => {
-            if (payload[field]) {
-                payload[field] = new Date(payload[field]).toISOString();
-            } else {
-                payload[field] = null;
+            if (field in payload) {
+                if (payload[field]) {
+                    payload[field] = new Date(payload[field]).toISOString();
+                } else {
+                    payload[field] = null;
+                }
             }
         });
 

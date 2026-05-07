@@ -202,15 +202,15 @@
           <label class="field-label">Work Mode <span class="req">*</span></label>
           <div class="mode-chips">
             <label class="mode-chip" [class.active]="process.workMode === 'remote'">
-              <input type="radio" name="workMode" [(ngModel)]="process.workMode" value="remote">
+              <input type="radio" name="workMode" [(ngModel)]="process.workMode" value="remote" (change)="onWorkModeChange()">
               🌐 Remote
             </label>
             <label class="mode-chip" [class.active]="process.workMode === 'hybrid'">
-              <input type="radio" name="workMode" [(ngModel)]="process.workMode" value="hybrid">
+              <input type="radio" name="workMode" [(ngModel)]="process.workMode" value="hybrid" (change)="onWorkModeChange()">
               🔀 Hybrid
             </label>
             <label class="mode-chip" [class.active]="process.workMode === 'office'">
-              <input type="radio" name="workMode" [(ngModel)]="process.workMode" value="office">
+              <input type="radio" name="workMode" [(ngModel)]="process.workMode" value="office" (change)="onWorkModeChange()">
               🏢 On-site
             </label>
           </div>

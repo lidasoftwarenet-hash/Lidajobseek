@@ -65,5 +65,17 @@ describe('ProcessesService', () => {
       const req = httpMock.expectOne(apiUrl);
       expect(req.request.body.initialInviteDate).toBeNull();
     });
+    it('should NOT nullify missing dates in partial updates (PATCH)', () => {
+      const input = {
+        currentStage: 'Interview'
+      };
+
+      service.update(1, input).subscribe();
+
+      const req = httpMock.expectOne(`${apiUrl}/1`);
+      expect(req.request.body.currentStage).toBe('Interview');
+      expect(req.request.body.initialInviteDate).toBeUndefined();
+      expect(req.request.body.nextFollowUp).toBeUndefined();
+    });
   });
 });

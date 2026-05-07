@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { SettingsService, UserSettings } from './settings.service';
 import { AuthService } from './auth.service';
-import { of, EMPTY } from 'rxjs';
+import { of, EMPTY, first } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('SettingsService', () => {
@@ -137,8 +137,8 @@ describe('SettingsService', () => {
   describe('openSettingsPanel()', () => {
     it('openSettings$ emits when openSettingsPanel() is called', (done) => {
       const service = getService();
-      service.openSettings$.subscribe(() => {
-        expect(true).toBeTrue(); // just checking it emitted
+      service.openSettings$.pipe(first()).subscribe(() => {
+        expect(true).toBeTrue();
         done();
       });
       service.openSettingsPanel();

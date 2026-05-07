@@ -247,6 +247,13 @@ export class ProcessFormComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  onWorkModeChange() {
+    if (this.process.workMode !== 'hybrid') {
+      this.process.daysFromOffice = null;
+    }
+    this.cdr.detectChanges();
+  }
+
   // ── Submit / Cancel ───────────────────────────────────────────────
   submit() {
     if (this.process.companyWebsite && !this.process.companyLogoUrl) this.fetchLogo();
@@ -256,6 +263,9 @@ export class ProcessFormComponent implements OnInit, OnDestroy {
       this.process.initiatedBy = '';
       this.process.firstContactChannel = '';
       this.process.initialInviteContent = '';
+    }
+    if (this.process.workMode !== 'hybrid') {
+      this.process.daysFromOffice = null;
     }
     this.onSubmit.emit();
   }

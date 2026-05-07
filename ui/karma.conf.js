@@ -11,10 +11,7 @@ module.exports = function (config) {
     ],
     client: {
       jasmine: {
-        // you can add configuration options for Jasmine here
-        // the possible options are listed at https://jasmine.github.io/api/edge/Configuration.html
-        // for example, you can disable the random execution with `random: false`
-        // or set a specific seed with `seed: 4321`
+        random: false
       },
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
@@ -41,12 +38,14 @@ module.exports = function (config) {
         flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
       }
     },
+    concurrency: 1,
     singleRun: false,
     restartOnFileChange: true,
     // CRITICAL: Increase timeouts for CI
-    browserNoActivityTimeout: 120000,
-    browserDisconnectTimeout: 60000,
+    browserNoActivityTimeout: 180000,
+    browserDisconnectTimeout: 120000,
     browserDisconnectTolerance: 3,
-    captureTimeout: 120000
+    captureTimeout: 120000,
+    pingInterval: 30000
   });
 };

@@ -133,9 +133,6 @@ export class ProcessListComponent implements OnInit, OnDestroy, AfterViewChecked
                 this.applyFilters();
                 this.findTasks();
                 this.isLoading = false;
-                setTimeout(() => {
-                    this.initDashCharts();
-                }, 0);
             },
             error: (err) => {
                 console.error('Failed to load processes', err);
