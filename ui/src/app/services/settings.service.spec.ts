@@ -132,4 +132,35 @@ describe('SettingsService', () => {
     service.setTheme('light');
     expect(document.body.classList.contains('dark-theme')).toBeFalse();
   });
+
+  // ── openSettings$ / openSettingsPanel() ─────────────────────────────
+  describe('openSettingsPanel()', () => {
+    it('openSettings$ emits when openSettingsPanel() is called', (done) => {
+      const service = getService();
+      service.openSettings$.subscribe(() => {
+        expect(true).toBeTrue(); // just checking it emitted
+        done();
+      });
+      service.openSettingsPanel();
+    });
+
+    it('openSettings$ emits each time openSettingsPanel() is called', () => {
+      const service = getService();
+      let count = 0;
+      service.openSettings$.subscribe(() => count++);
+
+      service.openSettingsPanel();
+      service.openSettingsPanel();
+      service.openSettingsPanel();
+
+      expect(count).toBe(3);
+    });
+
+    it('openSettings$ does NOT emit before openSettingsPanel() is called', () => {
+      const service = getService();
+      let emitted = false;
+      service.openSettings$.subscribe(() => emitted = true);
+      expect(emitted).toBeFalse();
+    });
+  });
 });

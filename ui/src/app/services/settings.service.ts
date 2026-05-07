@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { AuthService, DateFormatPreference, TimeFormatPreference, ThemePreference } from './auth.service';
 
 export interface UserSettings {
@@ -60,6 +60,10 @@ export class SettingsService {
   private settingsSubject = new BehaviorSubject<UserSettings>(this.loadSettings());
 
   settings$ = this.settingsSubject.asObservable();
+
+  /** Emit to this to open the settings panel from anywhere */
+  readonly openSettings$ = new Subject<void>();
+  openSettingsPanel() { this.openSettings$.next(); }
 
   constructor(private authService: AuthService) {
     // Apply theme on initialization

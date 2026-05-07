@@ -225,6 +225,19 @@
                             </div>
                         </div>
                         
+                        <div class="dl-item" *ngIf="process.jobDescriptionUrl">
+                            <div class="dl-icon">
+                                <lucide-icon name="briefcase" [size]="16"></lucide-icon>
+                            </div>
+                            <div class="dl-content">
+                                <span class="dl-label">Job Posting</span>
+                                <a [href]="formatUrl(process.jobDescriptionUrl)" target="_blank" class="btn-visit-detail">
+                                    <span>Visit Original Post</span>
+                                    <lucide-icon name="external-link" [size]="12"></lucide-icon>
+                                </a>
+                            </div>
+                        </div>
+
                         <div class="dl-item">
                             <div class="dl-icon">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -308,6 +321,44 @@
 </app-ai-assistant-panel>
 
 <style>
+    .btn-visit-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding: 8px 16px;
+        background: var(--primary-blue);
+        color: white;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: fit-content;
+        box-shadow: 0 4px 12px rgba(0, 120, 212, 0.2);
+    }
+
+    .btn-visit-detail:hover {
+        background: var(--primary-blue-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 120, 212, 0.3);
+    }
+
+    .btn-visit-detail lucide-icon {
+        opacity: 1;
+    }
+
+    /* Dark Mode Detail Button */
+    .dark-theme .btn-visit-detail {
+        background: var(--primary-blue);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-theme .btn-visit-detail:hover {
+        background: #1d8cf8; /* A bit brighter for dark mode visibility */
+        box-shadow: 0 6px 20px rgba(29, 140, 248, 0.4);
+    }
+
     /* ===== RESET & BASE OVERRIDES ===== */
     .dashboard-wrapper {
         min-height: 100vh;

@@ -8,7 +8,7 @@ import localeEnGb from '@angular/common/locales/en-GB';
 import {
   Pencil, Trash2, Edit, CheckCircle2, AlertCircle, Calendar, FileText, Circle,
   Download, Upload, Plus, Star, Phone, MapPin, Briefcase, MessageCircle, X,
-  Search, Filter, LayoutGrid, List, Sparkles, Info
+  Search, Filter, LayoutGrid, List, Sparkles, Info, Link, ExternalLink, Target, Rocket, Heart
 } from 'lucide-angular';
 import { provideLucideIcons } from './lucide-provider';
 
@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideLucideIcons({
       Pencil, Trash2, Edit, CheckCircle2, AlertCircle, Calendar, FileText, Circle,
       Download, Upload, Plus, Star, Phone, MapPin, Briefcase, MessageCircle, X,
-      Search, Filter, LayoutGrid, List, Sparkles, Info
+      Search, Filter, LayoutGrid, List, Sparkles, Info, Link, ExternalLink, Target, Rocket, Heart
     })
   ]
 };

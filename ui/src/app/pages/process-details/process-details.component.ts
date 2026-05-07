@@ -79,6 +79,15 @@ export class ProcessDetailsComponent implements OnInit {
         private toastService: ToastService
     ) { }
 
+    formatUrl(url: string | undefined): string {
+        if (!url) return '';
+        let cleanUrl = url.trim();
+        if (!cleanUrl.startsWith('http')) {
+            cleanUrl = 'https://' + cleanUrl;
+        }
+        return cleanUrl;
+    }
+
     ngOnInit() {
         this.loadProcess();
     }

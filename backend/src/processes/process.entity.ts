@@ -18,6 +18,9 @@ export class Process {
   @Property({ nullable: true })
   companyLogoUrl?: string;
 
+  @Property({ nullable: true })
+  jobDescriptionUrl?: string;
+
   @Property()
   roleTitle!: string;
 
