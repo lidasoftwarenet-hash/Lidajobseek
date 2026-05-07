@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
@@ -20,8 +20,8 @@ import { ConfirmService } from '../../services/confirm.service';
   templateUrl: './process-form.component.html',
   styleUrls: ['./process-form.component.css']
 })
-export class ProcessFormComponent implements OnInit {
-  readonly DEFAULT_LOGO = 'assets/Default-company .png';
+export class ProcessFormComponent implements OnInit, OnDestroy {
+  readonly DEFAULT_LOGO = 'assets/default-company.png';
 
   @Input() process: any = {};
   @Input() isEdit: boolean = false;
@@ -34,6 +34,8 @@ export class ProcessFormComponent implements OnInit {
   stages = PROCESS_STAGES;
   logoFetchState: 'idle' | 'fetching' | 'success' | 'failed' = 'idle';
   private logoFailedTimer: any;
+  private _cachedCities: string[] = [];
+  private _lastCountry: string = '';
 
   readonly CURRENCIES = [
     { code: 'ILS', symbol: '₪', label: 'ILS — Israeli Shekel' },
@@ -88,8 +90,12 @@ export class ProcessFormComponent implements OnInit {
 
   /** Cities for the country the user set in Settings */
   get citiesForUserCountry(): string[] {
-    const country = this.settingsService.getSettings().country || 'Israel';
-    return (countriesData as Record<string, string[]>)[country] || [];
+    const country = this.userCountry;
+    if (country !== this._lastCountry) {
+      this._lastCountry = country;
+      this._cachedCities = (countriesData as Record<string, string[]>)[country] || [];
+    }
+    return this._cachedCities;
   }
 
   get userCountry(): string {
@@ -97,6 +103,12 @@ export class ProcessFormComponent implements OnInit {
   }
 
   ngOnInit(): void {}
+
+  ngOnDestroy(): void {
+    if (this.logoFailedTimer) {
+      clearTimeout(this.logoFailedTimer);
+    }
+  }
 
   // ── Progress tracking ──────────────────────────────────────────────
   /** Count distinct terms in the tech stack field (comma or space-separated) */
@@ -259,10 +271,16 @@ export class ProcessFormComponent implements OnInit {
   }
 
   onLogoError() {
-    this.process.companyLogoUrl = null;
-    if (this.logoFetchState === 'fetching') this.showLogoFailed();
-    else this.logoFetchState = 'idle';
-    this.cdr.detectChanges();
+    // If the failure happened for the real logo, try the default one
+    if (this.process.companyLogoUrl) {
+      this.process.companyLogoUrl = null;
+      if (this.logoFetchState === 'fetching') this.showLogoFailed();
+      else this.logoFetchState = 'idle';
+      this.cdr.detectChanges();
+    } else {
+      // If even the default logo fails, just stop
+      this.logoFetchState = 'idle';
+    }
   }
 
   getCompanyInitial(): string {

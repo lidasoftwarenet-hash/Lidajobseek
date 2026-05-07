@@ -19,7 +19,7 @@ describe('ProcessFormComponent', () => {
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
   let confirmServiceSpy: jasmine.SpyObj<ConfirmService>;
 
-  const DEFAULT_LOGO = 'assets/Default-company .png';
+  const DEFAULT_LOGO = 'assets/default-company.png';
 
   function makeSettings(overrides: Partial<{ country: string }> = {}) {
     return { country: 'Israel', theme: 'light', clockFormat: '24', dateFormat: 'DD/MM/YYYY',
@@ -76,8 +76,8 @@ describe('ProcessFormComponent', () => {
 
   // ── DEFAULT_LOGO ────────────────────────────────────────────────────
   describe('DEFAULT_LOGO', () => {
-    it('should equal the asset path with space', () => {
-      expect(component.DEFAULT_LOGO).toBe('assets/Default-company .png');
+    it('should equal the asset path', () => {
+      expect(component.DEFAULT_LOGO).toBe('assets/default-company.png');
     });
   });
 
@@ -108,6 +108,7 @@ describe('ProcessFormComponent', () => {
     });
 
     it('sets logoFetchState to failed when currently fetching', () => {
+      component.process.companyLogoUrl = 'https://example.com/logo.png';
       component.logoFetchState = 'fetching';
       component.onLogoError();
       expect(component.logoFetchState).toBe('failed');
