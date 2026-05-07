@@ -69,6 +69,10 @@ describe('ProcessFormComponent', () => {
     fixture.detectChanges();
   });
 
+  afterEach(() => {
+    fixture.destroy();
+  });
+
   // ── Smoke test ──────────────────────────────────────────────────────
   it('should create', () => {
     expect(component).toBeTruthy();
