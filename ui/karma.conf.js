@@ -42,10 +42,10 @@ module.exports = function (config) {
     singleRun: false,
     restartOnFileChange: true,
     // CRITICAL: Increase timeouts for CI
-    browserNoActivityTimeout: 180000,
-    browserDisconnectTimeout: 120000,
-    browserDisconnectTolerance: 3,
-    captureTimeout: 120000,
-    pingInterval: 30000
+    browserNoActivityTimeout: 30000,
+    browserDisconnectTimeout: 30000,
+    browserDisconnectTolerance: 2,
+    captureTimeout: 60000,
+    pingInterval: 10000
   });
 };
