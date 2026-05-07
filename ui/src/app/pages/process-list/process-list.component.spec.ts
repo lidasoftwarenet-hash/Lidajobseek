@@ -159,7 +159,7 @@ describe('ProcessListComponent', () => {
     expect(component.kpiProcesses.length).toBe(0);
   });
 
-  xit('should provide correct timeline subtitles', () => {
+  it('should provide correct timeline subtitles', () => {
     component.kpiTimeRange = 'week';
     expect(component.getTimelineSubtitle()).toContain('Last 7 days');
     
@@ -167,7 +167,7 @@ describe('ProcessListComponent', () => {
     expect(component.getTimelineSubtitle()).toContain('Last 12 months');
   });
 
-  xit('should initialize charts when loading completes and view is ready', () => {
+  it('should initialize charts when loading completes and view is ready', () => {
     // Mock ElementRefs with real canvas elements for Chart.js
     component.timelineRef = new ElementRef(document.createElement('canvas'));
     component.stageRef = new ElementRef(document.createElement('canvas'));
@@ -186,7 +186,7 @@ describe('ProcessListComponent', () => {
     expect((component as any).initDashCharts).toHaveBeenCalled();
   });
 
-  xit('should not re-initialize charts if already built', () => {
+  it('should not re-initialize charts if already built', () => {
     component.isLoading = false;
     component.processes = [{ id: '1' }];
     (component as any).dashCharts = { timeline: {} }; 
