@@ -1,22 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { SettingsService, UserSettings } from './settings.service';
 import { AuthService } from './auth.service';
-import { of, EMPTY } from 'rxjs';
+import { of, EMPTY, first } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('SettingsService', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-
-  const mockLocalStorage = (() => {
-    let store: { [key: string]: string } = {};
-    return {
-      getItem: (key: string) => store[key] || null,
-      setItem: (key: string, value: string) => store[key] = value,
-      clear: () => store = {},
-    };
-  })();
+  let store: { [key: string]: string } = {};
 
   beforeEach(() => {
+    store = {};
     const authSpy = jasmine.createSpyObj('AuthService', [
       'isAuthenticated',
       'getPreferences',
@@ -30,11 +23,15 @@ describe('SettingsService', () => {
 
     authServiceSpy = authSpy;
 
-    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage, writable: true });
+    // Use safe spies instead of Object.defineProperty
+    spyOn(localStorage, 'getItem').and.callFake((key: string) => store[key] || null);
+    spyOn(localStorage, 'setItem').and.callFake((key: string, value: string) => store[key] = value);
+    spyOn(localStorage, 'clear').and.callFake(() => store = {});
     
     if (!window.matchMedia) {
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
+        configurable: true,
         value: jasmine.createSpy('matchMedia').and.returnValue({
           matches: false,
           media: '',
@@ -47,8 +44,6 @@ describe('SettingsService', () => {
         }),
       });
     }
-
-    mockLocalStorage.clear();
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -72,14 +67,14 @@ describe('SettingsService', () => {
   });
 
   it('should load settings from localStorage', () => {
-    mockLocalStorage.setItem('jobseek_user_settings', JSON.stringify({ theme: 'dark' }));
+    localStorage.setItem('jobseek_user_settings', JSON.stringify({ theme: 'dark' }));
     const service = getService();
     expect(service.getSettings().theme).toBe('dark');
   });
 
   it('should handle corrupted local storage JSON', () => {
     spyOn(console, 'error');
-    mockLocalStorage.setItem('jobseek_user_settings', '{ invalid }');
+    localStorage.setItem('jobseek_user_settings', '{ invalid }');
     const service = getService();
     expect(service.getSettings().theme).toBe('light'); 
     expect(console.error).toHaveBeenCalled();
@@ -131,5 +126,36 @@ describe('SettingsService', () => {
 
     service.setTheme('light');
     expect(document.body.classList.contains('dark-theme')).toBeFalse();
+  });
+
+  // ── openSettings$ / openSettingsPanel() ─────────────────────────────
+  describe('openSettingsPanel()', () => {
+    it('openSettings$ emits when openSettingsPanel() is called', (done) => {
+      const service = getService();
+      service.openSettings$.pipe(first()).subscribe(() => {
+        expect(true).toBeTrue();
+        done();
+      });
+      service.openSettingsPanel();
+    });
+
+    it('openSettings$ emits each time openSettingsPanel() is called', () => {
+      const service = getService();
+      let count = 0;
+      service.openSettings$.subscribe(() => count++);
+
+      service.openSettingsPanel();
+      service.openSettingsPanel();
+      service.openSettingsPanel();
+
+      expect(count).toBe(3);
+    });
+
+    it('openSettings$ does NOT emit before openSettingsPanel() is called', () => {
+      const service = getService();
+      let emitted = false;
+      service.openSettings$.subscribe(() => emitted = true);
+      expect(emitted).toBeFalse();
+    });
   });
 });

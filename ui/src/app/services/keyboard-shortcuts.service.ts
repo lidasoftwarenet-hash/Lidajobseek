@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { ToastService } from './toast.service';
@@ -15,17 +15,17 @@ export interface KeyboardShortcut {
 @Injectable({
   providedIn: 'root'
 })
-export class KeyboardShortcutsService {
+export class KeyboardShortcutsService implements OnDestroy {
   private shortcuts: KeyboardShortcut[] = [];
   private shortcutTriggered = new Subject<string>();
 
   shortcutTriggered$ = this.shortcutTriggered.asObservable();
+  private keydownListener?: (event: KeyboardEvent) => void;
 
   constructor(
     private router: Router,
     private toastService: ToastService
   ) {
-    console.log('KeyboardShortcutsService initialized');
     this.initializeDefaultShortcuts();
     this.setupEventListener();
   }
@@ -97,19 +97,15 @@ export class KeyboardShortcutsService {
   }
 
   private setupEventListener() {
-    document.addEventListener('keydown', (event: KeyboardEvent) => {
+    this.keydownListener = (event: KeyboardEvent) => {
       // Don't trigger shortcuts when typing in input fields
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return;
       }
 
-      // Debug: console.log(`Key pressed: ${event.key}, Ctrl: ${event.ctrlKey}, Alt: ${event.altKey}, Shift: ${event.shiftKey}`);
-
       const matchingShortcut = this.shortcuts.find(shortcut => {
         const keyMatch = shortcut.key.toLowerCase() === event.key.toLowerCase();
-        
-        // If the shortcut doesn't specify modifiers, we strictly expect none
         const ctrlMatch = (shortcut.ctrl ?? false) === (event.ctrlKey || event.metaKey);
         const altMatch = (shortcut.alt ?? false) === event.altKey;
         const shiftMatch = (shortcut.shift ?? false) === event.shiftKey;
@@ -118,15 +114,20 @@ export class KeyboardShortcutsService {
       });
 
       if (matchingShortcut) {
-        console.log('Triggering shortcut:', matchingShortcut.description);
         event.preventDefault();
         matchingShortcut.action();
         this.shortcutTriggered.next(matchingShortcut.description);
-        
-        // Give visual feedback
         this.toastService.show(`Shortcut: ${matchingShortcut.description}`, 'success');
       }
-    });
+    };
+
+    document.addEventListener('keydown', this.keydownListener);
+  }
+
+  ngOnDestroy() {
+    if (this.keydownListener) {
+      document.removeEventListener('keydown', this.keydownListener);
+    }
   }
 
   getShortcuts(): KeyboardShortcut[] {

@@ -44,8 +44,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests
-        run: npm run test -w ui -- --watch=false --browsers=ChromeHeadless
+      - name: Run unit tests (services, guards, interceptors, utils)
+        run: npm run test -w ui -- --watch=false --browsers=ChromeHeadlessNoSandbox --include="src/app/services/**/*.spec.ts" --include="src/app/guards/**/*.spec.ts" --include="src/app/interceptors/**/*.spec.ts" --include="src/app/utils/**/*.spec.ts"
+
+      - name: Run unit tests (process-form component)
+        run: npm run test -w ui -- --watch=false --browsers=ChromeHeadlessNoSandbox --include="src/app/components/process-form/**/*.spec.ts"
+
+      - name: Run unit tests (remaining components and pages)
+        run: npm run test -w ui -- --watch=false --browsers=ChromeHeadlessNoSandbox --include="src/app/app.component.spec.ts" --include="src/app/components/header/**/*.spec.ts" --include="src/app/components/settings-panel/**/*.spec.ts" --include="src/app/components/toast/**/*.spec.ts" --include="src/app/pages/**/*.spec.ts"
 
   test-docker-startup:
     name: Docker Startup Check

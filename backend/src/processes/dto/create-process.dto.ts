@@ -28,4 +28,5 @@ export class CreateProcessDto {
   tailoredPitch?: string;
   cvVersion?: string;
   submissionLink?: string;
+  jobDescriptionUrl?: string;
 }

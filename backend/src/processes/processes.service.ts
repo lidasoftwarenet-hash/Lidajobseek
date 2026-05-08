@@ -191,12 +191,14 @@ export class ProcessesService {
       scoreWLB,
       scoreGrowth,
       scoreVibe,
+      jobDescriptionUrl,
     } = dto;
 
     const data: any = {};
     if (companyName !== undefined) data.companyName = companyName;
     if (companyWebsite !== undefined) data.companyWebsite = companyWebsite;
     if (companyLogoUrl !== undefined) data.companyLogoUrl = companyLogoUrl;
+    if (jobDescriptionUrl !== undefined) data.jobDescriptionUrl = jobDescriptionUrl;
     if (roleTitle !== undefined) data.roleTitle = roleTitle;
     if (techStack !== undefined) data.techStack = techStack;
     if (location !== undefined) data.location = location;

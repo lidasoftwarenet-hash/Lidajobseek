@@ -43,6 +43,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     // Settings service will handle theme initialization
+    this.settingsService.openSettings$.subscribe(() => {
+      this.showSettings = true;
+    });
   }
 
   toggleSettings() {

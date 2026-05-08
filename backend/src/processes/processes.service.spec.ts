@@ -81,8 +81,8 @@ describe('ProcessesService', () => {
     it('should call syncInitialInteraction if initialInviteDate is present', async () => {
       const dto = { companyName: 'Test', initialInviteDate: '2026-04-01' };
       mockEm.findOne.mockResolvedValue(null); // No existing interaction
-      mockRepo.create.mockReturnValue({ 
-        ...dto, 
+      mockRepo.create.mockReturnValue({
+        ...dto,
         initialInviteDate: new Date(dto.initialInviteDate),
         interactions: { add: jest.fn() },
         contacts: { add: jest.fn() },
@@ -101,8 +101,8 @@ describe('ProcessesService', () => {
       const dto = { companyName: 'Test', initialInviteDate: '2026-04-01' };
       const existingInteraction = { id: 100, summary: 'Initial Interaction: Old' };
       mockEm.findOne.mockResolvedValue(existingInteraction);
-      mockRepo.create.mockReturnValue({ 
-        ...dto, 
+      mockRepo.create.mockReturnValue({
+        ...dto,
         initialInviteDate: new Date(dto.initialInviteDate),
         interactions: { add: jest.fn() },
         contacts: { add: jest.fn() },
@@ -119,9 +119,9 @@ describe('ProcessesService', () => {
 
     it('should persist companyWebsite and companyLogoUrl when provided', async () => {
       const dto = {
-        companyName: 'Varonis',
-        companyWebsite: 'varonis.com',
-        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=varonis.com&sz=128',
+        companyName: 'google',
+        companyWebsite: 'google.com',
+        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=google.com&sz=128',
       };
       mockEm.getReference.mockReturnValue({});
       mockRepo.create.mockImplementation(data => ({
@@ -134,8 +134,8 @@ describe('ProcessesService', () => {
       await service.create(dto as any, 1);
 
       expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({
-        companyWebsite: 'varonis.com',
-        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=varonis.com&sz=128',
+        companyWebsite: 'google.com',
+        companyLogoUrl: 'https://www.google.com/s2/favicons?domain=google.com&sz=128',
       }));
     });
 
@@ -199,6 +199,45 @@ describe('ProcessesService', () => {
       mockRepo.findOne.mockResolvedValue(null);
       await expect(service.update(999, {}, 1)).rejects.toThrow(NotFoundException);
     });
+
+    it('should persist jobDescriptionUrl when provided in create', async () => {
+      const dto = {
+        companyName: 'Test Corp',
+        jobDescriptionUrl: 'https://careers.google.com/jobs/123',
+      };
+      mockEm.getReference.mockReturnValue({});
+      mockRepo.create.mockImplementation(data => ({
+        ...data,
+        interactions: { add: jest.fn() },
+        contacts: { add: jest.fn() },
+        reviews: { add: jest.fn() }
+      }));
+
+      await service.create(dto as any, 1);
+
+      expect(mockRepo.create).toHaveBeenCalledWith(expect.objectContaining({
+        jobDescriptionUrl: 'https://careers.google.com/jobs/123',
+      }));
+    });
+
+    it('should update jobDescriptionUrl on an existing process', async () => {
+      const existingProcess: any = {
+        id: 1,
+        companyName: 'Old Corp',
+        jobDescriptionUrl: '',
+        interactions: { add: jest.fn() },
+      };
+      mockRepo.findOne.mockResolvedValue(existingProcess);
+
+      const updateDto = {
+        jobDescriptionUrl: 'https://new-job-link.com',
+      };
+
+      await service.update(1, updateDto, 1);
+
+      expect(existingProcess.jobDescriptionUrl).toBe('https://new-job-link.com');
+      expect(mockEm.flush).toHaveBeenCalled();
+    });
   });
 
   describe('findAll', () => {
@@ -208,7 +247,7 @@ describe('ProcessesService', () => {
         { id: 1, currentStage: 'Applied', interactions: [{}, {}], reviews: [] },
       ];
       mockRepo.find.mockResolvedValue(mockProcesses);
-      
+
       // Verification of updateStaleProcesses call (it's called internally)
       await service.findAll(userId);
 
@@ -247,7 +286,7 @@ describe('ProcessesService', () => {
       }];
       mockEm.create.mockReturnValue({});
       mockRepo.create.mockReturnValue({ interactions: { add: jest.fn() }, contacts: { add: jest.fn() }, reviews: { add: jest.fn() } });
-      
+
       const result = await service.importData(data, 'append', 1);
 
       expect(result.count).toBe(1);

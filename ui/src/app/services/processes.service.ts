@@ -13,7 +13,7 @@ export class ProcessesService {
     }
 
     create(data: any) {
-        return this.http.post(this.apiUrl, data);
+        return this.http.post(this.apiUrl, this.normalizePayload(data));
     }
 
     getById(id: number) {
@@ -21,7 +21,29 @@ export class ProcessesService {
     }
 
     update(id: number, data: any) {
-        return this.http.patch(`${this.apiUrl}/${id}`, data);
+        return this.http.patch(`${this.apiUrl}/${id}`, this.normalizePayload(data));
+    }
+
+    private normalizePayload(data: any) {
+        const payload = { ...data };
+        
+        // Convert date strings from <input type="date"> (YYYY-MM-DD) to ISO
+        const dateFields = ['initialInviteDate', 'nextFollowUp', 'offerDeadline'];
+        dateFields.forEach(field => {
+            if (field in payload) {
+                if (payload[field]) {
+                    payload[field] = new Date(payload[field]).toISOString();
+                } else {
+                    payload[field] = null;
+                }
+            }
+        });
+
+        if (payload.salaryExpectation) {
+            payload.salaryExpectation = Number(payload.salaryExpectation);
+        }
+
+        return payload;
     }
 
     delete(id: number) {
