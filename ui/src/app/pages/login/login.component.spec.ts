@@ -9,7 +9,7 @@ import { ToastService } from '../../services/toast.service';
 import { SettingsService } from '../../services/settings.service';
 import { of, throwError } from 'rxjs';
 
-xdescribe('LoginComponent', () => {
+describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
