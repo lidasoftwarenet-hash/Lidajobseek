@@ -3,7 +3,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { ProcessesService } from './processes.service';
 import { environment } from '../../environments/environment';
 
-xdescribe('ProcessesService', () => {
+describe('ProcessesService', () => {
   let service: ProcessesService;
   let httpMock: HttpTestingController;
   const apiUrl = `${environment.apiUrl}/api/processes`;

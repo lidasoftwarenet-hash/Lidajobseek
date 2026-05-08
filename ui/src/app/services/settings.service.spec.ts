@@ -4,19 +4,12 @@ import { AuthService } from './auth.service';
 import { of, EMPTY, first } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-xdescribe('SettingsService', () => {
+describe('SettingsService', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
-
-  const mockLocalStorage = (() => {
-    let store: { [key: string]: string } = {};
-    return {
-      getItem: (key: string) => store[key] || null,
-      setItem: (key: string, value: string) => store[key] = value,
-      clear: () => store = {},
-    };
-  })();
+  let store: { [key: string]: string } = {};
 
   beforeEach(() => {
+    store = {};
     const authSpy = jasmine.createSpyObj('AuthService', [
       'isAuthenticated',
       'getPreferences',
@@ -30,11 +23,15 @@ xdescribe('SettingsService', () => {
 
     authServiceSpy = authSpy;
 
-    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage, writable: true });
+    // Use safe spies instead of Object.defineProperty
+    spyOn(localStorage, 'getItem').and.callFake((key: string) => store[key] || null);
+    spyOn(localStorage, 'setItem').and.callFake((key: string, value: string) => store[key] = value);
+    spyOn(localStorage, 'clear').and.callFake(() => store = {});
     
     if (!window.matchMedia) {
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
+        configurable: true,
         value: jasmine.createSpy('matchMedia').and.returnValue({
           matches: false,
           media: '',
@@ -47,8 +44,6 @@ xdescribe('SettingsService', () => {
         }),
       });
     }
-
-    mockLocalStorage.clear();
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -72,14 +67,14 @@ xdescribe('SettingsService', () => {
   });
 
   it('should load settings from localStorage', () => {
-    mockLocalStorage.setItem('jobseek_user_settings', JSON.stringify({ theme: 'dark' }));
+    localStorage.setItem('jobseek_user_settings', JSON.stringify({ theme: 'dark' }));
     const service = getService();
     expect(service.getSettings().theme).toBe('dark');
   });
 
   it('should handle corrupted local storage JSON', () => {
     spyOn(console, 'error');
-    mockLocalStorage.setItem('jobseek_user_settings', '{ invalid }');
+    localStorage.setItem('jobseek_user_settings', '{ invalid }');
     const service = getService();
     expect(service.getSettings().theme).toBe('light'); 
     expect(console.error).toHaveBeenCalled();

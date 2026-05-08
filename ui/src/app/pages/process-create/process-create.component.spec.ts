@@ -8,7 +8,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { LucideAngularModule, Link, ExternalLink, Briefcase, MapPin, Sparkles, Target, Rocket, Heart, Calendar } from 'lucide-angular';
 
-xdescribe('ProcessCreateComponent', () => {
+describe('ProcessCreateComponent', () => {
   let component: ProcessCreateComponent;
   let fixture: ComponentFixture<ProcessCreateComponent>;
   let router: Router;

@@ -13,7 +13,7 @@ import { ConfirmService } from '../../services/confirm.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { EMPTY, of } from 'rxjs';
 
-xdescribe('ProcessFormComponent', () => {
+describe('ProcessFormComponent', () => {
   let component: ProcessFormComponent;
   let fixture: ComponentFixture<ProcessFormComponent>;
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
