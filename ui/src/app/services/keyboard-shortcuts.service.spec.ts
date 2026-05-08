@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ToastService } from './toast.service';
 
-xdescribe('KeyboardShortcutsService', () => {
+describe('KeyboardShortcutsService', () => {
   let service: KeyboardShortcutsService;
   let router: Router;
   let toastServiceSpy: jasmine.SpyObj<ToastService>;
